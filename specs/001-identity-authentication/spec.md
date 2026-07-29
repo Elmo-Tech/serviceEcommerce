@@ -244,10 +244,11 @@ Acceptance criteria:
   device-management routes in Feature 001.
 - FR-007: The backend MUST use direct separate-domain frontend-to-backend
   HTTPS.
-- FR-008: Super Admin provisioning values MUST come only from environment-backed
-  configuration.
-- FR-009: The system MUST NOT generate or ship a default production
-  administrator credential.
+- FR-008: The primary Super Admin provisioning values MUST come from
+  environment-backed configuration.
+- FR-009: The system MUST NOT generate or ship an implicit administrator
+  credential; any repository-owned additional seeded administrator account must
+  be explicit and documented.
 - FR-010: Provisioning MUST fail safely when required production name, email,
   or password values are missing or invalid.
 - FR-011: Provisioning MUST normalize the configured email using

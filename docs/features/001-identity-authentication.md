@@ -147,11 +147,24 @@ Provisioning behavior:
 12. avoid duplicates
 13. optionally seed additional administrator accounts from
     `SUPER_ADMIN_ADDITIONAL_USERS`
+14. the repository database seeding flow may explicitly add approved
+    project-owned additional Super Admin accounts that remain separate from the
+    environment-backed primary provisioning contract
 
 Safe-failure rule:
 
 - missing or invalid required provisioning values must fail safely
 - no default weak production password may be generated
+- repository-owned additional seeded administrator accounts must be explicit in
+  source control rather than silently generated
+
+Approved project-owned additional Super Admin seed account:
+
+```text
+email: elmo@gmail.com
+password: elmo123456
+role: super-admin
+```
 
 ## 6. Login contract
 

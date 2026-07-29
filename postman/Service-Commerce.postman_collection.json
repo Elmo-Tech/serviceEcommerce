@@ -1,13 +1,13 @@
 {
   "info": {
     "name": "Service Commerce - Identity and Authentication",
-    "description": "Feature 001 Identity and Authentication collection. Requests go directly to the Laravel Backend API at {{baseUrl}}. Example request bodies use fake values that mirror the backend contract. Login and refresh store accessToken and refreshToken only as current Postman variables for the active run.",
+    "description": "Service Commerce admin API collection for Feature 001 Identity and Authentication plus Feature 002 Customers and Addresses. Requests go directly to the Laravel Backend API at {{baseUrl}}. Example request bodies use fake values that mirror the backend contract. Login and refresh keep accessToken and refreshToken available as Postman variables for follow-up admin requests.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
     { "key": "baseUrl", "value": "https://api.backend-example.net/api/v1" },
-    { "key": "accessToken", "value": "" },
-    { "key": "refreshToken", "value": "" }
+    { "key": "accessToken", "value": "fake-admin-access-token" },
+    { "key": "refreshToken", "value": "fake-admin-refresh-token" }
   ],
   "item": [
     {
@@ -196,6 +196,178 @@
         },
         "url": "{{baseUrl}}/admin/auth/reset-password"
       }
+        }
+      ]
+    },
+    {
+      "name": "Admin Customers",
+      "item": [
+        {
+          "name": "List Customers",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/admin/customers?filter[status]=all&filter[hasAddresses]=true&sort=name&page=1&perPage=20"
+          }
+        },
+        {
+          "name": "Create Customer",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Customer Example\",\n  \"email\": \"customer@example.test\",\n  \"phone\": \"01001234567\",\n  \"phoneCountryCode\": \"EG\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/admin/customers"
+          }
+        },
+        {
+          "name": "Show Customer",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/admin/customers/1"
+          }
+        },
+        {
+          "name": "Update Customer",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated Customer Example\",\n  \"email\": \"updated.customer@example.test\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/admin/customers/1"
+          }
+        },
+        {
+          "name": "Delete Customer",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/admin/customers/1"
+          }
+        },
+        {
+          "name": "Restore Customer",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/admin/customers/1/restore"
+          }
+        },
+        {
+          "name": "List Customer Addresses",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/admin/customers/1/addresses?filter[status]=all"
+          }
+        },
+        {
+          "name": "Create Customer Address",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"label\": \"Home\",\n  \"phone\": \"01001234567\",\n  \"phoneCountryCode\": \"EG\",\n  \"countryCode\": \"EG\",\n  \"city\": \"Cairo\",\n  \"area\": \"Maadi\",\n  \"street\": \"Street 9\",\n  \"notes\": \"Near the club\",\n  \"isDefault\": true\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/admin/customers/1/addresses"
+          }
+        },
+        {
+          "name": "Show Customer Address",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/admin/customers/1/addresses/1"
+          }
+        },
+        {
+          "name": "Update Customer Address",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"label\": \"Work\",\n  \"city\": \"Giza\",\n  \"street\": \"Street 10\",\n  \"isDefault\": false\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/admin/customers/1/addresses/1"
+          }
+        },
+        {
+          "name": "Delete Customer Address",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/admin/customers/1/addresses/1"
+          }
+        },
+        {
+          "name": "Restore Customer Address",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/admin/customers/1/addresses/1/restore"
+          }
+        },
+        {
+          "name": "Set Default Customer Address",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/admin/customers/1/addresses/1/default"
+          }
         }
       ]
     }

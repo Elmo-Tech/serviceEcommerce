@@ -1993,13 +1993,12 @@ GET /api/v1/admin/customers
 Supported query parameters:
 
 ```text
-search
-status
-hasAddresses
-createdFrom
-createdTo
-sortBy
-sortDirection
+filter[search]
+filter[status]
+filter[hasAddresses]
+filter[createdFrom]
+filter[createdTo]
+sort
 page
 perPage
 ```
@@ -2055,8 +2054,8 @@ Rules:
 ## 55. Address Presence Filter
 
 ```text
-hasAddresses=true
-hasAddresses=false
+filter[hasAddresses]=true
+filter[hasAddresses]=false
 ```
 
 Counts active addresses only.
@@ -2066,8 +2065,8 @@ Counts active addresses only.
 ## 56. Date Filters
 
 ```text
-createdFrom
-createdTo
+filter[createdFrom]
+filter[createdTo]
 ```
 
 Rules:
@@ -2081,24 +2080,19 @@ Rules:
 
 ## 57. Sorting
 
-Approved customer sort fields:
+Approved customer sort values:
 
 ```text
 createdAt
+-createdAt
 name
+-name
 ```
 
 Default:
 
 ```text
-createdAt desc
-```
-
-Approved directions:
-
-```text
-asc
-desc
+-createdAt
 ```
 
 Unknown sort field is rejected.
@@ -2125,7 +2119,7 @@ Address list may be unpaginated because the active limit is 20.
 Supported filter:
 
 ```text
-status=active|deleted|all
+filter[status]=active|deleted|all
 ```
 
 Recommended ordering:

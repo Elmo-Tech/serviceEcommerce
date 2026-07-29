@@ -10,6 +10,13 @@ uses(RefreshDatabase::class);
 it('shows the authenticated administrator profile with the exact approved shape', function () {
     seedAdminAuthEnvironment();
     $this->seed(SuperAdminSeeder::class);
+    $expectedPermissions = \App\Models\User::query()
+        ->sole()
+        ->getAllPermissions()
+        ->pluck('name')
+        ->sort()
+        ->values()
+        ->all();
 
     $loginResponse = loginAdminForTests();
     $accessToken = (string) $loginResponse->json('data.accessToken');
@@ -25,7 +32,7 @@ it('shows the authenticated administrator profile with the exact approved shape'
         ->assertJsonPath('data.email', 'admin@example.test')
         ->assertJsonPath('data.avatar', null)
         ->assertJsonPath('data.role', 'super-admin')
-        ->assertJsonPath('data.permissions', [])
+        ->assertJsonPath('data.permissions', $expectedPermissions)
         ->assertJsonMissingPath('data.id')
         ->assertJsonMissingPath('data.roles')
         ->assertJsonMissingPath('data.avatarUrl');

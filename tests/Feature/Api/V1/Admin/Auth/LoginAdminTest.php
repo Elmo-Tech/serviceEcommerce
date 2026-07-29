@@ -31,6 +31,13 @@ beforeEach(function () {
 
 it('logs in successfully with normalized email and returns the approved token and profile contract', function () {
     $this->seed(SuperAdminSeeder::class);
+    $expectedPermissions = User::query()
+        ->sole()
+        ->getAllPermissions()
+        ->pluck('name')
+        ->sort()
+        ->values()
+        ->all();
 
     $response = $this->postJson('/api/v1/admin/auth/login', [
         'email' => '  ADMIN@EXAMPLE.TEST  ',
@@ -49,7 +56,7 @@ it('logs in successfully with normalized email and returns the approved token an
         ->assertJsonPath('data.profile.email', 'admin@example.test')
         ->assertJsonPath('data.profile.avatar', null)
         ->assertJsonPath('data.profile.role', 'super-admin')
-        ->assertJsonPath('data.profile.permissions', [])
+        ->assertJsonPath('data.profile.permissions', $expectedPermissions)
         ->assertJsonPath('data.refreshTokenExpiresIn', 2592000)
         ->assertJsonMissingPath('data.profile.id')
         ->assertJsonMissingPath('data.profile.roles')

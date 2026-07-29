@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\HttpStatusCode;
+use App\Exceptions\ApiBusinessException;
 use App\Http\Middleware\ApplyAuthenticationResponseHeaders;
 use App\Http\Middleware\EnsureAdminIsActive;
 use App\Http\Middleware\EnsureUserIsAdministrator;
@@ -13,6 +14,10 @@ use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
+use Spatie\Permission\Exceptions\UnauthorizedException as SpatieUnauthorizedException;
+use Spatie\Permission\Middleware\PermissionMiddleware;
+use Spatie\Permission\Middleware\RoleMiddleware;
+use Spatie\Permission\Middleware\RoleOrPermissionMiddleware;
 use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\TooManyRequestsHttpException;
@@ -41,6 +46,9 @@ return Application::configure(basePath: dirname(__DIR__))
             'admin.auth.headers' => ApplyAuthenticationResponseHeaders::class,
             'admin.user_type' => EnsureUserIsAdministrator::class,
             'admin.active' => EnsureAdminIsActive::class,
+            'permission' => PermissionMiddleware::class,
+            'role' => RoleMiddleware::class,
+            'role_or_permission' => RoleOrPermissionMiddleware::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
@@ -119,6 +127,20 @@ return Application::configure(basePath: dirname(__DIR__))
             );
         });
 
+        $exceptions->render(function (ApiBusinessException $exception, Request $request) use ($apiError) {
+            if (! $request->is('api/*') && ! $request->expectsJson()) {
+                return null;
+            }
+
+            return $apiError(
+                $request,
+                $exception->translationKey(),
+                $exception->machineCode(),
+                $exception->status(),
+                $exception->errors(),
+            );
+        });
+
         $exceptions->render(function (AuthenticationException $exception, Request $request) use ($apiError) {
             if (! $request->is('api/*') && ! $request->expectsJson()) {
                 return null;
@@ -129,6 +151,19 @@ return Application::configure(basePath: dirname(__DIR__))
                 'auth.unauthenticated',
                 'UNAUTHENTICATED',
                 HttpStatusCode::UNAUTHORIZED,
+            );
+        });
+
+        $exceptions->render(function (SpatieUnauthorizedException $exception, Request $request) use ($apiError) {
+            if (! $request->is('api/*') && ! $request->expectsJson()) {
+                return null;
+            }
+
+            return $apiError(
+                $request,
+                'auth.forbidden',
+                'FORBIDDEN',
+                HttpStatusCode::FORBIDDEN,
             );
         });
 

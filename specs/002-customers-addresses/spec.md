@@ -4,7 +4,7 @@
 
 **Created**: 2026-07-29
 
-**Status**: Draft
+**Status**: Ready for Planning
 
 **Input**: User description: "Build Feature 002 from `docs/features/002-customers-addresses.md` and use that file as the authoritative reference."
 
@@ -197,6 +197,10 @@ without requiring the Orders feature to exist yet.
 - **FR-006**: The system MUST return the approved invalid-phone validation
   outcome for customer or address phone parsing failures using the stable code
   `CUSTOMER_PHONE_INVALID` on the `phone` field.
+- **FR-006A**: Administrator customer create or update requests that resolve to
+  an already-owned normalized phone MUST fail with HTTP `422`, use the stable
+  code `CUSTOMER_PHONE_ALREADY_EXISTS`, attach the error to `phone`, and MUST
+  NOT create or update a conflicting customer record.
 - **FR-007**: The system MUST use `phoneNormalized` as the only customer
   matching key and MUST NOT match customers by name, email, or address fields.
 - **FR-008**: When an active customer already exists for a normalized phone,
@@ -237,14 +241,15 @@ without requiring the Orders feature to exist yet.
   MUST ensure that all other active addresses for the same customer become
   non-default within the same atomic operation.
 - **FR-020**: When the current default address is deleted, the system MUST
-  choose the deterministic fallback default from the remaining active
-  addresses, and if no active addresses remain, the customer MUST have zero
-  default addresses.
+  choose the newest remaining active address ordered by `createdAt DESC`, then
+  `id DESC`, as the fallback default within the same atomic operation. If no
+  active addresses remain, the customer MUST have zero default addresses.
 - **FR-021**: When a soft-deleted address matches the future guest-order
   submitted address identity, the system MUST restore that address instead of
   creating a duplicate and MUST NOT auto-update saved label, phone, or notes.
-- **FR-022**: Customer soft delete MUST soft-delete active addresses in the
-  approved way, and customer restore MUST NOT automatically restore all deleted
+- **FR-022**: Customer soft deletion MUST soft-delete the customer and all
+  active addresses inside the same database transaction. Customer restoration
+  MUST restore the customer only and MUST NOT automatically restore deleted
   addresses.
 - **FR-023**: Customer and address APIs MUST NOT change historical order
   customer or address snapshots once those snapshots exist in future features.
@@ -299,8 +304,9 @@ without requiring the Orders feature to exist yet.
 
 - **DI-001**: The system MUST enforce unique normalized customer phone,
   unique non-null normalized customer email, valid customer-to-address foreign
-  keys, a maximum of 20 active addresses per customer, and at most one active
-  default address per customer.
+  keys, and a maximum of 20 active addresses per customer. A customer MUST have
+  zero default addresses when no active address exists and exactly one active
+  default address whenever one or more active addresses exist.
 - **DI-002**: Customer creation, customer restoration, address creation,
   address restoration, address identity changes, default-address changes, and
   guest-order matching resolution MUST use the approved transaction and lock or
@@ -325,7 +331,7 @@ without requiring the Orders feature to exist yet.
   `PATCH /api/v1/admin/customers/{customer}/addresses/{address}`,
   `DELETE /api/v1/admin/customers/{customer}/addresses/{address}`,
   `POST /api/v1/admin/customers/{customer}/addresses/{address}/restore`, and
-  `POST /api/v1/admin/customers/{customer}/addresses/{address}/set-default`.
+  `PUT /api/v1/admin/customers/{customer}/addresses/{address}/default`.
 - **API-002**: Customer create and update requests MUST use `camelCase` request
   keys, accept the approved customer fields only, and reject unsupported
   customer-auth, role, permission, or protected identity fields.
@@ -333,16 +339,25 @@ without requiring the Orders feature to exist yet.
   keys and accept only `label`, `phone`, `phoneCountryCode`, `countryCode`,
   `city`, `area`, `street`, `notes`, and `isDefault` as applicable.
 - **API-004**: Success responses MUST follow the shared API envelope and return
-  only approved customer or address data; error responses MUST use the shared
-  localized envelope with stable English machine codes including
-  `VALIDATION_ERROR`, `UNAUTHENTICATED`, `USER_INACTIVE`, `FORBIDDEN`,
-  `CUSTOMER_PHONE_INVALID`, `CUSTOMER_EMAIL_ALREADY_EXISTS`,
-  `CUSTOMER_ADDRESS_LIMIT_EXCEEDED`, `CUSTOMER_ADDRESS_ALREADY_EXISTS`, and
-  `CUSTOMER_ADDRESS_NOT_FOUND` where applicable.
-- **API-005**: Customer list responses MUST support allow-listed search,
-  soft-delete-aware filtering, sorting, and pagination without exposing
-  arbitrary query access; nested address responses remain customer-scoped and
-  safely bounded by the 20-address limit.
+  only approved customer or address data. Error responses MUST use the shared
+  localized envelope with stable English machine codes where applicable,
+  including `VALIDATION_ERROR`, `UNAUTHENTICATED`, `USER_INACTIVE`,
+  `FORBIDDEN`, `RATE_LIMITED`, `INTERNAL_ERROR`, `CUSTOMER_NOT_FOUND`,
+  `CUSTOMER_PHONE_ALREADY_EXISTS`, `CUSTOMER_EMAIL_ALREADY_EXISTS`,
+  `CUSTOMER_PHONE_INVALID`, `CUSTOMER_DELETED`,
+  `CUSTOMER_ADDRESS_NOT_FOUND`, `CUSTOMER_ADDRESS_ALREADY_EXISTS`,
+  `CUSTOMER_ADDRESS_LIMIT_EXCEEDED`,
+  `CUSTOMER_DEFAULT_ADDRESS_REQUIRED`, and
+  `CUSTOMER_ADDRESS_RESTORE_CONFLICT`.
+- **API-005**: `GET /api/v1/admin/customers` MUST support only the approved
+  query parameters: `filter[search]`, `filter[status]`,
+  `filter[hasAddresses]`, `filter[createdFrom]`, `filter[createdTo]`, `sort`,
+  `page`, and `perPage`. The default `filter[status]` MUST be `active`;
+  allowed status values are `active`, `deleted`, and `all`. Allowed customer
+  sort values are `createdAt`, `-createdAt`, `name`, and `-name`; the default
+  sort is `-createdAt`. The default `perPage` is `20` and the maximum is
+  `100`. Nested address responses remain customer-scoped and safely bounded by
+  the 20-active-address limit.
 - **LOC-001**: Arabic and English MUST both be supported for success messages,
   validation messages, and business-rule errors in this feature, while
   permission identifiers, error codes, route paths, and JSON keys remain
@@ -354,18 +369,26 @@ without requiring the Orders feature to exist yet.
 
 ### Verification Requirements *(mandatory)*
 
-- **VR-001**: The feature MUST include consolidated API Feature Tests for
-  customer routes and address routes covering success, validation,
-  unauthenticated, inactive-admin, forbidden, nested not-found, persistence,
-  safe-resource, and localization behaviour.
+- **VR-001**: The feature MUST include consolidated API Feature Tests for the
+  customer and address business areas. Related route, validation, permission,
+  persistence, safe-resource, and representative localization scenarios MUST
+  be grouped instead of producing one test file or one task per case.
 - **VR-002**: The feature MUST include focused domain tests for customer and
-  address matching plus real MySQL concurrency tests for same-phone customer
-  creation, one-default-address enforcement, and duplicate-address race
-  protection where the selected address-identity strategy supports it.
+  address matching plus only the critical real-MySQL concurrency tests for
+  same-phone customer creation, one-default-address enforcement, and
+  duplicate-address race protection where the selected database strategy
+  supports direct enforcement.
 - **VR-003**: Feature acceptance requires passing Pest, Pint, and PHPStan or
   Larastan quality gates, updated Postman documentation for the protected
   customer and address routes, and explicit proof that no public customer CRUD
   or token-handling behaviour was introduced.
+- **VR-004**: Planning and task generation MUST keep tests consolidated into
+  approximately five meaningful groups. Feature 002 MUST NOT duplicate Feature
+  001 tests for Refresh Token rotation, predecessor-token revocation, token
+  reuse detection, IP-only refresh throttling, browser token storage, CSP,
+  cookies, CSRF, token entropy, or authentication log redaction. Do not
+  generate one task per route, permission, validation rule, locale, or security
+  assertion.
 
 ### Key Entities *(include if feature involves data)*
 
@@ -412,3 +435,20 @@ without requiring the Orders feature to exist yet.
   address collections remain safely bounded by the 20-active-address maximum.
 - Historical customer and address snapshots will be persisted by the future
   Orders feature, but Feature 002 must define and preserve that boundary now.
+
+## Planning and Task-Generation Constraint
+
+The generated plan and tasks MUST remain focused on the customer/address
+business domain.
+
+Target testing task groups:
+
+1. consolidated customer API and permission coverage
+2. consolidated address API, ownership, and permission coverage
+3. customer/address matching coverage
+4. critical MySQL concurrency coverage
+5. minimal authentication-boundary, localization, and architecture coverage
+
+The generator MUST NOT expand these into dozens of security, validation, route,
+permission, or locale subtasks unless a real implementation defect later
+requires a focused regression test.

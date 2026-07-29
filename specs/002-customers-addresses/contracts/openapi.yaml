@@ -1,0 +1,950 @@
+openapi: 3.1.0
+info:
+  title: Service Commerce Backend - Feature 002 Customers and Addresses
+  version: 1.1.0
+  description: >
+    Protected administrator contract for customer and customer-address
+    management. Feature 002 reuses the Feature 001 Bearer Access Token model,
+    never accepts or returns Refresh Tokens, and exposes explicit list, detail,
+    and address Resources.
+servers:
+  - url: https://api.example-backend.net/api/v1
+security:
+  - bearerAuth: []
+tags:
+  - name: Customers
+  - name: Customer Addresses
+
+paths:
+  /admin/customers:
+    get:
+      operationId: listCustomers
+      tags: [Customers]
+      summary: List customers
+      parameters:
+        - $ref: '#/components/parameters/AcceptLanguage'
+        - $ref: '#/components/parameters/Search'
+        - $ref: '#/components/parameters/CustomerFilters'
+        - $ref: '#/components/parameters/Sort'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PerPage'
+      responses:
+        '200':
+          description: Customer list returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerListSuccess'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/ForbiddenOrInactive'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+    post:
+      operationId: createCustomer
+      tags: [Customers]
+      summary: Create customer
+      parameters:
+        - $ref: '#/components/parameters/AcceptLanguage'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCustomerRequest'
+      responses:
+        '201':
+          description: Customer created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerDetailSuccess'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/ForbiddenOrInactive'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /admin/customers/{customer}:
+    get:
+      operationId: showCustomer
+      tags: [Customers]
+      summary: Show customer
+      parameters:
+        - $ref: '#/components/parameters/AcceptLanguage'
+        - $ref: '#/components/parameters/CustomerId'
+      responses:
+        '200':
+          description: Customer details returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerDetailSuccess'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/ForbiddenOrInactive'
+        '404':
+          $ref: '#/components/responses/CustomerNotFound'
+    patch:
+      operationId: updateCustomer
+      tags: [Customers]
+      summary: Update customer
+      parameters:
+        - $ref: '#/components/parameters/AcceptLanguage'
+        - $ref: '#/components/parameters/CustomerId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateCustomerRequest'
+      responses:
+        '200':
+          description: Customer updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerDetailSuccess'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/ForbiddenOrInactive'
+        '404':
+          $ref: '#/components/responses/CustomerNotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+    delete:
+      operationId: deleteCustomer
+      tags: [Customers]
+      summary: Soft delete customer
+      parameters:
+        - $ref: '#/components/parameters/AcceptLanguage'
+        - $ref: '#/components/parameters/CustomerId'
+      responses:
+        '200':
+          description: Customer deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MutationSuccess'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/ForbiddenOrInactive'
+        '404':
+          $ref: '#/components/responses/CustomerNotFound'
+
+  /admin/customers/{customer}/restore:
+    post:
+      operationId: restoreCustomer
+      tags: [Customers]
+      summary: Restore soft-deleted customer
+      parameters:
+        - $ref: '#/components/parameters/AcceptLanguage'
+        - $ref: '#/components/parameters/CustomerId'
+      responses:
+        '200':
+          description: Customer restored
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerDetailSuccess'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/ForbiddenOrInactive'
+        '404':
+          $ref: '#/components/responses/CustomerNotFound'
+        '422':
+          $ref: '#/components/responses/CustomerRestoreConflict'
+
+  /admin/customers/{customer}/addresses:
+    get:
+      operationId: listCustomerAddresses
+      tags: [Customer Addresses]
+      summary: List customer addresses
+      parameters:
+        - $ref: '#/components/parameters/AcceptLanguage'
+        - $ref: '#/components/parameters/CustomerId'
+        - $ref: '#/components/parameters/AddressFilters'
+      responses:
+        '200':
+          description: Customer addresses returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerAddressListSuccess'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/ForbiddenOrInactive'
+        '404':
+          $ref: '#/components/responses/CustomerNotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+    post:
+      operationId: createCustomerAddress
+      tags: [Customer Addresses]
+      summary: Create customer address
+      parameters:
+        - $ref: '#/components/parameters/AcceptLanguage'
+        - $ref: '#/components/parameters/CustomerId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCustomerAddressRequest'
+      responses:
+        '201':
+          description: Address created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerAddressSuccess'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/ForbiddenOrInactive'
+        '404':
+          $ref: '#/components/responses/CustomerNotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /admin/customers/{customer}/addresses/{address}:
+    get:
+      operationId: showCustomerAddress
+      tags: [Customer Addresses]
+      summary: Show customer address
+      parameters:
+        - $ref: '#/components/parameters/AcceptLanguage'
+        - $ref: '#/components/parameters/CustomerId'
+        - $ref: '#/components/parameters/AddressId'
+      responses:
+        '200':
+          description: Address returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerAddressSuccess'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/ForbiddenOrInactive'
+        '404':
+          $ref: '#/components/responses/CustomerAddressNotFound'
+    patch:
+      operationId: updateCustomerAddress
+      tags: [Customer Addresses]
+      summary: Update customer address
+      parameters:
+        - $ref: '#/components/parameters/AcceptLanguage'
+        - $ref: '#/components/parameters/CustomerId'
+        - $ref: '#/components/parameters/AddressId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateCustomerAddressRequest'
+      responses:
+        '200':
+          description: Address updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerAddressSuccess'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/ForbiddenOrInactive'
+        '404':
+          $ref: '#/components/responses/CustomerAddressNotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+    delete:
+      operationId: deleteCustomerAddress
+      tags: [Customer Addresses]
+      summary: Soft delete customer address
+      parameters:
+        - $ref: '#/components/parameters/AcceptLanguage'
+        - $ref: '#/components/parameters/CustomerId'
+        - $ref: '#/components/parameters/AddressId'
+      responses:
+        '200':
+          description: Address deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MutationSuccess'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/ForbiddenOrInactive'
+        '404':
+          $ref: '#/components/responses/CustomerAddressNotFound'
+
+  /admin/customers/{customer}/addresses/{address}/restore:
+    post:
+      operationId: restoreCustomerAddress
+      tags: [Customer Addresses]
+      summary: Restore soft-deleted customer address
+      parameters:
+        - $ref: '#/components/parameters/AcceptLanguage'
+        - $ref: '#/components/parameters/CustomerId'
+        - $ref: '#/components/parameters/AddressId'
+      responses:
+        '200':
+          description: Address restored
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerAddressSuccess'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/ForbiddenOrInactive'
+        '404':
+          $ref: '#/components/responses/CustomerAddressNotFound'
+        '409':
+          $ref: '#/components/responses/CustomerAddressRestoreConflict'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /admin/customers/{customer}/addresses/{address}/default:
+    put:
+      operationId: setDefaultCustomerAddress
+      tags: [Customer Addresses]
+      summary: Set address as default
+      parameters:
+        - $ref: '#/components/parameters/AcceptLanguage'
+        - $ref: '#/components/parameters/CustomerId'
+        - $ref: '#/components/parameters/AddressId'
+      responses:
+        '200':
+          description: Default address changed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerAddressSuccess'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/ForbiddenOrInactive'
+        '404':
+          $ref: '#/components/responses/CustomerAddressNotFound'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: Sanctum
+
+  parameters:
+    AcceptLanguage:
+      name: Accept-Language
+      in: header
+      required: false
+      schema:
+        type: string
+        enum: [ar, en]
+    CustomerId:
+      name: customer
+      in: path
+      required: true
+      schema:
+        type: integer
+        minimum: 1
+    AddressId:
+      name: address
+      in: path
+      required: true
+      schema:
+        type: integer
+        minimum: 1
+    Search:
+      name: search
+      in: query
+      required: false
+      schema:
+        type: string
+        maxLength: 255
+    CustomerFilters:
+      name: filter
+      in: query
+      required: false
+      style: deepObject
+      explode: true
+      schema:
+        type: object
+        additionalProperties: false
+        properties:
+          search:
+            type: string
+            maxLength: 255
+          status:
+            type: string
+            enum: [active, deleted, all]
+            default: active
+          hasAddresses:
+            type: boolean
+          createdFrom:
+            type: string
+            format: date
+          createdTo:
+            type: string
+            format: date
+    AddressFilters:
+      name: filter
+      in: query
+      required: false
+      style: deepObject
+      explode: true
+      schema:
+        type: object
+        additionalProperties: false
+        properties:
+          status:
+            type: string
+            enum: [active, deleted, all]
+            default: active
+    Sort:
+      name: sort
+      in: query
+      required: false
+      schema:
+        type: string
+        enum: [createdAt, -createdAt, name, -name]
+        default: -createdAt
+    Page:
+      name: page
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+    PerPage:
+      name: perPage
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+
+  responses:
+    Unauthenticated:
+      description: Missing, invalid, expired, or revoked administrator Access Token
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            unauthenticated:
+              value:
+                success: false
+                message: Localized safe message
+                code: UNAUTHENTICATED
+                errors: null
+
+    ForbiddenOrInactive:
+      description: Administrator is inactive or lacks the required permission
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            inactiveAdministrator:
+              summary: Authenticated administrator is inactive
+              value:
+                success: false
+                message: Localized safe message
+                code: USER_INACTIVE
+                errors: null
+            forbidden:
+              summary: Active administrator lacks permission
+              value:
+                success: false
+                message: Localized safe message
+                code: FORBIDDEN
+                errors: null
+
+    CustomerNotFound:
+      description: Customer not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            notFound:
+              value:
+                success: false
+                message: Localized safe message
+                code: CUSTOMER_NOT_FOUND
+                errors: null
+
+    CustomerAddressNotFound:
+      description: Customer-scoped address not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            notFound:
+              value:
+                success: false
+                message: Localized safe message
+                code: CUSTOMER_ADDRESS_NOT_FOUND
+                errors: null
+
+    CustomerRestoreConflict:
+      description: Customer cannot be restored because a unique value is already owned
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            duplicatePhone:
+              value:
+                success: false
+                message: Localized safe message
+                code: CUSTOMER_PHONE_ALREADY_EXISTS
+                errors:
+                  phone:
+                    - Localized validation message
+            duplicateEmail:
+              value:
+                success: false
+                message: Localized safe message
+                code: CUSTOMER_EMAIL_ALREADY_EXISTS
+                errors:
+                  email:
+                    - Localized validation message
+
+    CustomerAddressRestoreConflict:
+      description: Address restore conflicts with duplicate or restore-state rules
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            restoreConflict:
+              value:
+                success: false
+                message: Localized safe message
+                code: CUSTOMER_ADDRESS_RESTORE_CONFLICT
+                errors: null
+
+    ValidationError:
+      description: Request validation or business-rule validation failed
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            validation:
+              value:
+                success: false
+                message: Localized safe message
+                code: VALIDATION_ERROR
+                errors:
+                  field:
+                    - Localized validation message
+            invalidPhone:
+              value:
+                success: false
+                message: Localized safe message
+                code: CUSTOMER_PHONE_INVALID
+                errors:
+                  phone:
+                    - Localized phone validation message
+            duplicatePhone:
+              value:
+                success: false
+                message: Localized safe message
+                code: CUSTOMER_PHONE_ALREADY_EXISTS
+                errors:
+                  phone:
+                    - Localized validation message
+            duplicateEmail:
+              value:
+                success: false
+                message: Localized safe message
+                code: CUSTOMER_EMAIL_ALREADY_EXISTS
+                errors:
+                  email:
+                    - Localized validation message
+            duplicateAddress:
+              value:
+                success: false
+                message: Localized safe message
+                code: CUSTOMER_ADDRESS_ALREADY_EXISTS
+                errors: null
+            addressLimit:
+              value:
+                success: false
+                message: Localized safe message
+                code: CUSTOMER_ADDRESS_LIMIT_EXCEEDED
+                errors: null
+            defaultRequired:
+              value:
+                success: false
+                message: Localized safe message
+                code: CUSTOMER_DEFAULT_ADDRESS_REQUIRED
+                errors: null
+
+  schemas:
+    CreateCustomerRequest:
+      type: object
+      additionalProperties: false
+      required: [name, phone]
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 150
+        email:
+          type: [string, 'null']
+          format: email
+          maxLength: 255
+        phone:
+          type: string
+          minLength: 1
+          maxLength: 30
+        phoneCountryCode:
+          type: string
+          pattern: '^[A-Za-z]{2}$'
+          example: EG
+
+    UpdateCustomerRequest:
+      type: object
+      additionalProperties: false
+      minProperties: 1
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 150
+        email:
+          type: [string, 'null']
+          format: email
+          maxLength: 255
+        phone:
+          type: string
+          minLength: 1
+          maxLength: 30
+        phoneCountryCode:
+          type: string
+          pattern: '^[A-Za-z]{2}$'
+          example: EG
+
+    CreateCustomerAddressRequest:
+      type: object
+      additionalProperties: false
+      required: [phone, countryCode, city, street]
+      properties:
+        label:
+          type: [string, 'null']
+          maxLength: 100
+        phone:
+          type: string
+          minLength: 1
+          maxLength: 30
+        phoneCountryCode:
+          type: string
+          pattern: '^[A-Za-z]{2}$'
+          example: EG
+        countryCode:
+          type: string
+          pattern: '^[A-Za-z]{2}$'
+          example: EG
+        city:
+          type: string
+          minLength: 1
+          maxLength: 150
+        area:
+          type: [string, 'null']
+          maxLength: 150
+        street:
+          type: string
+          minLength: 1
+          maxLength: 255
+        notes:
+          type: [string, 'null']
+          maxLength: 1000
+        isDefault:
+          type: boolean
+          default: false
+
+    UpdateCustomerAddressRequest:
+      type: object
+      additionalProperties: false
+      minProperties: 1
+      properties:
+        label:
+          type: [string, 'null']
+          maxLength: 100
+        phone:
+          type: string
+          minLength: 1
+          maxLength: 30
+        phoneCountryCode:
+          type: string
+          pattern: '^[A-Za-z]{2}$'
+          example: EG
+        countryCode:
+          type: string
+          pattern: '^[A-Za-z]{2}$'
+          example: EG
+        city:
+          type: string
+          minLength: 1
+          maxLength: 150
+        area:
+          type: [string, 'null']
+          maxLength: 150
+        street:
+          type: string
+          minLength: 1
+          maxLength: 255
+        notes:
+          type: [string, 'null']
+          maxLength: 1000
+        isDefault:
+          type: boolean
+
+    CustomerListItem:
+      type: object
+      additionalProperties: false
+      required:
+        [id, name, email, phone, isDeleted, addressesCount, createdAt]
+      properties:
+        id:
+          type: integer
+          minimum: 1
+        name:
+          type: string
+        email:
+          type: [string, 'null']
+          format: email
+        phone:
+          type: string
+        isDeleted:
+          type: boolean
+        addressesCount:
+          type: integer
+          minimum: 0
+        createdAt:
+          type: string
+          format: date-time
+
+    CustomerDetail:
+      type: object
+      additionalProperties: false
+      required:
+        - id
+        - name
+        - email
+        - phone
+        - isDeleted
+        - deletedAt
+        - addressesCount
+        - addresses
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: integer
+          minimum: 1
+        name:
+          type: string
+        email:
+          type: [string, 'null']
+          format: email
+        phone:
+          type: string
+        isDeleted:
+          type: boolean
+        deletedAt:
+          type: [string, 'null']
+          format: date-time
+        addressesCount:
+          type: integer
+          minimum: 0
+        addresses:
+          type: array
+          items:
+            $ref: '#/components/schemas/CustomerAddress'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    CustomerAddress:
+      type: object
+      additionalProperties: false
+      required:
+        - id
+        - label
+        - phone
+        - countryCode
+        - city
+        - area
+        - street
+        - notes
+        - isDefault
+        - isDeleted
+        - deletedAt
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: integer
+          minimum: 1
+        label:
+          type: [string, 'null']
+        phone:
+          type: string
+        countryCode:
+          type: string
+          pattern: '^[A-Z]{2}$'
+        city:
+          type: string
+        area:
+          type: [string, 'null']
+        street:
+          type: string
+        notes:
+          type: [string, 'null']
+        isDefault:
+          type: boolean
+        isDeleted:
+          type: boolean
+        deletedAt:
+          type: [string, 'null']
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    PaginationMeta:
+      type: object
+      additionalProperties: false
+      required: [currentPage, perPage, total, lastPage]
+      properties:
+        currentPage:
+          type: integer
+          minimum: 1
+        perPage:
+          type: integer
+          minimum: 1
+          maximum: 100
+        total:
+          type: integer
+          minimum: 0
+        lastPage:
+          type: integer
+          minimum: 1
+
+    CustomerDetailSuccess:
+      type: object
+      additionalProperties: false
+      required: [success, message, data]
+      properties:
+        success:
+          type: boolean
+          const: true
+        message:
+          type: string
+        data:
+          $ref: '#/components/schemas/CustomerDetail'
+
+    CustomerAddressSuccess:
+      type: object
+      additionalProperties: false
+      required: [success, message, data]
+      properties:
+        success:
+          type: boolean
+          const: true
+        message:
+          type: string
+        data:
+          $ref: '#/components/schemas/CustomerAddress'
+
+    CustomerListSuccess:
+      type: object
+      additionalProperties: false
+      required: [success, message, data, meta]
+      properties:
+        success:
+          type: boolean
+          const: true
+        message:
+          type: string
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/CustomerListItem'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+
+    CustomerAddressListSuccess:
+      type: object
+      additionalProperties: false
+      required: [success, message, data]
+      properties:
+        success:
+          type: boolean
+          const: true
+        message:
+          type: string
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/CustomerAddress'
+
+    MutationSuccess:
+      type: object
+      additionalProperties: false
+      required: [success, message, data]
+      properties:
+        success:
+          type: boolean
+          const: true
+        message:
+          type: string
+        data:
+          type: 'null'
+
+    ErrorResponse:
+      type: object
+      additionalProperties: false
+      required: [success, message, code, errors]
+      properties:
+        success:
+          type: boolean
+          const: false
+        message:
+          type: string
+        code:
+          type: string
+        errors:
+          oneOf:
+            - type: 'null'
+            - type: object
+              additionalProperties:
+                type: array
+                items:
+                  type: string

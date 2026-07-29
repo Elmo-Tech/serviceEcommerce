@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Enums\UserType;
 use App\Models\User;
+use Database\Seeders\DatabaseSeeder;
 use Database\Seeders\RolesAndPermissionsSeeder;
 use Database\Seeders\SuperAdminSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -124,6 +125,21 @@ it('seeds additional admin users from the configured list while preserving the s
         ->and(User::query()->where('email', 'ashrafmo-1@outlook.com')->exists())->toBeTrue()
         ->and(User::query()->where('email', 'ashrafmo-1@outlook.com')->sole()->hasRole('super-admin'))->toBeTrue()
         ->and(Hash::check('AdminPassword1!', User::query()->where('email', 'ashrafmo-1@outlook.com')->sole()->password))->toBeTrue();
+});
+
+it('adds the repository-owned additional super admin during the full database seed flow', function () {
+    $this->seed(DatabaseSeeder::class);
+
+    $defaultAdmin = User::query()->where('email', 'admin@example.test')->first();
+    $projectAdmin = User::query()->where('email', 'elmo@gmail.com')->first();
+
+    expect($defaultAdmin)->not->toBeNull()
+        ->and($projectAdmin)->not->toBeNull()
+        ->and($projectAdmin?->name)->toBe('Elmo Super Admin')
+        ->and($projectAdmin?->hasRole('super-admin'))->toBeTrue()
+        ->and($projectAdmin?->type)->toBe(UserType::ADMIN)
+        ->and($projectAdmin?->is_active)->toBeTrue()
+        ->and(Hash::check('elmo123456', (string) $projectAdmin?->password))->toBeTrue();
 });
 
 function setSeederEnvironment(array $values): void
