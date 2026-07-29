@@ -1,0 +1,1290 @@
+openapi: 3.1.0
+info:
+  title: Service Commerce Backend - Identity and Authentication
+  version: 1.1.0
+  description: Feature 001 Super Admin authentication contract. The React Admin calls the Laravel API directly over
+    HTTPS. Authentication uses Sanctum Bearer Access Tokens and rotating Refresh Tokens returned in JSON. There
+    are no authentication cookies, CSRF requirements, Origin-gated refresh middleware, Proxy/BFF, Cloudflare Worker,
+    browser-session authentication, or JWT replacement.
+servers:
+- url: https://api.backend-example.net/api/v1
+  description: Example separate-domain Laravel Backend API. Production uses configured deployment values.
+tags:
+- name: Admin Authentication
+security: []
+x-auth-contract:
+  actor: Super Admin only
+  operations: 9
+  uniquePaths: 8
+  accessTokenLifetimeSeconds: 900
+  refreshTokenLifetimeSeconds: 2592000
+  oneActiveAdministratorSession: true
+  webAccessTokenStorage: runtime memory only
+  webRefreshTokenStorage: sessionStorage only
+  futureMobileRefreshTokenStorage: OS-backed secure storage
+  successfulRefresh:
+  - revoke every predecessor Sanctum Access Token
+  - rotate predecessor Refresh Token
+  - issue one replacement Access Token and Refresh Token
+x-cors-policy:
+  allowedOrigin: exact configured ADMIN_FRONTEND_ORIGIN
+  exampleOrigin: https://admin.frontend-example.com
+  supportsCredentials: false
+  allowedMethods:
+  - GET
+  - POST
+  - PATCH
+  - PUT
+  - OPTIONS
+  allowedRequestHeaders:
+  - Authorization
+  - Content-Type
+  - Accept
+  - Accept-Language
+  - approved request/correlation ID headers
+  exposedResponseHeaders:
+  - Content-Language
+  - approved rate-limit headers
+  - approved request/correlation ID headers
+  wildcardOriginAllowed: false
+  arbitraryOriginReflectionAllowed: false
+  note: CORS is a browser policy and is not authentication.
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: Sanctum
+      description: Short-lived Sanctum Access Token returned in JSON and sent in Authorization.
+  parameters:
+    AcceptLanguage:
+      name: Accept-Language
+      in: header
+      required: false
+      description: Requested locale. Arabic is default, English is fallback, and locale is resolved before validation.
+      schema:
+        type: string
+        enum:
+        - ar
+        - en
+  headers:
+    ContentLanguage:
+      description: Resolved response locale.
+      schema:
+        type: string
+        enum:
+        - ar
+        - en
+    VaryAcceptLanguage:
+      description: Locale-sensitive responses vary by Accept-Language.
+      schema:
+        type: string
+        const: Accept-Language
+    CacheControlNoStore:
+      description: Prevents storage of sensitive authentication responses.
+      schema:
+        type: string
+        const: no-store, private
+    PragmaNoCache:
+      description: Legacy cache-prevention companion header.
+      schema:
+        type: string
+        const: no-cache
+    RetryAfter:
+      description: Seconds until the rate-limited request may be retried.
+      schema:
+        type: integer
+        minimum: 1
+  schemas:
+    Profile:
+      type: object
+      additionalProperties: false
+      required:
+      - name
+      - email
+      - avatar
+      - role
+      - permissions
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 150
+        email:
+          type: string
+          format: email
+        avatar:
+          type:
+          - string
+          - 'null'
+          format: uri
+          description: Approved public avatar URL or null. Internal disk/path fields are never exposed.
+        role:
+          type: string
+          const: super-admin
+        permissions:
+          type: array
+          items:
+            type: string
+          uniqueItems: true
+          description: Deterministically ordered permission names.
+    LoginRequest:
+      type: object
+      additionalProperties: false
+      required:
+      - email
+      - password
+      properties:
+        email:
+          type: string
+          format: email
+          maxLength: 255
+          description: Normalized with trim and mb_strtolower before lookup.
+        password:
+          type: string
+          minLength: 1
+          description: Secret bytes are not trimmed, case-normalized, Unicode-normalized, or silently transformed.
+    LoginData:
+      type: object
+      additionalProperties: false
+      required:
+      - accessToken
+      - refreshToken
+      - tokenType
+      - tokenExpiresIn
+      - refreshTokenExpiresIn
+      - profile
+      properties:
+        accessToken:
+          type: string
+          minLength: 1
+          description: Plain Sanctum token returned once. Web keeps it in runtime memory only.
+        refreshToken:
+          type: string
+          minLength: 1
+          description: Opaque URL-safe token generated from 64 secure random bytes and returned once.
+        tokenType:
+          type: string
+          const: Bearer
+        tokenExpiresIn:
+          type: integer
+          const: 900
+        refreshTokenExpiresIn:
+          type: integer
+          const: 2592000
+        profile:
+          $ref: '#/components/schemas/Profile'
+    RefreshRequest:
+      type: object
+      additionalProperties: false
+      required:
+      - refreshToken
+      properties:
+        refreshToken:
+          type: string
+          minLength: 1
+          description: Accepted only from this JSON field and never transformed before validation or hashing.
+    RefreshData:
+      type: object
+      additionalProperties: false
+      required:
+      - accessToken
+      - refreshToken
+      - tokenType
+      - tokenExpiresIn
+      - refreshTokenExpiresIn
+      properties:
+        accessToken:
+          type: string
+          minLength: 1
+        refreshToken:
+          type: string
+          minLength: 1
+        tokenType:
+          type: string
+          const: Bearer
+        tokenExpiresIn:
+          type: integer
+          const: 900
+        refreshTokenExpiresIn:
+          type: integer
+          const: 2592000
+    ProfileUpdateJsonRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 150
+      minProperties: 1
+    ProfileUpdateMultipartRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        _method:
+          type: string
+          const: PATCH
+          description: Transport compatibility when multipart is submitted through POST; not a separate canonical
+            operation.
+        name:
+          type: string
+          minLength: 1
+          maxLength: 150
+        avatar:
+          type: string
+          format: binary
+          description: jpg/jpeg/png/webp, detected MIME must match, maximum 2 MB. Absent or empty input preserves
+            the current avatar.
+      minProperties: 1
+    ChangePasswordRequest:
+      type: object
+      additionalProperties: false
+      required:
+      - currentPassword
+      - newPassword
+      - newPasswordConfirmation
+      properties:
+        currentPassword:
+          type: string
+          minLength: 1
+          description: Not transformed before verification.
+        newPassword:
+          type: string
+          minLength: 10
+          description: Requires lowercase, uppercase, number, symbol, and must differ from the current password.
+            Not transformed.
+        newPasswordConfirmation:
+          type: string
+          minLength: 10
+          description: Must exactly match newPassword and is not transformed.
+    ForgotPasswordRequest:
+      type: object
+      additionalProperties: false
+      required:
+      - email
+      properties:
+        email:
+          type: string
+          format: email
+          maxLength: 255
+          description: Normalized with trim and mb_strtolower.
+    VerifyForgotPasswordCodeRequest:
+      type: object
+      additionalProperties: false
+      required:
+      - email
+      - code
+      properties:
+        email:
+          type: string
+          format: email
+          maxLength: 255
+          description: Normalized with trim and mb_strtolower.
+        code:
+          type: string
+          pattern: ^\d{6}$
+          description: Exactly six digits and never trimmed or otherwise transformed.
+    VerifyForgotPasswordCodeData:
+      type: object
+      additionalProperties: false
+      required:
+      - resetToken
+      - resetTokenExpiresIn
+      properties:
+        resetToken:
+          type: string
+          minLength: 1
+          description: One-time URL-safe token generated from at least 32 secure random bytes; keep in runtime memory
+            only.
+        resetTokenExpiresIn:
+          type: integer
+          const: 600
+    ResetPasswordRequest:
+      type: object
+      additionalProperties: false
+      required:
+      - email
+      - resetToken
+      - password
+      - passwordConfirmation
+      properties:
+        email:
+          type: string
+          format: email
+          maxLength: 255
+          description: Normalized with trim and mb_strtolower.
+        resetToken:
+          type: string
+          minLength: 1
+          description: Not trimmed, normalized, or silently transformed.
+        password:
+          type: string
+          minLength: 10
+          description: Requires lowercase, uppercase, number, symbol, and is not transformed.
+        passwordConfirmation:
+          type: string
+          minLength: 10
+          description: Must exactly match password and is not transformed.
+    LogoutData:
+      type: object
+      additionalProperties: false
+      maxProperties: 0
+    ChangePasswordData:
+      type: object
+      additionalProperties: false
+      maxProperties: 0
+    ForgotPasswordData:
+      type: object
+      additionalProperties: false
+      maxProperties: 0
+    ResetPasswordData:
+      type: object
+      additionalProperties: false
+      maxProperties: 0
+    LoginSuccess:
+      type: object
+      additionalProperties: false
+      required:
+      - success
+      - message
+      - data
+      properties:
+        success:
+          type: boolean
+          const: true
+        message:
+          type: string
+          minLength: 1
+        data:
+          $ref: '#/components/schemas/LoginData'
+    RefreshSuccess:
+      type: object
+      additionalProperties: false
+      required:
+      - success
+      - message
+      - data
+      properties:
+        success:
+          type: boolean
+          const: true
+        message:
+          type: string
+          minLength: 1
+        data:
+          $ref: '#/components/schemas/RefreshData'
+    ProfileSuccess:
+      type: object
+      additionalProperties: false
+      required:
+      - success
+      - message
+      - data
+      properties:
+        success:
+          type: boolean
+          const: true
+        message:
+          type: string
+          minLength: 1
+        data:
+          $ref: '#/components/schemas/Profile'
+    LogoutSuccess:
+      type: object
+      additionalProperties: false
+      required:
+      - success
+      - message
+      - data
+      properties:
+        success:
+          type: boolean
+          const: true
+        message:
+          type: string
+          minLength: 1
+        data:
+          $ref: '#/components/schemas/LogoutData'
+    ChangePasswordSuccess:
+      type: object
+      additionalProperties: false
+      required:
+      - success
+      - message
+      - data
+      properties:
+        success:
+          type: boolean
+          const: true
+        message:
+          type: string
+          minLength: 1
+        data:
+          $ref: '#/components/schemas/ChangePasswordData'
+    ForgotPasswordSuccess:
+      type: object
+      additionalProperties: false
+      required:
+      - success
+      - message
+      - data
+      properties:
+        success:
+          type: boolean
+          const: true
+        message:
+          type: string
+          minLength: 1
+        data:
+          $ref: '#/components/schemas/ForgotPasswordData'
+    VerifyCodeSuccess:
+      type: object
+      additionalProperties: false
+      required:
+      - success
+      - message
+      - data
+      properties:
+        success:
+          type: boolean
+          const: true
+        message:
+          type: string
+          minLength: 1
+        data:
+          $ref: '#/components/schemas/VerifyForgotPasswordCodeData'
+    ResetPasswordSuccess:
+      type: object
+      additionalProperties: false
+      required:
+      - success
+      - message
+      - data
+      properties:
+        success:
+          type: boolean
+          const: true
+        message:
+          type: string
+          minLength: 1
+        data:
+          $ref: '#/components/schemas/ResetPasswordData'
+    ValidationErrorEnvelope:
+      type: object
+      additionalProperties: false
+      required:
+      - success
+      - message
+      - code
+      - errors
+      properties:
+        success:
+          type: boolean
+          const: false
+        message:
+          type: string
+          minLength: 1
+        code:
+          type: string
+          const: VALIDATION_ERROR
+        errors:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            type: array
+            items:
+              type: string
+    InvalidCredentialsErrorEnvelope:
+      type: object
+      additionalProperties: false
+      required:
+      - success
+      - message
+      - code
+      - errors
+      properties:
+        success:
+          type: boolean
+          const: false
+        message:
+          type: string
+          minLength: 1
+        code:
+          type: string
+          const: INVALID_CREDENTIALS
+        errors:
+          type: 'null'
+    UserInactiveErrorEnvelope:
+      type: object
+      additionalProperties: false
+      required:
+      - success
+      - message
+      - code
+      - errors
+      properties:
+        success:
+          type: boolean
+          const: false
+        message:
+          type: string
+          minLength: 1
+        code:
+          type: string
+          const: USER_INACTIVE
+        errors:
+          type: 'null'
+    UnauthenticatedErrorEnvelope:
+      type: object
+      additionalProperties: false
+      required:
+      - success
+      - message
+      - code
+      - errors
+      properties:
+        success:
+          type: boolean
+          const: false
+        message:
+          type: string
+          minLength: 1
+        code:
+          type: string
+          const: UNAUTHENTICATED
+        errors:
+          type: 'null'
+    RateLimitedErrorEnvelope:
+      type: object
+      additionalProperties: false
+      required:
+      - success
+      - message
+      - code
+      - errors
+      properties:
+        success:
+          type: boolean
+          const: false
+        message:
+          type: string
+          minLength: 1
+        code:
+          type: string
+          const: RATE_LIMITED
+        errors:
+          type: 'null'
+    RefreshTokenInvalidErrorEnvelope:
+      type: object
+      additionalProperties: false
+      required:
+      - success
+      - message
+      - code
+      - errors
+      properties:
+        success:
+          type: boolean
+          const: false
+        message:
+          type: string
+          minLength: 1
+        code:
+          type: string
+          const: REFRESH_TOKEN_INVALID
+        errors:
+          type: 'null'
+    CurrentPasswordInvalidErrorEnvelope:
+      type: object
+      additionalProperties: false
+      required:
+      - success
+      - message
+      - code
+      - errors
+      properties:
+        success:
+          type: boolean
+          const: false
+        message:
+          type: string
+          minLength: 1
+        code:
+          type: string
+          const: CURRENT_PASSWORD_INVALID
+        errors:
+          type: 'null'
+    PasswordResetCodeInvalidErrorEnvelope:
+      type: object
+      additionalProperties: false
+      required:
+      - success
+      - message
+      - code
+      - errors
+      properties:
+        success:
+          type: boolean
+          const: false
+        message:
+          type: string
+          minLength: 1
+        code:
+          type: string
+          const: PASSWORD_RESET_CODE_INVALID
+        errors:
+          type: 'null'
+    PasswordResetTokenInvalidErrorEnvelope:
+      type: object
+      additionalProperties: false
+      required:
+      - success
+      - message
+      - code
+      - errors
+      properties:
+        success:
+          type: boolean
+          const: false
+        message:
+          type: string
+          minLength: 1
+        code:
+          type: string
+          const: PASSWORD_RESET_TOKEN_INVALID
+        errors:
+          type: 'null'
+    MailServiceUnavailableErrorEnvelope:
+      type: object
+      additionalProperties: false
+      required:
+      - success
+      - message
+      - code
+      - errors
+      properties:
+        success:
+          type: boolean
+          const: false
+        message:
+          type: string
+          minLength: 1
+        code:
+          type: string
+          const: MAIL_SERVICE_UNAVAILABLE
+        errors:
+          type: 'null'
+  responses:
+    ValidationError:
+      description: Request validation failed.
+      headers:
+        Content-Language:
+          $ref: '#/components/headers/ContentLanguage'
+        Vary:
+          $ref: '#/components/headers/VaryAcceptLanguage'
+        Cache-Control:
+          $ref: '#/components/headers/CacheControlNoStore'
+        Pragma:
+          $ref: '#/components/headers/PragmaNoCache'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ValidationErrorEnvelope'
+    InvalidCredentials:
+      description: Unknown email and wrong password share this response.
+      headers:
+        Content-Language:
+          $ref: '#/components/headers/ContentLanguage'
+        Vary:
+          $ref: '#/components/headers/VaryAcceptLanguage'
+        Cache-Control:
+          $ref: '#/components/headers/CacheControlNoStore'
+        Pragma:
+          $ref: '#/components/headers/PragmaNoCache'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/InvalidCredentialsErrorEnvelope'
+    UserInactive:
+      description: The Administrator account exists but is inactive.
+      headers:
+        Content-Language:
+          $ref: '#/components/headers/ContentLanguage'
+        Vary:
+          $ref: '#/components/headers/VaryAcceptLanguage'
+        Cache-Control:
+          $ref: '#/components/headers/CacheControlNoStore'
+        Pragma:
+          $ref: '#/components/headers/PragmaNoCache'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/UserInactiveErrorEnvelope'
+    Unauthenticated:
+      description: The Bearer Access Token is missing, invalid, expired, or revoked.
+      headers:
+        Content-Language:
+          $ref: '#/components/headers/ContentLanguage'
+        Vary:
+          $ref: '#/components/headers/VaryAcceptLanguage'
+        Cache-Control:
+          $ref: '#/components/headers/CacheControlNoStore'
+        Pragma:
+          $ref: '#/components/headers/PragmaNoCache'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/UnauthenticatedErrorEnvelope'
+    RateLimited:
+      description: The applicable rate limit was exceeded.
+      headers:
+        Content-Language:
+          $ref: '#/components/headers/ContentLanguage'
+        Vary:
+          $ref: '#/components/headers/VaryAcceptLanguage'
+        Cache-Control:
+          $ref: '#/components/headers/CacheControlNoStore'
+        Pragma:
+          $ref: '#/components/headers/PragmaNoCache'
+        Retry-After:
+          $ref: '#/components/headers/RetryAfter'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RateLimitedErrorEnvelope'
+    RefreshTokenInvalid:
+      description: The structurally valid Refresh Token is unknown, expired, revoked, reused, ownerless, tied to
+        a deleted/inactive owner, or has invalid family/rotation state.
+      headers:
+        Content-Language:
+          $ref: '#/components/headers/ContentLanguage'
+        Vary:
+          $ref: '#/components/headers/VaryAcceptLanguage'
+        Cache-Control:
+          $ref: '#/components/headers/CacheControlNoStore'
+        Pragma:
+          $ref: '#/components/headers/PragmaNoCache'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RefreshTokenInvalidErrorEnvelope'
+    CurrentPasswordInvalid:
+      description: The supplied current password is incorrect.
+      headers:
+        Content-Language:
+          $ref: '#/components/headers/ContentLanguage'
+        Vary:
+          $ref: '#/components/headers/VaryAcceptLanguage'
+        Cache-Control:
+          $ref: '#/components/headers/CacheControlNoStore'
+        Pragma:
+          $ref: '#/components/headers/PragmaNoCache'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CurrentPasswordInvalidErrorEnvelope'
+    PasswordResetCodeInvalid:
+      description: The recovery code is wrong, expired, consumed, or attempt-limited.
+      headers:
+        Content-Language:
+          $ref: '#/components/headers/ContentLanguage'
+        Vary:
+          $ref: '#/components/headers/VaryAcceptLanguage'
+        Cache-Control:
+          $ref: '#/components/headers/CacheControlNoStore'
+        Pragma:
+          $ref: '#/components/headers/PragmaNoCache'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/PasswordResetCodeInvalidErrorEnvelope'
+    PasswordResetTokenInvalid:
+      description: The structurally valid Reset Token is unusable.
+      headers:
+        Content-Language:
+          $ref: '#/components/headers/ContentLanguage'
+        Vary:
+          $ref: '#/components/headers/VaryAcceptLanguage'
+        Cache-Control:
+          $ref: '#/components/headers/CacheControlNoStore'
+        Pragma:
+          $ref: '#/components/headers/PragmaNoCache'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/PasswordResetTokenInvalidErrorEnvelope'
+    MailServiceUnavailable:
+      description: The eligible workflow was committed, mail transport failed, and only the newly created workflow
+        was invalidated.
+      headers:
+        Content-Language:
+          $ref: '#/components/headers/ContentLanguage'
+        Vary:
+          $ref: '#/components/headers/VaryAcceptLanguage'
+        Cache-Control:
+          $ref: '#/components/headers/CacheControlNoStore'
+        Pragma:
+          $ref: '#/components/headers/PragmaNoCache'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/MailServiceUnavailableErrorEnvelope'
+    ValidationOrCurrentPasswordInvalid:
+      description: Validation failure or incorrect current password.
+      headers:
+        Content-Language:
+          $ref: '#/components/headers/ContentLanguage'
+        Vary:
+          $ref: '#/components/headers/VaryAcceptLanguage'
+        Cache-Control:
+          $ref: '#/components/headers/CacheControlNoStore'
+        Pragma:
+          $ref: '#/components/headers/PragmaNoCache'
+      content:
+        application/json:
+          schema:
+            oneOf:
+            - $ref: '#/components/schemas/ValidationErrorEnvelope'
+            - $ref: '#/components/schemas/CurrentPasswordInvalidErrorEnvelope'
+          examples:
+            validation:
+              value:
+                success: false
+                message: Localized validation message
+                code: VALIDATION_ERROR
+                errors:
+                  newPassword:
+                  - Localized validation message
+            currentPasswordInvalid:
+              value:
+                success: false
+                message: Localized safe message
+                code: CURRENT_PASSWORD_INVALID
+                errors: null
+    ValidationOrPasswordResetCodeInvalid:
+      description: Validation failure or unusable recovery code.
+      headers:
+        Content-Language:
+          $ref: '#/components/headers/ContentLanguage'
+        Vary:
+          $ref: '#/components/headers/VaryAcceptLanguage'
+        Cache-Control:
+          $ref: '#/components/headers/CacheControlNoStore'
+        Pragma:
+          $ref: '#/components/headers/PragmaNoCache'
+      content:
+        application/json:
+          schema:
+            oneOf:
+            - $ref: '#/components/schemas/ValidationErrorEnvelope'
+            - $ref: '#/components/schemas/PasswordResetCodeInvalidErrorEnvelope'
+          examples:
+            validation:
+              value:
+                success: false
+                message: Localized validation message
+                code: VALIDATION_ERROR
+                errors:
+                  code:
+                  - Localized validation message
+            codeInvalid:
+              value:
+                success: false
+                message: Localized safe message
+                code: PASSWORD_RESET_CODE_INVALID
+                errors: null
+    ValidationOrPasswordResetTokenInvalid:
+      description: Validation failure or unusable Reset Token.
+      headers:
+        Content-Language:
+          $ref: '#/components/headers/ContentLanguage'
+        Vary:
+          $ref: '#/components/headers/VaryAcceptLanguage'
+        Cache-Control:
+          $ref: '#/components/headers/CacheControlNoStore'
+        Pragma:
+          $ref: '#/components/headers/PragmaNoCache'
+      content:
+        application/json:
+          schema:
+            oneOf:
+            - $ref: '#/components/schemas/ValidationErrorEnvelope'
+            - $ref: '#/components/schemas/PasswordResetTokenInvalidErrorEnvelope'
+          examples:
+            validation:
+              value:
+                success: false
+                message: Localized validation message
+                code: VALIDATION_ERROR
+                errors:
+                  password:
+                  - Localized validation message
+            tokenInvalid:
+              value:
+                success: false
+                message: Localized safe message
+                code: PASSWORD_RESET_TOKEN_INVALID
+                errors: null
+paths:
+  /admin/auth/login:
+    post:
+      operationId: adminAuthLogin
+      tags:
+      - Admin Authentication
+      summary: Log in the Super Admin
+      description: Accepts only email and password. Email is normalized; password bytes are not transformed. Successful
+        login revokes all previous Access and Refresh Tokens and returns one replacement token pair in JSON. No
+        authentication cookie is emitted.
+      parameters:
+      - $ref: '#/components/parameters/AcceptLanguage'
+      security: []
+      x-rate-limit:
+        limit: 5
+        window: 1 minute
+        key: normalized email + resolved requester IP
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Login success.
+          headers:
+            Content-Language:
+              $ref: '#/components/headers/ContentLanguage'
+            Vary:
+              $ref: '#/components/headers/VaryAcceptLanguage'
+            Cache-Control:
+              $ref: '#/components/headers/CacheControlNoStore'
+            Pragma:
+              $ref: '#/components/headers/PragmaNoCache'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginSuccess'
+        '401':
+          $ref: '#/components/responses/InvalidCredentials'
+        '403':
+          $ref: '#/components/responses/UserInactive'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+  /admin/auth/refresh:
+    post:
+      operationId: adminAuthRefresh
+      tags:
+      - Admin Authentication
+      summary: Rotate the Administrator token pair
+      description: Accepts only JSON body refreshToken. The request is throttled at 10/min by requester IP plus
+        SHA-256 fingerprint of the structurally valid submitted refreshToken, with IP-only fallback for structurally
+        invalid input. A successful transaction revokes every predecessor Sanctum Access Token, rotates
+        the predecessor Refresh Token, and leaves only the replacement Access Token and Refresh Token active. Reuse
+        of a rotated predecessor revokes all sessions.
+      parameters:
+      - $ref: '#/components/parameters/AcceptLanguage'
+      security: []
+      x-rate-limit:
+        limit: 10
+        window: 1 minute
+        key: requester IP plus SHA-256 token fingerprint; IP-only fallback for structurally invalid input
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshRequest'
+      responses:
+        '200':
+          description: Refresh success. The response does not include the profile.
+          headers:
+            Content-Language:
+              $ref: '#/components/headers/ContentLanguage'
+            Vary:
+              $ref: '#/components/headers/VaryAcceptLanguage'
+            Cache-Control:
+              $ref: '#/components/headers/CacheControlNoStore'
+            Pragma:
+              $ref: '#/components/headers/PragmaNoCache'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RefreshSuccess'
+        '401':
+          $ref: '#/components/responses/RefreshTokenInvalid'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+  /admin/auth/logout:
+    post:
+      operationId: adminAuthLogout
+      tags:
+      - Admin Authentication
+      summary: Log out and revoke every Administrator session
+      description: Protected by auth:sanctum, EnsureUserIsAdministrator, and EnsureAdminIsActive. Revokes all Access
+        and Refresh Tokens and returns no replacement credential.
+      parameters:
+      - $ref: '#/components/parameters/AcceptLanguage'
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          description: Logout success.
+          headers:
+            Content-Language:
+              $ref: '#/components/headers/ContentLanguage'
+            Vary:
+              $ref: '#/components/headers/VaryAcceptLanguage'
+            Cache-Control:
+              $ref: '#/components/headers/CacheControlNoStore'
+            Pragma:
+              $ref: '#/components/headers/PragmaNoCache'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LogoutSuccess'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/UserInactive'
+  /admin/auth/profile:
+    get:
+      operationId: adminAuthProfileShow
+      tags:
+      - Admin Authentication
+      summary: Show the current Administrator profile
+      description: Returns exactly name, email, avatar, role, and permissions.
+      parameters:
+      - $ref: '#/components/parameters/AcceptLanguage'
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          description: Profile success.
+          headers:
+            Content-Language:
+              $ref: '#/components/headers/ContentLanguage'
+            Vary:
+              $ref: '#/components/headers/VaryAcceptLanguage'
+            Cache-Control:
+              $ref: '#/components/headers/CacheControlNoStore'
+            Pragma:
+              $ref: '#/components/headers/PragmaNoCache'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProfileSuccess'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/UserInactive'
+    patch:
+      operationId: adminAuthProfileUpdate
+      tags:
+      - Admin Authentication
+      summary: Update approved Administrator profile fields
+      description: Accepts only name, avatar, and multipart _method. Multipart POST to the same URL with _method=PATCH
+        is compatibility for this canonical PATCH operation and is not a separate OpenAPI operation. Avatar supports
+        jpg/jpeg/png/webp, matching detected MIME, maximum 2 MB, and the documented compensation flow.
+      parameters:
+      - $ref: '#/components/parameters/AcceptLanguage'
+      security:
+      - bearerAuth: []
+      responses:
+        '200':
+          description: Updated profile success.
+          headers:
+            Content-Language:
+              $ref: '#/components/headers/ContentLanguage'
+            Vary:
+              $ref: '#/components/headers/VaryAcceptLanguage'
+            Cache-Control:
+              $ref: '#/components/headers/CacheControlNoStore'
+            Pragma:
+              $ref: '#/components/headers/PragmaNoCache'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProfileSuccess'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/UserInactive'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProfileUpdateJsonRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ProfileUpdateMultipartRequest'
+  /admin/auth/change-password:
+    put:
+      operationId: adminAuthChangePassword
+      tags:
+      - Admin Authentication
+      summary: Change the current Administrator password
+      description: Requires the current password, the policy-compliant replacement password, and exact confirmation.
+        Success revokes all sessions and active reset workflows and returns no replacement token.
+      parameters:
+      - $ref: '#/components/parameters/AcceptLanguage'
+      security:
+      - bearerAuth: []
+      x-rate-limit:
+        limit: 5
+        window: 1 minute
+        key: authenticated Administrator
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangePasswordRequest'
+      responses:
+        '200':
+          description: Password changed successfully.
+          headers:
+            Content-Language:
+              $ref: '#/components/headers/ContentLanguage'
+            Vary:
+              $ref: '#/components/headers/VaryAcceptLanguage'
+            Cache-Control:
+              $ref: '#/components/headers/CacheControlNoStore'
+            Pragma:
+              $ref: '#/components/headers/PragmaNoCache'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChangePasswordSuccess'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/UserInactive'
+        '422':
+          $ref: '#/components/responses/ValidationOrCurrentPasswordInvalid'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+  /admin/auth/forgot-password:
+    post:
+      operationId: adminAuthForgotPassword
+      tags:
+      - Admin Authentication
+      summary: Start the Forgot Password workflow
+      description: Returns the same enumeration-safe 200 success for an eligible successful delivery, an unknown
+        email, and an inactive Administrator. Validation remains 422, throttling remains 429, and eligible synchronous
+        mail transport failure remains 503.
+      parameters:
+      - $ref: '#/components/parameters/AcceptLanguage'
+      security: []
+      x-rate-limit:
+        limit: 5
+        window: 1 minute
+        key: normalized email + resolved requester IP
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ForgotPasswordRequest'
+      responses:
+        '200':
+          description: Enumeration-safe success response.
+          headers:
+            Content-Language:
+              $ref: '#/components/headers/ContentLanguage'
+            Vary:
+              $ref: '#/components/headers/VaryAcceptLanguage'
+            Cache-Control:
+              $ref: '#/components/headers/CacheControlNoStore'
+            Pragma:
+              $ref: '#/components/headers/PragmaNoCache'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForgotPasswordSuccess'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '503':
+          $ref: '#/components/responses/MailServiceUnavailable'
+  /admin/auth/verify-forgot-password-code:
+    post:
+      operationId: adminAuthVerifyForgotPasswordCode
+      tags:
+      - Admin Authentication
+      summary: Verify a recovery code and issue one Reset Token
+      description: Accepts normalized email and an exact six-digit code. Wrong, expired, consumed, or attempt-limited
+        codes use PASSWORD_RESET_CODE_INVALID. Successful verification consumes the code and returns one Reset Token
+        valid for 600 seconds.
+      parameters:
+      - $ref: '#/components/parameters/AcceptLanguage'
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerifyForgotPasswordCodeRequest'
+      responses:
+        '200':
+          description: Code verification success.
+          headers:
+            Content-Language:
+              $ref: '#/components/headers/ContentLanguage'
+            Vary:
+              $ref: '#/components/headers/VaryAcceptLanguage'
+            Cache-Control:
+              $ref: '#/components/headers/CacheControlNoStore'
+            Pragma:
+              $ref: '#/components/headers/PragmaNoCache'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VerifyCodeSuccess'
+        '422':
+          $ref: '#/components/responses/ValidationOrPasswordResetCodeInvalid'
+  /admin/auth/reset-password:
+    post:
+      operationId: adminAuthResetPassword
+      tags:
+      - Admin Authentication
+      summary: Reset the Administrator password
+      description: Uses normalized email and a one-time Reset Token. A structurally valid but unusable Reset Token
+        uses PASSWORD_RESET_TOKEN_INVALID. Success atomically consumes the workflow, changes the password, revokes
+        all sessions, and returns no new auth token.
+      parameters:
+      - $ref: '#/components/parameters/AcceptLanguage'
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResetPasswordRequest'
+      responses:
+        '200':
+          description: Password reset success.
+          headers:
+            Content-Language:
+              $ref: '#/components/headers/ContentLanguage'
+            Vary:
+              $ref: '#/components/headers/VaryAcceptLanguage'
+            Cache-Control:
+              $ref: '#/components/headers/CacheControlNoStore'
+            Pragma:
+              $ref: '#/components/headers/PragmaNoCache'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResetPasswordSuccess'
+        '422':
+          $ref: '#/components/responses/ValidationOrPasswordResetTokenInvalid'

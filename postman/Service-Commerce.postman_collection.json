@@ -1,0 +1,203 @@
+{
+  "info": {
+    "name": "Service Commerce - Identity and Authentication",
+    "description": "Feature 001 Identity and Authentication collection. Requests go directly to the Laravel Backend API at {{baseUrl}}. Example request bodies use fake values that mirror the backend contract. Login and refresh store accessToken and refreshToken only as current Postman variables for the active run.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "https://api.backend-example.net/api/v1" },
+    { "key": "accessToken", "value": "" },
+    { "key": "refreshToken", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Admin Auth",
+      "item": [
+        {
+      "name": "Login",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "const data = pm.response.json().data;",
+              "pm.environment.set('accessToken', data.accessToken);",
+              "pm.environment.set('refreshToken', data.refreshToken);",
+              "pm.test('Login returns both tokens in JSON', function () {",
+              "  pm.expect(data.accessToken).to.be.a('string');",
+              "  pm.expect(data.refreshToken).to.be.a('string');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Accept", "value": "application/json" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"admin@example.test\",\n  \"password\": \"AdminPassword1!\"\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": "{{baseUrl}}/admin/auth/login"
+      }
+    },
+    {
+      "name": "Refresh",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "const data = pm.response.json().data;",
+              "pm.environment.set('accessToken', data.accessToken);",
+              "pm.environment.set('refreshToken', data.refreshToken);",
+              "pm.test('Refresh returns rotated tokens in JSON', function () {",
+              "  pm.expect(data.accessToken).to.be.a('string');",
+              "  pm.expect(data.refreshToken).to.be.a('string');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Accept", "value": "application/json" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": "{{baseUrl}}/admin/auth/refresh"
+      }
+    },
+    {
+      "name": "Logout",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Accept", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+        ],
+        "url": "{{baseUrl}}/admin/auth/logout"
+      }
+    },
+    {
+      "name": "Show Profile",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Accept", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+        ],
+        "url": "{{baseUrl}}/admin/auth/profile"
+      }
+    },
+    {
+      "name": "Update Profile",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Accept", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "_method",
+              "value": "PATCH",
+              "type": "text"
+            },
+            {
+              "key": "name",
+              "value": "Updated Admin",
+              "type": "text"
+            },
+            {
+              "key": "avatar",
+              "type": "file",
+              "src": ""
+            }
+          ]
+        },
+        "url": "{{baseUrl}}/admin/auth/profile"
+      }
+    },
+    {
+      "name": "Change Password",
+      "request": {
+        "method": "PUT",
+        "header": [
+          { "key": "Accept", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"currentPassword\": \"AdminPassword1!\",\n  \"password\": \"NewAdminPassword1!\",\n  \"passwordConfirmation\": \"NewAdminPassword1!\"\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": "{{baseUrl}}/admin/auth/change-password"
+      }
+    },
+    {
+      "name": "Forgot Password",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Accept", "value": "application/json" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"admin@example.test\"\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": "{{baseUrl}}/admin/auth/forgot-password"
+      }
+    },
+    {
+      "name": "Verify Forgot Password Code",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Accept", "value": "application/json" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"admin@example.test\",\n  \"code\": \"123456\"\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": "{{baseUrl}}/admin/auth/verify-forgot-password-code"
+      }
+    },
+    {
+      "name": "Reset Password",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Accept", "value": "application/json" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"admin@example.test\",\n  \"resetToken\": \"ResetTokenExample1234567890\",\n  \"password\": \"NewAdminPassword1!\",\n  \"passwordConfirmation\": \"NewAdminPassword1!\"\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": "{{baseUrl}}/admin/auth/reset-password"
+      }
+        }
+      ]
+    }
+  ]
+}

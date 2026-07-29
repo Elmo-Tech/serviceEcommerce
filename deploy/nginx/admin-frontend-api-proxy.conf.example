@@ -1,0 +1,65 @@
+# Optional reverse-proxy example for deployments that terminate TLS before
+# forwarding direct JSON API calls to Laravel. This proxy does not implement
+# authentication, does not translate cookies, and must not add CSRF headers.
+# The proxy_pass URL intentionally has no trailing slash so the original
+# /api/v1/... path is preserved exactly.
+
+location ^~ /api/v1/ {
+    proxy_pass https://api.example-backend.net;
+    proxy_http_version 1.1;
+
+    proxy_ssl_server_name on;
+    proxy_ssl_name api.example-backend.net;
+    proxy_ssl_verify on;
+    proxy_ssl_verify_depth 3;
+    proxy_ssl_trusted_certificate /etc/ssl/certs/ca-certificates.crt;
+
+    # The upstream identity and forwarding metadata are deployment-controlled.
+    proxy_set_header Host api.example-backend.net;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header X-Forwarded-Host $host;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+
+    # Preserve the approved direct JSON request contract.
+    proxy_set_header Authorization $http_authorization;
+    proxy_set_header Accept $http_accept;
+    proxy_set_header Accept-Language $http_accept_language;
+
+    # Do not forward hop-by-hop or client-supplied proxy credentials.
+    proxy_set_header Connection "";
+    proxy_set_header Keep-Alive "";
+    proxy_set_header Proxy-Authenticate "";
+    proxy_set_header Proxy-Authorization "";
+    proxy_set_header TE "";
+    proxy_set_header Trailer "";
+    proxy_set_header Transfer-Encoding "";
+    proxy_set_header Upgrade "";
+
+    proxy_request_buffering off;
+    proxy_buffering off;
+    proxy_cache off;
+    proxy_no_cache 1;
+    proxy_cache_bypass 1;
+
+    client_max_body_size 20m;
+    proxy_connect_timeout 10s;
+    proxy_send_timeout 60s;
+    proxy_read_timeout 60s;
+
+    # Disable request logging here unless the deployment defines a proven
+    # secret-redacting log format that omits query strings and auth headers.
+    access_log off;
+}
+
+# This fixed internal handler prevents upstream/network failures from exposing
+# the upstream hostname. Add these directives to the same server block.
+error_page 502 503 504 = @admin_api_unavailable;
+
+location @admin_api_unavailable {
+    internal;
+    default_type application/json;
+    add_header Cache-Control "no-store, private" always;
+    add_header Pragma "no-cache" always;
+    return 503 '{"success":false,"message":"Service temporarily unavailable.","code":"SERVICE_UNAVAILABLE","errors":null}';
+}
+

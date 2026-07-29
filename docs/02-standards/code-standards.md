@@ -481,7 +481,7 @@ making `type` the authorization source.
 Use the shared enum:
 
 ```text
-App\Enums\HTTP_RESPONSE_CODE
+App\Enums\HttpStatusCode
 ```
 
 Rules:

@@ -105,7 +105,7 @@ behaviour.
 - Order-item attachments MUST be mapped to the intended submitted item.
 - Order snapshots MUST preserve approved order-time values.
 - Backend PHP code that selects an HTTP status MUST use the shared
-  `App\Enums\HTTP_RESPONSE_CODE` enum unless an approved architecture decision
+  `App\Enums\HttpStatusCode` enum unless an approved architecture decision
   replaces it.
 - Lists MUST be paginated unless the endpoint is an explicitly documented,
   safely bounded reference list.
@@ -840,7 +840,7 @@ Rules:
   prevents the operation.
 - Use `422` for field and payload validation errors.
 - Laravel code selecting a response status uses
-  `App\Enums\HTTP_RESPONSE_CODE`.
+  `App\Enums\HttpStatusCode`.
 
 ---
 
@@ -2406,3 +2406,22 @@ Tests must verify observable API behaviour, not merely implementation details.
 - No claim that queued email has been delivered.
 - No sensitive exception details in responses.
 - No implementation guess when an approved feature specification is ambiguous.
+
+## 48. Administrator Separate-Domain Direct API Contract
+
+When the Admin Frontend and Laravel Backend use different physical origins,
+the approved Admin browser API base may be the absolute Laravel API origin,
+such as `https://api.backend-example.net/api/v1`. Authenticated browser code
+MAY call the Laravel origin directly.
+
+Rules:
+
+- direct browser requests use HTTPS only
+- exact allow-listed CORS is mandatory
+- `Access-Control-Allow-Credentials` remains disabled for this flow
+- Bearer access tokens are sent in `Authorization`
+- refresh tokens are sent only in the documented JSON request body
+- no same-origin proxy, BFF, Cloudflare Worker, or cookie-forwarding layer is
+  required by the API standard
+- browser-public frontend configuration may expose the approved backend API
+  origin for this contract

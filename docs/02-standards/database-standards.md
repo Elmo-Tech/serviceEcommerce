@@ -707,7 +707,7 @@ Reasons:
 
 ### 7.5 HTTP Status Enum
 
-`App\Enums\HTTP_RESPONSE_CODE` is an application-code concern and is not
+`App\Enums\HttpStatusCode` is an application-code concern and is not
 persisted in business tables.
 
 Do not create database columns for HTTP status codes unless an integration

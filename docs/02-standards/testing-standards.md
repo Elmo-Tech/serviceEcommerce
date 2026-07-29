@@ -2316,3 +2316,21 @@ Testing work is complete only when:
 - Failed mandatory quality gates block merge.
 - Add a regression test for important bug fixes.
 - Do not disable a critical test to make CI pass.
+
+## Cross-Domain Administrator Authentication Amendment Tests
+
+The same-origin proxy amendment requires focused tests proving the refresh
+cookie remains host-only, HttpOnly, production Secure, `SameSite=Strict`, and
+scoped to `/api/v1/admin/auth`; the readable CSRF cookie is host-only,
+production Secure, `SameSite=Strict`, and scoped to `/`; and the legacy CSRF
+cookie at `/api/v1/admin/auth` is explicitly expired whenever current auth
+cookies are set or cleared.
+
+Configuration tests MUST reject wildcard credentialed CORS, insecure
+production cookie configuration, an absolute Admin browser API base, and an
+unsafe or malformed production Admin Frontend origin. Proxy tests in the
+frontend/deployment repository MUST prove fixed destination, method/query/body
+preservation, multipart forwarding, approved request headers, separate
+`Set-Cookie` forwarding, non-caching, hop-by-hop stripping, secret-safe errors,
+and no request-controlled target. Browser staging tests remain required when
+the Admin Frontend and proxy are available.

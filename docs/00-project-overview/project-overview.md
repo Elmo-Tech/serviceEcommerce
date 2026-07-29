@@ -49,6 +49,14 @@ The backend will later be consumed by:
 The React dashboard and Next.js website are outside the implementation scope of
 this repository.
 
+For administrator authentication, the React dashboard and Laravel API may be
+deployed on different registrable domains. The approved browser flow is direct
+HTTPS from the dashboard to the Laravel API using a browser-public API base
+such as `VITE_API_BASE_URL=https://api.backend-example.net/api/v1`. The backend
+uses exact allow-listed CORS, Bearer access tokens, and rotating refresh tokens
+returned in JSON. Same-origin proxy/BFF authentication, authentication cookies,
+and CSRF refresh flows are not part of the approved design.
+
 ---
 
 ## 2. Problem Statement

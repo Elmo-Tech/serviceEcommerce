@@ -163,6 +163,100 @@ before planning or implementation.
 
 ---
 
+## 4.1 Administrator Authentication Contract
+
+All Feature 002 administration routes MUST use the authentication and session
+contract defined by Feature 001.
+
+The protected middleware order MUST be:
+
+```text
+auth:sanctum
+-> EnsureUserIsAdministrator
+-> EnsureAdminIsActive
+-> permission middleware
+-> endpoint
+```
+
+Administrator requests MUST send the current Sanctum Access Token using:
+
+```http
+Authorization: Bearer {accessToken}
+```
+
+The Administrator identity MUST be resolved only from the authenticated Bearer
+Access Token:
+
+```php
+$request->user()
+```
+
+Feature 002 requests MUST NOT accept an Administrator identity or
+authentication state from request input.
+
+Do not accept:
+
+```text
+accessToken
+refreshToken
+administratorId
+adminId
+userId
+role
+roles
+permissions
+isActive
+authentication metadata
+```
+
+Feature 002 MUST NOT:
+
+- issue Access Tokens
+- issue Refresh Tokens
+- rotate Refresh Tokens
+- accept Refresh Tokens
+- create authentication cookies
+- require CSRF
+- use browser `Origin` as authentication
+- introduce Proxy/BFF authentication
+- introduce customer authentication
+- return `accessToken` or `refreshToken` in any Feature 002 response
+
+Token issuance, refresh, rotation, reuse detection, login replacement, and
+session revocation remain exclusively owned by Feature 001.
+
+When the Admin Frontend receives an expired or revoked Access Token:
+
+1. the Feature 002 request returns `401 UNAUTHENTICATED`
+2. the frontend calls Feature 001
+   `POST /api/v1/admin/auth/refresh`
+3. the frontend receives the replacement token pair
+4. the frontend retries the Feature 002 request using the new Access Token
+
+Feature 002 endpoints never receive or process the Refresh Token.
+
+The previous Access Token becomes unusable after a successful Feature 001
+refresh. Only the replacement Access Token may authorize Feature 002 routes.
+
+Administration requests use:
+
+```text
+Authorization: Bearer {currentAccessToken}
+Accept: application/json
+Accept-Language: ar|en
+```
+
+They MUST NOT depend on:
+
+```text
+Cookie
+X-CSRF-TOKEN
+withCredentials=true
+refreshToken in a Feature 002 request
+```
+
+---
+
 ## 5. Scope
 
 ### 5.1 Included
@@ -226,6 +320,22 @@ The administrator can manage customers and addresses through protected
 administration routes.
 
 Each operation requires its own Spatie permission.
+
+Authentication is inherited from Feature 001.
+
+The exact middleware order is:
+
+```text
+auth:sanctum
+-> EnsureUserIsAdministrator
+-> EnsureAdminIsActive
+-> operation permission
+-> endpoint
+```
+
+Permission checks MUST run only after the request has been authenticated, the
+authenticated user has been confirmed as an Administrator, and the
+Administrator account has been confirmed active.
 
 ### 6.2 Guest Order Workflow
 
@@ -1380,9 +1490,14 @@ POST   /api/v1/admin/customers/{customer}/restore
 
 Rules:
 
-- routes are protected by Sanctum
-- active administrator required
-- each operation uses its independent permission
+- routes use the Feature 001 Sanctum Bearer Access Token contract
+- routes are protected by `auth:sanctum`
+- authenticated user must be an Administrator
+- active Administrator required
+- each operation uses its independent permission after authentication,
+  Administrator classification, and active-state checks
+- Feature 002 never accepts or processes a Refresh Token
+- no authentication cookie or CSRF dependency
 - no force-delete route
 - no bulk route
 - no export route
@@ -1403,9 +1518,13 @@ PUT    /api/v1/admin/customers/{customer}/addresses/{address}/default
 
 Rules:
 
+- routes use the Feature 001 Sanctum Bearer Access Token contract
 - nested ownership required
 - address belonging to another customer returns `404`
-- each operation uses an independent address permission
+- each operation uses an independent address permission after authentication,
+  Administrator classification, and active-state checks
+- Feature 002 never accepts or processes a Refresh Token
+- no authentication cookie or CSRF dependency
 - no public address API
 - no address transfer endpoint
 
@@ -2114,10 +2233,45 @@ CUSTOMER_DEFAULT_ADDRESS_REQUIRED
 CUSTOMER_ADDRESS_RESTORE_CONFLICT
 VALIDATION_ERROR
 UNAUTHENTICATED
+USER_INACTIVE
 FORBIDDEN
 RATE_LIMITED
 INTERNAL_ERROR
 ```
+
+Authentication and authorization boundaries:
+
+Missing, invalid, expired, or revoked Administrator Access Token:
+
+```text
+HTTP 401
+code: UNAUTHENTICATED
+```
+
+A predecessor Access Token used after a successful Feature 001 refresh:
+
+```text
+HTTP 401
+code: UNAUTHENTICATED
+```
+
+Authenticated Administrator whose account is inactive:
+
+```text
+HTTP 403
+code: USER_INACTIVE
+```
+
+Authenticated active Administrator without the required operation permission:
+
+```text
+HTTP 403
+code: FORBIDDEN
+```
+
+Feature 002 MUST preserve these boundaries and MUST NOT convert an inactive
+Administrator into `FORBIDDEN` or a permission failure into
+`UNAUTHENTICATED`.
 
 ---
 
@@ -2293,6 +2447,48 @@ embedded content
 ```
 
 Frontend renders values as text.
+
+---
+
+## 73.1 Authentication Data Boundary
+
+Feature 002 request validation and mutation DTOs MUST reject or ignore
+authentication-related fields according to the project's strict unknown-field
+policy.
+
+Feature 002 MUST NOT accept:
+
+```text
+accessToken
+refreshToken
+administratorId
+adminId
+userId
+role
+roles
+permissions
+isActive
+tokenExpiresIn
+refreshTokenExpiresIn
+```
+
+The acting Administrator is always obtained from the current authenticated
+request context.
+
+Feature 002 resources and envelopes MUST NOT return:
+
+```text
+accessToken
+refreshToken
+tokenType
+tokenExpiresIn
+refreshTokenExpiresIn
+authentication cookies
+internal Sanctum token metadata
+```
+
+Customer and address records remain guest-domain data and never become
+authentication principals in this Feature.
 
 ---
 
@@ -2552,7 +2748,11 @@ Database constraints provide final race protection.
 
 # Testing
 
-## 85. Testing Strategy
+## 85. Lean Testing Strategy
+
+Feature 002 uses a focused test suite. The goal is to protect business-critical
+behaviour without generating a separate test or task for every validation rule,
+route, permission, locale, or security variation.
 
 Use:
 
@@ -2560,301 +2760,218 @@ Use:
 Pest
 MySQL testing database
 RefreshDatabase
-API Feature Tests
-focused concurrency tests
+API feature tests
+focused domain tests
+critical concurrency tests only
 ```
 
-Do not use SQLite.
+Do not use SQLite for the database invariants covered by this Feature.
+
+### Test planning rule
+
+The implementation plan and `tasks.md` MUST consolidate related scenarios.
+
+Do not create:
+
+- one task per validation rule
+- one test file per route
+- one task per permission
+- one task per locale
+- one task per security assertion
+- duplicated Feature 001 token-security tests
+- exhaustive penetration-testing tasks
+- repeated tests for the same middleware behaviour on every endpoint
+
+Prefer one implementation task and one focused test task per business area.
+
+Recommended test groups:
+
+```text
+CustomerApiTest.php
+CustomerAddressApiTest.php
+CustomerMatchingTest.php
+CustomerAddressMatchingTest.php
+CustomerCriticalConcurrencyTest.php
+CustomerAuthBoundaryTest.php
+```
+
+The final file names may follow existing repository conventions, but the suite
+must remain consolidated.
 
 ---
 
-## 86. Customer Create Tests
+## 86. Required Customer API Coverage
 
-Required:
+One consolidated customer API suite must cover:
 
-- create with Egyptian local phone
-- create with international phone
-- default country EG
-- explicit foreign phone country
-- name required
-- email optional
-- multiple null emails allowed
-- non-null email unique
-- phone required
-- phone invalid
-- normalized phone unique
-- response excludes normalized phone
-- no authentication fields
-- permission required
-- unauthenticated returns 401
-- missing permission returns 403
+- create a customer with a valid Egyptian local phone
+- create a customer with a valid international phone
+- reject an invalid phone
+- enforce unique normalized phone
+- allow multiple customers with `email = null`
+- reject duplicate non-null normalized email
+- update mutable fields
+- list with the main search, status, sorting, and pagination behaviour
+- soft-delete customer and active addresses
+- restore customer without automatically restoring addresses
+- return explicit Resources without normalized phone or authentication fields
+- enforce the required customer permission
 
----
-
-## 87. Customer Update Tests
-
-Required:
-
-- update name
-- update email
-- clear email to null
-- duplicate email rejected
-- update phone
-- duplicate phone rejected
-- invalid phone rejected
-- snapshots unaffected
-- prohibited fields rejected
-- permission required
+Detailed validation permutations do not require separate tests when Laravel
+validation and a representative boundary test already cover the rule.
 
 ---
 
-## 88. Customer List Tests
+## 87. Required Address API Coverage
 
-Required:
+One consolidated address API suite must cover:
 
-- default active filter
-- deleted filter
-- all filter
-- search by name
-- search by email
-- search by phone
-- has-addresses true
-- has-addresses false
-- date range
-- sort by createdAt
-- sort by name
-- default sort
-- pagination default 20
-- pagination maximum 100
-- invalid filter
-- N+1 regression check where practical
-
----
-
-## 89. Customer Delete and Restore Tests
-
-Required:
-
-- soft delete
-- active addresses soft-deleted
-- orders not deleted
-- snapshots preserved
-- force-delete route absent
-- restore customer only
-- addresses remain deleted
-- restore duplicate phone conflict
-- restore duplicate email conflict
-- permissions separated
-
----
-
-## 90. Customer Matching Tests
-
-Required:
-
-- active customer resolved by normalized phone
-- name difference does not update saved name
-- email difference does not update saved email
-- submitted values remain available for snapshot
-- deleted matching customer restored
-- missing customer created
-- matching ignores name
-- matching ignores email
-- MySQL concurrent same-phone creation resolves one customer
-- unique violation is recovered safely
-
----
-
-## 91. Address Create Tests
-
-Required:
-
-- create valid Egyptian address
-- create international address
-- phone required
-- country code required
-- city required
-- street required
-- area optional
-- label optional
-- notes optional
-- removed fields rejected or ignored according to strict API policy
-- first address becomes default
-- second address non-default by default
-- requested new default replaces old default
+- create an address with the approved fields
+- first active address becomes default
+- creating or selecting a new default clears the previous default
 - maximum 20 active addresses
-- twenty-first rejected
-- address permission required
+- duplicate normalized address is rejected
+- update identity fields recalculates the address hash
+- delete the default address and choose the deterministic fallback
+- restore a deleted address
+- nested address belonging to another customer returns
+  `CUSTOMER_ADDRESS_NOT_FOUND`
+- removed fields are not persisted
+- Resource does not expose `phoneNormalized` or `addressHash`
+- enforce the required address permission, including the independent
+  set-default permission
 
-Removed fields to test:
+Do not create a separate test file for every address route.
+
+---
+
+## 88. Required Matching Coverage
+
+Focused domain tests must cover:
+
+### Customer matching
+
+- active customer is resolved by normalized phone
+- saved name and email are not overwritten by guest-order input
+- matching deleted customer is restored
+- missing customer is created
+
+### Address matching
+
+- active matching address is reused
+- saved label, phone, and notes are not overwritten
+- matching deleted address is restored
+- first active restored/created address becomes default when appropriate
+- active-address limit remains enforced
+
+Snapshot field availability may be verified in these domain tests without
+creating separate snapshot test suites before the Orders Feature exists.
+
+---
+
+## 89. Critical Concurrency Coverage
+
+Only the following concurrency tests are mandatory for Feature 002:
+
+1. simultaneous customer creation with the same normalized phone resolves to
+   one customer
+2. simultaneous default-address changes leave one active default
+3. simultaneous matching address creation does not leave duplicate active
+   addresses when the selected database strategy supports enforcement
+
+These tests run against MySQL.
+
+Do not create concurrency tests for every CRUD operation.
+
+---
+
+## 90. Minimal Authentication and Authorization Coverage
+
+Feature 001 owns token issuance, refresh rotation, token reuse detection,
+cookies/CSRF exclusion, and token-storage security.
+
+Feature 002 MUST NOT duplicate the full Feature 001 security suite.
+
+Use one focused auth-boundary suite that proves:
 
 ```text
-recipientName
-building
-floor
-apartment
-postalCode
+missing/invalid Access Token -> 401 UNAUTHENTICATED
+inactive Administrator -> 403 USER_INACTIVE
+active Administrator without required permission -> 403 FORBIDDEN
+valid active Administrator with permission -> representative route succeeds
 ```
 
-Recommended strict behaviour:
+Also verify once at architecture level:
 
-```text
-reject unknown fields in mutation contracts where practical
-```
+- Feature 002 routes use
+  `auth:sanctum -> EnsureUserIsAdministrator -> EnsureAdminIsActive ->
+  permission`
+- no public customer CRUD route exists
+- no customer authentication route exists
+- Feature 002 does not issue or accept Refresh Tokens
+- Feature 002 does not return Access Tokens or Refresh Tokens
 
----
+The following belong to Feature 001 and MUST NOT become Feature 002 tasks:
 
-## 92. Address Hash Tests
+- Refresh Token rotation tests
+- predecessor Access Token revocation tests
+- token reuse-detection tests
+- IP-only refresh throttling tests
+- authentication cookie/CSRF test matrices
+- frontend token-storage tests
+- CSP tests
+- token entropy tests
+- authentication log-redaction suites
 
-Required:
-
-- same normalized country/city/area/street produces same hash
-- whitespace normalization
-- country uppercase normalization
-- label difference does not change hash
-- notes difference does not change hash
-- phone difference does not change hash
-- city change changes hash
-- street change changes hash
-- hash is not returned in API
-
----
-
-## 93. Address Matching Tests
-
-Required:
-
-- matching active address reused
-- no duplicate created
-- saved label not overwritten
-- saved phone not overwritten
-- saved notes not overwritten
-- submitted values available for snapshot
-- matching deleted address restored
-- restored address respects active limit
-- first restored active address becomes default when no default exists
-- duplicate active address rejected in admin create
-- concurrency invariant tested with MySQL
+A single integration smoke check using a valid Feature 001 Access Token is
+sufficient for Feature 002.
 
 ---
 
-## 94. Address Update Tests
+## 91. Minimal Localization Coverage
 
-Required:
+Use focused localization tests only:
 
-- update label
-- update phone
-- update country
-- update city
-- update area
-- update street
-- update notes
-- clear optional fields
-- identity update recalculates hash
-- duplicate resulting hash rejected
-- update to default
-- cannot change customer
-- snapshots unaffected
-- permission required
+- one successful Arabic response
+- one successful English response
+- one Arabic validation or domain error
+- one English validation or domain error
+- stable error code remains English
+
+Do not duplicate the complete business suite in both languages.
 
 ---
 
-## 95. Default Address Tests
+## 92. Minimal Architecture Coverage
 
-Required:
+One architecture test must verify:
 
-- first active address default
-- one default maximum
-- set-default endpoint
-- independent set-default permission
-- deleting default selects newest active fallback
-- deleting last address leaves no default
-- restoring first active address makes it default
-- restoring while default exists keeps restored non-default
-- concurrent default changes leave one default
-
----
-
-## 96. Nested Ownership Tests
-
-Required:
-
-- address belongs to route customer
-- foreign address returns 404
-- foreign deleted address restore returns 404
-- foreign set-default returns 404
-- response does not reveal actual owner
-
----
-
-## 97. Permission Tests
-
-Customer permissions independently tested:
-
-```text
-customers.view
-customers.create
-customers.update
-customers.delete
-customers.restore
-```
-
-Address permissions independently tested:
-
-```text
-customer-addresses.view
-customer-addresses.create
-customer-addresses.update
-customer-addresses.delete
-customer-addresses.restore
-customer-addresses.set-default
-```
-
-For every protected route:
-
-```text
-with permission -> expected success
-without permission -> 403
-without authentication -> 401
-```
-
----
-
-## 98. Localization Tests
-
-Focused tests for:
-
-```text
-Arabic messages
-English messages
-Arabic validation
-English validation
-stable codes
-stable keys
-ISO codes unchanged
-phone values unchanged
-```
-
-Do not duplicate the full business suite in both languages.
-
----
-
-## 99. Architecture and Route Tests
-
-Verify:
-
-- exact customer routes
-- exact address routes
+- exact customer and address administration routes
+- protected middleware order
+- customer and address permissions remain independent
+- nested ownership is enforced
 - no public customer CRUD
-- no customer auth route
-- no customer export route
-- no customer orders route in this Feature
+- no customer authentication
 - no force-delete route
-- customer routes use customer permissions
-- address routes use independent address permissions
-- nested routes use ownership validation
-- mutations use Form Requests
-- matching logic is not inside Controllers
+- matching logic is outside Controllers
+- Resources do not expose normalized identity or authentication fields
+
+---
+
+## 93. Recommended Test Task Grouping
+
+Planning and task generation should produce approximately these test tasks:
+
+```text
+1. customer API and customer permission tests
+2. address API, nested ownership, and address permission tests
+3. customer/address matching tests
+4. critical MySQL concurrency tests
+5. minimal auth-boundary, localization, and architecture tests
+```
+
+Do not expand these into dozens of security or validation subtasks unless an
+actual implementation defect requires a focused regression test.
 
 ---
 
@@ -3060,34 +3177,21 @@ tests/
       V1/
         Admin/
           Customers/
-            ListCustomersTest.php
-            CreateCustomerTest.php
-            ShowCustomerTest.php
-            UpdateCustomerTest.php
-            DeleteCustomerTest.php
-            RestoreCustomerTest.php
-            ListCustomerAddressesTest.php
-            CreateCustomerAddressTest.php
-            ShowCustomerAddressTest.php
-            UpdateCustomerAddressTest.php
-            DeleteCustomerAddressTest.php
-            RestoreCustomerAddressTest.php
-            SetDefaultCustomerAddressTest.php
+            CustomerApiTest.php
+            CustomerAddressApiTest.php
+            CustomerAuthBoundaryTest.php
 
-  Feature/
     Domain/
       Customers/
-        ResolveGuestCustomerTest.php
-        ResolveGuestCustomerAddressTest.php
+        CustomerMatchingTest.php
+        CustomerAddressMatchingTest.php
 
-  Concurrency/
-    Customers/
-      CustomerPhoneConcurrencyTest.php
-      CustomerAddressConcurrencyTest.php
-      DefaultAddressConcurrencyTest.php
+    Concurrency/
+      Customers/
+        CustomerCriticalConcurrencyTest.php
 
   Architecture/
-    CustomerRoutesTest.php
+    CustomerFeatureArchitectureTest.php
 ```
 
 Migration filenames follow Laravel timestamp conventions.
@@ -3114,11 +3218,38 @@ Migration filenames follow Laravel timestamp conventions.
 14. implement address matching service
 15. add localization
 16. update Postman collection
-17. add API tests
-18. add matching tests
-19. add critical MySQL concurrency tests
-20. add architecture and route tests
+17. add consolidated customer and address API tests
+18. add focused matching tests
+19. add only the critical MySQL concurrency tests
+20. add one minimal auth/localization/architecture test group
 21. run Pint, Larastan, and Pest
+
+---
+
+# Planning and Task Generation Constraint
+
+## 111.1 Lean Task Rule
+
+When this Feature is processed by `/speckit.specify`, `/speckit.plan`, or task
+generation:
+
+- consolidate related implementation work
+- keep testing tasks grouped by business area
+- do not generate one task per validation case
+- do not generate one security task per route
+- do not repeat Feature 001 authentication internals
+- keep Feature 002 focused on customers, addresses, matching, default-address
+  invariants, permissions, and critical concurrency
+- security work is limited to applying the existing Feature 001 middleware
+  contract and one focused integration test group
+
+Target:
+
+```text
+small number of meaningful implementation tasks
+approximately five consolidated testing tasks
+no duplicated authentication-security programme
+```
 
 ---
 
@@ -3154,6 +3285,18 @@ The Feature is complete only when:
 - customer and address updates do not alter historical snapshots
 - public customer CRUD does not exist
 - customer authentication does not exist
+- all Admin routes follow the Feature 001 Bearer Access Token contract
+- middleware order is
+  `auth:sanctum -> EnsureUserIsAdministrator -> EnsureAdminIsActive ->
+  permission -> endpoint`
+- missing, invalid, expired, revoked, or predecessor Access Tokens return
+  `UNAUTHENTICATED`
+- inactive Administrator returns `USER_INACTIVE`
+- missing permission returns `FORBIDDEN`
+- Feature 002 never accepts Refresh Tokens
+- Feature 002 never returns Access Tokens or Refresh Tokens
+- no authentication cookie, CSRF, Origin-authentication, or Proxy/BFF
+  dependency exists
 - MySQL concurrency tests pass
 - Arabic and English messages exist
 - Postman documentation is updated
@@ -3168,6 +3311,18 @@ The Feature is complete only when:
 ## 113. Mandatory Rules
 
 - Customer is a guest domain record, not an authenticated account.
+- Feature 002 Admin routes must use the Feature 001 Sanctum Bearer Access Token
+  contract.
+- Resolve the acting Administrator only from the authenticated request context.
+- Apply middleware in this order:
+  `auth:sanctum -> EnsureUserIsAdministrator -> EnsureAdminIsActive ->
+  permission -> endpoint`.
+- Do not accept `accessToken`, `refreshToken`, `administratorId`, `adminId`,
+  `userId`, roles, permissions, or active state from Feature 002 request input.
+- Do not issue, rotate, accept, or return Access Tokens or Refresh Tokens in
+  Feature 002.
+- Do not add authentication cookies, CSRF, Origin-authentication, Proxy/BFF, or
+  `withCredentials=true` dependencies.
 - Do not create customer passwords.
 - Do not create customer login routes.
 - Use one customer `name` field.
@@ -3221,3 +3376,8 @@ The Feature is complete only when:
 - Do not create customer export in this Feature.
 - Do not create customer order-history route in this Feature.
 - Test duplicate phone creation with real MySQL concurrency.
+- Keep Feature 002 tests consolidated and focused.
+- Do not duplicate Feature 001 token, refresh, browser-storage, CSP, or
+  authentication security test suites.
+- Do not generate one task per validation rule, permission, route, or security
+  assertion.

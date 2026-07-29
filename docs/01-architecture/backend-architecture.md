@@ -27,6 +27,20 @@ The backend is consumed by two external applications:
 
 Both frontend applications are outside this repository's implementation scope.
 
+The administrator frontend and Laravel backend may have different physical
+origins and registrable domains. Authenticated administrator browser traffic
+uses direct browser-to-backend HTTPS requests with exact allow-listed CORS:
+
+```text
+Browser -> https://api.backend-example.net/api/v1/* -> Laravel /api/v1/*
+```
+
+The browser-visible backend origin is an approved part of the Admin Web build
+configuration. Administrator authentication uses Bearer access tokens in the
+`Authorization` header and rotating refresh tokens transported in JSON rather
+than cookies. Same-origin proxy/BFF forwarding, authentication cookies, and
+CSRF refresh flows are not part of the approved architecture.
+
 This project is:
 
 - a single-business platform
@@ -857,7 +871,7 @@ Endpoints must:
 - use correct HTTP methods
 - return JSON unless returning an approved file response
 - use appropriate HTTP status codes
-- use the shared `App\Enums\HTTP_RESPONSE_CODE` enum for
+- use the shared `App\Enums\HttpStatusCode` enum for
   application-controlled response statuses
 - use consistent validation, authentication, authorization, not-found,
   conflict, rate-limit, and server-error shapes
@@ -2748,7 +2762,7 @@ Production responses must not expose:
 Application-controlled HTTP status codes use:
 
 ```text
-App\Enums\HTTP_RESPONSE_CODE
+App\Enums\HttpStatusCode
 ```
 
 Machine-readable business error codes remain stable and in English.

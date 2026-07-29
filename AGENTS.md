@@ -900,7 +900,7 @@ Do not create unversioned product endpoints.
 - Database columns use `snake_case`.
 - Use correct HTTP methods and status codes.
 - Application-controlled statuses use the shared
-  `App\Enums\HTTP_RESPONSE_CODE` enum unless an approved architecture decision
+  `App\Enums\HttpStatusCode` enum unless an approved architecture decision
   replaces it.
 - Use API Resources or explicit response transformers.
 - Keep response envelopes consistent.

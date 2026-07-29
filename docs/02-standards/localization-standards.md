@@ -864,7 +864,7 @@ Illustrative pattern:
 throw new BusinessRuleException(
     code: 'REQUIRED_SERVICE_ANSWER_MISSING',
     messageKey: 'service_questions.errors.required_answer_missing',
-    status: HTTP_RESPONSE_CODE::UNPROCESSABLE_ENTITY,
+    status: HttpStatusCode::UNPROCESSABLE_ENTITY,
 );
 ```
 

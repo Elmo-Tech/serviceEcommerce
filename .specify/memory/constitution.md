@@ -57,8 +57,8 @@ constitution, backend architecture, or the shared security, authentication,
 authorization, API, database, localization, file-storage, testing, and code
 standards.
 
-Feature-level overrides MUST NOT return refresh tokens in JSON; weaken HTTPS,
-CSRF, CORS, or cookie requirements; remove required permission enforcement;
+Feature-level overrides MUST NOT weaken HTTPS or exact CORS requirements;
+remove required permission enforcement;
 replace MySQL integrity constraints with frontend validation; change the
 approved API envelope; expose raw storage paths; disable required tests;
 introduce unsupported queues, Cron jobs, Redis, workers, schedulers, or other
@@ -130,17 +130,20 @@ Tests MUST use a dedicated MySQL database and MUST NOT use production data.
 Administrator authentication MUST use Laravel Sanctum Bearer access tokens with
 a 15-minute lifetime and custom rotating refresh tokens with a 30-day lifetime.
 The access token MUST be returned in JSON, and the React client MUST keep it in
-memory only. Refresh tokens MUST be hashed at rest, transported only through an
-HttpOnly, Secure, host-only cookie, never returned in JSON, and protected by
-CSRF and exact allowed-origin checks.
+memory only. Refresh tokens MUST be hashed at rest, returned in JSON only at
+login and refresh, accepted only from the documented refresh JSON body, stored
+by the approved Admin Web client only in `sessionStorage`, and stored by a
+future mobile client only in platform secure storage. The current approved
+direct separate-domain Admin architecture uses no authentication cookies and no
+CSRF flow. Exact allow-listed CORS and HTTPS remain mandatory.
 Only one administrator session may be active; login, refresh, logout, password
 change, and password reset MUST apply the approved rotation or revocation rules.
 Inactive administrators MUST NOT authenticate, refresh, or use existing access
 tokens. Plain passwords, access tokens, refresh tokens, reset tokens, and
 recovery codes MUST NOT be persisted or logged. Tokens MUST NOT appear in URLs,
-`localStorage`, or `sessionStorage`. Administrator registration, MFA, Remember
-Me, device management, session-management UI, and future MFA scaffolding are
-outside the MVP.
+or `localStorage`. Administrator registration, MFA, Remember Me, device
+management, session-management UI, and future MFA scaffolding are outside the
+MVP.
 
 ### VI. Explicit Authorization
 
@@ -344,4 +347,4 @@ plan and review MUST verify compliance. Reviewers MUST reject undocumented
 exceptions, missing traceability, failed mandatory gates, or unresolved
 authoritative conflicts.
 
-**Version**: 1.0.2 | **Ratified**: 2026-07-28 | **Last Amended**: 2026-07-28
+**Version**: 1.1.0 | **Ratified**: 2026-07-28 | **Last Amended**: 2026-07-28
