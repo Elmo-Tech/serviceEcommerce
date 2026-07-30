@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Models\User;
 use Database\Seeders\SuperAdminSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -10,7 +11,7 @@ uses(RefreshDatabase::class);
 it('shows the authenticated administrator profile with the exact approved shape', function () {
     seedAdminAuthEnvironment();
     $this->seed(SuperAdminSeeder::class);
-    $expectedPermissions = \App\Models\User::query()
+    $expectedPermissions = User::query()
         ->sole()
         ->getAllPermissions()
         ->pluck('name')

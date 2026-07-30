@@ -1,0 +1,1575 @@
+openapi: 3.1.0
+info:
+  title: Service Commerce Backend - Feature 003 Categories and Subcategories
+  version: 1.3.0
+  description: Canonical admin and public contract for Feature 003. Root Categories and nested Subcategories are stored in one self-referencing categories table. Protected routes use the Feature 001 Bearer access-token boundary. Public catalog routes are read-only and locale-aware under /api/v1/public/*. Slug-bound public responses expose alternate locale URLs only through response metadata.
+servers:
+- url: https://api.example-backend.net/api/v1
+tags:
+- name: Admin Categories
+- name: Admin Subcategories
+- name: Public Categories
+paths:
+  /admin/categories:
+    get:
+      operationId: listCategories
+      tags:
+      - Admin Categories
+      summary: List root categories
+      security:
+      - bearerAuth: []
+      parameters:
+      - $ref: '#/components/parameters/AcceptLanguage'
+      - $ref: '#/components/parameters/Search'
+      - $ref: '#/components/parameters/IsActive'
+      - $ref: '#/components/parameters/Trashed'
+      - $ref: '#/components/parameters/Sort'
+      - $ref: '#/components/parameters/Page'
+      - $ref: '#/components/parameters/PerPage'
+      responses:
+        '200':
+          description: Root categories returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminCategoryListSuccess'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/ForbiddenOrInactive'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+    post:
+      operationId: createCategory
+      tags:
+      - Admin Categories
+      summary: Create root category
+      security:
+      - bearerAuth: []
+      parameters:
+      - $ref: '#/components/parameters/AcceptLanguage'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCategoryRequest'
+      responses:
+        '201':
+          description: Root category created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminCategoryDetailSuccess'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/ForbiddenOrInactive'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+  /admin/categories/reorder:
+    patch:
+      operationId: reorderCategories
+      tags:
+      - Admin Categories
+      summary: Reorder root categories
+      security:
+      - bearerAuth: []
+      parameters:
+      - $ref: '#/components/parameters/AcceptLanguage'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReorderRequest'
+      responses:
+        '200':
+          description: Root categories reordered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MutationSuccess'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/ForbiddenOrInactive'
+        '404':
+          $ref: '#/components/responses/CategoryNotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+  /admin/categories/{category}:
+    get:
+      operationId: showCategory
+      tags:
+      - Admin Categories
+      summary: Show one root category
+      security:
+      - bearerAuth: []
+      parameters:
+      - $ref: '#/components/parameters/AcceptLanguage'
+      - $ref: '#/components/parameters/CategoryId'
+      responses:
+        '200':
+          description: Root category returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminCategoryDetailSuccess'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/ForbiddenOrInactive'
+        '404':
+          $ref: '#/components/responses/CategoryNotFound'
+    patch:
+      operationId: updateCategory
+      tags:
+      - Admin Categories
+      summary: Update one root category
+      security:
+      - bearerAuth: []
+      parameters:
+      - $ref: '#/components/parameters/AcceptLanguage'
+      - $ref: '#/components/parameters/CategoryId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateCategoryRequest'
+      responses:
+        '200':
+          description: Root category updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminCategoryDetailSuccess'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/ForbiddenOrInactive'
+        '404':
+          $ref: '#/components/responses/CategoryNotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+    delete:
+      operationId: deleteCategory
+      tags:
+      - Admin Categories
+      summary: Soft delete one root category
+      security:
+      - bearerAuth: []
+      parameters:
+      - $ref: '#/components/parameters/AcceptLanguage'
+      - $ref: '#/components/parameters/CategoryId'
+      responses:
+        '200':
+          description: Resource soft-deleted; shared success envelope returned with data null
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MutationSuccess'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/ForbiddenOrInactive'
+        '404':
+          $ref: '#/components/responses/CategoryNotFound'
+        '409':
+          $ref: '#/components/responses/CategoryHasSubcategories'
+  /admin/categories/{category}/restore:
+    post:
+      operationId: restoreCategory
+      tags:
+      - Admin Categories
+      summary: Restore soft-deleted root category
+      security:
+      - bearerAuth: []
+      parameters:
+      - $ref: '#/components/parameters/AcceptLanguage'
+      - $ref: '#/components/parameters/CategoryId'
+      responses:
+        '200':
+          description: Root category restored
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminCategoryDetailSuccess'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/ForbiddenOrInactive'
+        '404':
+          $ref: '#/components/responses/CategoryNotFound'
+        '409':
+          $ref: '#/components/responses/CategoryNotDeleted'
+  /admin/categories/{category}/subcategories:
+    get:
+      operationId: listSubcategories
+      tags:
+      - Admin Subcategories
+      summary: List subcategories under one root category
+      security:
+      - bearerAuth: []
+      parameters:
+      - $ref: '#/components/parameters/AcceptLanguage'
+      - $ref: '#/components/parameters/CategoryId'
+      - $ref: '#/components/parameters/Search'
+      - $ref: '#/components/parameters/IsActive'
+      - $ref: '#/components/parameters/Trashed'
+      - $ref: '#/components/parameters/Sort'
+      - $ref: '#/components/parameters/Page'
+      - $ref: '#/components/parameters/PerPage'
+      responses:
+        '200':
+          description: Subcategories returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminSubcategoryListSuccess'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/ForbiddenOrInactive'
+        '404':
+          $ref: '#/components/responses/CategoryNotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+    post:
+      operationId: createSubcategory
+      tags:
+      - Admin Subcategories
+      summary: Create subcategory under one root category
+      security:
+      - bearerAuth: []
+      parameters:
+      - $ref: '#/components/parameters/AcceptLanguage'
+      - $ref: '#/components/parameters/CategoryId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateSubcategoryRequest'
+      responses:
+        '201':
+          description: Subcategory created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminSubcategoryDetailSuccess'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/ForbiddenOrInactive'
+        '404':
+          $ref: '#/components/responses/CategoryNotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+  /admin/categories/{category}/subcategories/reorder:
+    patch:
+      operationId: reorderSubcategories
+      tags:
+      - Admin Subcategories
+      summary: Reorder subcategories under one root category
+      security:
+      - bearerAuth: []
+      parameters:
+      - $ref: '#/components/parameters/AcceptLanguage'
+      - $ref: '#/components/parameters/CategoryId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReorderRequest'
+      responses:
+        '200':
+          description: Subcategories reordered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MutationSuccess'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/ForbiddenOrInactive'
+        '404':
+          $ref: '#/components/responses/SubcategoryNotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+  /admin/categories/{category}/subcategories/{subcategory}:
+    get:
+      operationId: showSubcategory
+      tags:
+      - Admin Subcategories
+      summary: Show one scoped subcategory
+      security:
+      - bearerAuth: []
+      parameters:
+      - $ref: '#/components/parameters/AcceptLanguage'
+      - $ref: '#/components/parameters/CategoryId'
+      - $ref: '#/components/parameters/SubcategoryId'
+      responses:
+        '200':
+          description: Subcategory returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminSubcategoryDetailSuccess'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/ForbiddenOrInactive'
+        '404':
+          $ref: '#/components/responses/SubcategoryNotFound'
+    patch:
+      operationId: updateSubcategory
+      tags:
+      - Admin Subcategories
+      summary: Update one scoped subcategory
+      security:
+      - bearerAuth: []
+      parameters:
+      - $ref: '#/components/parameters/AcceptLanguage'
+      - $ref: '#/components/parameters/CategoryId'
+      - $ref: '#/components/parameters/SubcategoryId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateSubcategoryRequest'
+      responses:
+        '200':
+          description: Subcategory updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminSubcategoryDetailSuccess'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/ForbiddenOrInactive'
+        '404':
+          $ref: '#/components/responses/SubcategoryNotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+    delete:
+      operationId: deleteSubcategory
+      tags:
+      - Admin Subcategories
+      summary: Soft delete one scoped subcategory
+      security:
+      - bearerAuth: []
+      parameters:
+      - $ref: '#/components/parameters/AcceptLanguage'
+      - $ref: '#/components/parameters/CategoryId'
+      - $ref: '#/components/parameters/SubcategoryId'
+      responses:
+        '200':
+          description: Resource soft-deleted; shared success envelope returned with data null
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MutationSuccess'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/ForbiddenOrInactive'
+        '404':
+          $ref: '#/components/responses/SubcategoryNotFound'
+        '409':
+          $ref: '#/components/responses/SubcategoryHasServices'
+  /admin/categories/{category}/subcategories/{subcategory}/restore:
+    post:
+      operationId: restoreSubcategory
+      tags:
+      - Admin Subcategories
+      summary: Restore soft-deleted scoped subcategory
+      security:
+      - bearerAuth: []
+      parameters:
+      - $ref: '#/components/parameters/AcceptLanguage'
+      - $ref: '#/components/parameters/CategoryId'
+      - $ref: '#/components/parameters/SubcategoryId'
+      responses:
+        '200':
+          description: Subcategory restored
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminSubcategoryDetailSuccess'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/ForbiddenOrInactive'
+        '404':
+          $ref: '#/components/responses/SubcategoryNotFound'
+        '409':
+          description: Restore conflict because the parent is deleted or the record is not deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                parentDeleted:
+                  value:
+                    success: false
+                    message: Localized safe message
+                    code: PARENT_CATEGORY_DELETED
+                    errors: null
+                notDeleted:
+                  value:
+                    success: false
+                    message: Localized safe message
+                    code: SUBCATEGORY_NOT_DELETED
+                    errors: null
+  /public/categories:
+    get:
+      operationId: listPublicCategories
+      tags:
+      - Public Categories
+      summary: List publicly visible categories
+      security: []
+      parameters:
+      - $ref: '#/components/parameters/AcceptLanguage'
+      responses:
+        '200':
+          description: Public categories returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublicCategoryListSuccess'
+          headers:
+            Content-Language:
+              $ref: '#/components/headers/ContentLanguage'
+            Vary:
+              $ref: '#/components/headers/VaryAcceptLanguage'
+  /public/categories/{categorySlug}:
+    get:
+      operationId: showPublicCategory
+      tags:
+      - Public Categories
+      summary: Show one publicly visible category
+      security: []
+      parameters:
+      - $ref: '#/components/parameters/AcceptLanguage'
+      - $ref: '#/components/parameters/CategorySlug'
+      responses:
+        '200':
+          description: Public category returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublicCategorySuccess'
+          headers:
+            Content-Language:
+              $ref: '#/components/headers/ContentLanguage'
+            Vary:
+              $ref: '#/components/headers/VaryAcceptLanguage'
+        '404':
+          $ref: '#/components/responses/PublicNotFound'
+  /public/categories/{categorySlug}/subcategories:
+    get:
+      operationId: listPublicSubcategories
+      tags:
+      - Public Categories
+      summary: List publicly visible subcategories for one category
+      security: []
+      parameters:
+      - $ref: '#/components/parameters/AcceptLanguage'
+      - $ref: '#/components/parameters/CategorySlug'
+      responses:
+        '200':
+          description: Public subcategories returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublicSubcategoryListSuccess'
+          headers:
+            Content-Language:
+              $ref: '#/components/headers/ContentLanguage'
+            Vary:
+              $ref: '#/components/headers/VaryAcceptLanguage'
+        '404':
+          $ref: '#/components/responses/PublicNotFound'
+  /public/categories/{categorySlug}/subcategories/{subcategorySlug}:
+    get:
+      operationId: showPublicSubcategory
+      tags:
+      - Public Categories
+      summary: Show one publicly visible subcategory
+      security: []
+      parameters:
+      - $ref: '#/components/parameters/AcceptLanguage'
+      - $ref: '#/components/parameters/CategorySlug'
+      - $ref: '#/components/parameters/SubcategorySlug'
+      responses:
+        '200':
+          description: Public subcategory returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublicSubcategorySuccess'
+          headers:
+            Content-Language:
+              $ref: '#/components/headers/ContentLanguage'
+            Vary:
+              $ref: '#/components/headers/VaryAcceptLanguage'
+        '404':
+          $ref: '#/components/responses/PublicNotFound'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: Sanctum
+  parameters:
+    AcceptLanguage:
+      name: Accept-Language
+      in: header
+      required: false
+      schema:
+        type: string
+        enum:
+        - ar
+        - en
+        default: ar
+    CategoryId:
+      name: category
+      in: path
+      required: true
+      schema:
+        type: integer
+        minimum: 1
+    SubcategoryId:
+      name: subcategory
+      in: path
+      required: true
+      schema:
+        type: integer
+        minimum: 1
+    CategorySlug:
+      name: categorySlug
+      in: path
+      required: true
+      schema:
+        type: string
+        maxLength: 180
+    SubcategorySlug:
+      name: subcategorySlug
+      in: path
+      required: true
+      schema:
+        type: string
+        maxLength: 180
+    Search:
+      name: filter[search]
+      in: query
+      required: false
+      schema:
+        type: string
+        maxLength: 255
+      description: Custom Query Builder search filter across Arabic and English names, descriptions, and slugs.
+    IsActive:
+      name: filter[isActive]
+      in: query
+      required: false
+      schema:
+        type: boolean
+    Trashed:
+      name: filter[trashed]
+      in: query
+      required: false
+      schema:
+        type: string
+        enum:
+        - without
+        - with
+        - only
+        default: without
+    Page:
+      name: page
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+    PerPage:
+      name: perPage
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+    Sort:
+      name: sort
+      in: query
+      required: false
+      description: Spatie Query Builder sort. Prefix with '-' for descending. 'name' maps to the resolved locale name column.
+      schema:
+        type: string
+        enum:
+        - sortOrder
+        - -sortOrder
+        - name
+        - -name
+        - createdAt
+        - -createdAt
+        - updatedAt
+        - -updatedAt
+        default: sortOrder
+  responses:
+    Unauthenticated:
+      description: Missing, invalid, expired, or revoked administrator access token
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            unauthenticated:
+              value:
+                success: false
+                message: Localized safe message
+                code: UNAUTHENTICATED
+                errors: null
+    ForbiddenOrInactive:
+      description: Administrator is inactive or lacks the required permission
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            inactiveAdministrator:
+              value:
+                success: false
+                message: Localized safe message
+                code: USER_INACTIVE
+                errors: null
+            forbidden:
+              value:
+                success: false
+                message: Localized safe message
+                code: FORBIDDEN
+                errors: null
+    CategoryNotFound:
+      description: Root category not found in the requested admin scope
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            notFound:
+              value:
+                success: false
+                message: Localized safe message
+                code: CATEGORY_NOT_FOUND
+                errors: null
+    SubcategoryNotFound:
+      description: Scoped subcategory not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            notFound:
+              value:
+                success: false
+                message: Localized safe message
+                code: SUBCATEGORY_NOT_FOUND
+                errors: null
+    CategoryHasSubcategories:
+      description: Root category cannot be deleted because non-deleted subcategories still exist
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            hasSubcategories:
+              value:
+                success: false
+                message: Localized safe message
+                code: CATEGORY_HAS_SUBCATEGORIES
+                errors: null
+    SubcategoryHasServices:
+      description: Subcategory cannot be deleted because non-deleted services still exist
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            hasServices:
+              value:
+                success: false
+                message: Localized safe message
+                code: SUBCATEGORY_HAS_SERVICES
+                errors: null
+    CategoryNotDeleted:
+      description: Root category restore requested for a row that is not deleted
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            notDeleted:
+              value:
+                success: false
+                message: Localized safe message
+                code: CATEGORY_NOT_DELETED
+                errors: null
+    PublicNotFound:
+      description: Public record is missing or not visible in the resolved locale
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            notFound:
+              value:
+                success: false
+                message: Localized safe message
+                code: RESOURCE_NOT_FOUND
+                errors: null
+      headers:
+        Content-Language:
+          $ref: '#/components/headers/ContentLanguage'
+        Vary:
+          $ref: '#/components/headers/VaryAcceptLanguage'
+    ValidationError:
+      description: Request validation or business-rule validation failed
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            validation:
+              value:
+                success: false
+                message: Localized safe message
+                code: VALIDATION_ERROR
+                errors:
+                  field:
+                  - Localized validation message
+            duplicateSlug:
+              value:
+                success: false
+                message: Localized safe message
+                code: VALIDATION_ERROR
+                errors:
+                  slugAr:
+                  - Localized validation message
+            parentFieldRejected:
+              value:
+                success: false
+                message: Localized safe message
+                code: VALIDATION_ERROR
+                errors:
+                  payload:
+                  - Localized validation message
+  schemas:
+    CreateCategoryRequest:
+      type: object
+      additionalProperties: false
+      required:
+      - nameAr
+      - nameEn
+      properties:
+        nameAr:
+          type: string
+          minLength: 2
+          maxLength: 150
+        nameEn:
+          type: string
+          minLength: 2
+          maxLength: 150
+        descriptionAr:
+          type:
+          - string
+          - 'null'
+          maxLength: 2000
+          description: Optional Arabic plain-text description. Must be submitted with descriptionEn when present. Blank values normalize to null.
+        descriptionEn:
+          type:
+          - string
+          - 'null'
+          maxLength: 2000
+          description: Optional English plain-text description. Must be submitted with descriptionAr when present. Blank values normalize to null.
+        slugAr:
+          type:
+          - string
+          - 'null'
+          maxLength: 180
+        slugEn:
+          type:
+          - string
+          - 'null'
+          maxLength: 180
+        sortOrder:
+          type: integer
+          minimum: 0
+          default: 0
+        isActive:
+          type: boolean
+          default: true
+      oneOf:
+      - title: Description pair omitted
+        not:
+          anyOf:
+          - required:
+            - descriptionAr
+          - required:
+            - descriptionEn
+      - title: Both descriptions null
+        required:
+        - descriptionAr
+        - descriptionEn
+        properties:
+          descriptionAr:
+            type: 'null'
+          descriptionEn:
+            type: 'null'
+      - title: Both descriptions contain non-blank text
+        required:
+        - descriptionAr
+        - descriptionEn
+        properties:
+          descriptionAr:
+            type: string
+            pattern: \S
+          descriptionEn:
+            type: string
+            pattern: \S
+      - title: Arabic blank and English null normalize to null pair
+        required:
+        - descriptionAr
+        - descriptionEn
+        properties:
+          descriptionAr:
+            type: string
+            pattern: ^\s*$
+          descriptionEn:
+            type: 'null'
+      - title: Arabic null and English blank normalize to null pair
+        required:
+        - descriptionAr
+        - descriptionEn
+        properties:
+          descriptionAr:
+            type: 'null'
+          descriptionEn:
+            type: string
+            pattern: ^\s*$
+      - title: Both blank strings normalize to null pair
+        required:
+        - descriptionAr
+        - descriptionEn
+        properties:
+          descriptionAr:
+            type: string
+            pattern: ^\s*$
+          descriptionEn:
+            type: string
+            pattern: ^\s*$
+    UpdateCategoryRequest:
+      type: object
+      additionalProperties: false
+      minProperties: 1
+      properties:
+        nameAr:
+          type: string
+          minLength: 2
+          maxLength: 150
+        nameEn:
+          type: string
+          minLength: 2
+          maxLength: 150
+        descriptionAr:
+          type:
+          - string
+          - 'null'
+          maxLength: 2000
+          description: Optional Arabic plain-text description. Must be submitted with descriptionEn when present. Blank values normalize to null.
+        descriptionEn:
+          type:
+          - string
+          - 'null'
+          maxLength: 2000
+          description: Optional English plain-text description. Must be submitted with descriptionAr when present. Blank values normalize to null.
+        slugAr:
+          type: string
+          maxLength: 180
+        slugEn:
+          type: string
+          maxLength: 180
+        sortOrder:
+          type: integer
+          minimum: 0
+        isActive:
+          type: boolean
+      oneOf:
+      - title: Description pair omitted
+        not:
+          anyOf:
+          - required:
+            - descriptionAr
+          - required:
+            - descriptionEn
+      - title: Both descriptions null
+        required:
+        - descriptionAr
+        - descriptionEn
+        properties:
+          descriptionAr:
+            type: 'null'
+          descriptionEn:
+            type: 'null'
+      - title: Both descriptions contain non-blank text
+        required:
+        - descriptionAr
+        - descriptionEn
+        properties:
+          descriptionAr:
+            type: string
+            pattern: \S
+          descriptionEn:
+            type: string
+            pattern: \S
+      - title: Arabic blank and English null normalize to null pair
+        required:
+        - descriptionAr
+        - descriptionEn
+        properties:
+          descriptionAr:
+            type: string
+            pattern: ^\s*$
+          descriptionEn:
+            type: 'null'
+      - title: Arabic null and English blank normalize to null pair
+        required:
+        - descriptionAr
+        - descriptionEn
+        properties:
+          descriptionAr:
+            type: 'null'
+          descriptionEn:
+            type: string
+            pattern: ^\s*$
+      - title: Both blank strings normalize to null pair
+        required:
+        - descriptionAr
+        - descriptionEn
+        properties:
+          descriptionAr:
+            type: string
+            pattern: ^\s*$
+          descriptionEn:
+            type: string
+            pattern: ^\s*$
+    CreateSubcategoryRequest:
+      $ref: '#/components/schemas/CreateCategoryRequest'
+    UpdateSubcategoryRequest:
+      $ref: '#/components/schemas/UpdateCategoryRequest'
+    ReorderRequest:
+      type: object
+      additionalProperties: false
+      required:
+      - orderedIds
+      properties:
+        orderedIds:
+          type: array
+          minItems: 1
+          uniqueItems: true
+          items:
+            type: integer
+            minimum: 1
+    AdminCategoryListItem:
+      type: object
+      additionalProperties: false
+      required:
+      - id
+      - name
+      - description
+      - slug
+      - sortOrder
+      - isActive
+      - subcategoriesCount
+      - createdAt
+      - updatedAt
+      - deletedAt
+      properties:
+        id:
+          type: integer
+          minimum: 1
+        name:
+          type: string
+        description:
+          type:
+          - string
+          - 'null'
+        slug:
+          type: string
+        sortOrder:
+          type: integer
+          minimum: 0
+        isActive:
+          type: boolean
+        subcategoriesCount:
+          type: integer
+          minimum: 0
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        deletedAt:
+          type:
+          - string
+          - 'null'
+          format: date-time
+    AdminCategoryDetail:
+      type: object
+      additionalProperties: false
+      required:
+      - id
+      - nameAr
+      - nameEn
+      - descriptionAr
+      - descriptionEn
+      - slugAr
+      - slugEn
+      - sortOrder
+      - isActive
+      - subcategoriesCount
+      - createdAt
+      - updatedAt
+      - deletedAt
+      properties:
+        id:
+          type: integer
+          minimum: 1
+        nameAr:
+          type: string
+        nameEn:
+          type: string
+        descriptionAr:
+          type:
+          - string
+          - 'null'
+        descriptionEn:
+          type:
+          - string
+          - 'null'
+        slugAr:
+          type: string
+        slugEn:
+          type: string
+        sortOrder:
+          type: integer
+          minimum: 0
+        isActive:
+          type: boolean
+        subcategoriesCount:
+          type: integer
+          minimum: 0
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        deletedAt:
+          type:
+          - string
+          - 'null'
+          format: date-time
+    AdminSubcategory:
+      type: object
+      additionalProperties: false
+      required:
+      - id
+      - nameAr
+      - nameEn
+      - descriptionAr
+      - descriptionEn
+      - slugAr
+      - slugEn
+      - sortOrder
+      - isActive
+      - category
+      - createdAt
+      - updatedAt
+      - deletedAt
+      properties:
+        id:
+          type: integer
+          minimum: 1
+        nameAr:
+          type: string
+        nameEn:
+          type: string
+        descriptionAr:
+          type:
+          - string
+          - 'null'
+        descriptionEn:
+          type:
+          - string
+          - 'null'
+        slugAr:
+          type: string
+        slugEn:
+          type: string
+        sortOrder:
+          type: integer
+          minimum: 0
+        isActive:
+          type: boolean
+        category:
+          $ref: '#/components/schemas/AdminCategorySummary'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        deletedAt:
+          type:
+          - string
+          - 'null'
+          format: date-time
+    AdminCategorySummary:
+      type: object
+      additionalProperties: false
+      required:
+      - id
+      - nameAr
+      - nameEn
+      - slugAr
+      - slugEn
+      properties:
+        id:
+          type: integer
+          minimum: 1
+        nameAr:
+          type: string
+        nameEn:
+          type: string
+        slugAr:
+          type: string
+        slugEn:
+          type: string
+    PublicSubcategoryListItem:
+      type: object
+      additionalProperties: false
+      required:
+      - name
+      - description
+      - slug
+      properties:
+        name:
+          type: string
+        description:
+          type:
+          - string
+          - 'null'
+        slug:
+          type: string
+    PublicSubcategory:
+      type: object
+      additionalProperties: false
+      required:
+      - name
+      - description
+      - slug
+      - category
+      properties:
+        name:
+          type: string
+        description:
+          type:
+          - string
+          - 'null'
+        slug:
+          type: string
+        category:
+          type: object
+          additionalProperties: false
+          required:
+          - name
+          - description
+          - slug
+          properties:
+            name:
+              type: string
+            description:
+              type:
+              - string
+              - 'null'
+            slug:
+              type: string
+    PaginationMeta:
+      type: object
+      additionalProperties: false
+      required:
+      - currentPage
+      - perPage
+      - total
+      - lastPage
+      properties:
+        currentPage:
+          type: integer
+          minimum: 1
+        perPage:
+          type: integer
+          minimum: 1
+          maximum: 100
+        total:
+          type: integer
+          minimum: 0
+        lastPage:
+          type: integer
+          minimum: 1
+    AdminCategoryListSuccess:
+      type: object
+      additionalProperties: false
+      required:
+      - success
+      - message
+      - data
+      - meta
+      properties:
+        success:
+          type: boolean
+          const: true
+        message:
+          type: string
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdminCategoryListItem'
+          description: Localized Admin index items. Content keys name, description, and slug follow Accept-Language; operational fields remain available.
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+    AdminSubcategoryListSuccess:
+      type: object
+      additionalProperties: false
+      required:
+      - success
+      - message
+      - data
+      - meta
+      properties:
+        success:
+          type: boolean
+          const: true
+        message:
+          type: string
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdminSubcategoryListItem'
+          description: Localized nested Admin index items. Parent scope comes from the route.
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+    AdminCategoryDetailSuccess:
+      type: object
+      additionalProperties: false
+      required:
+      - success
+      - message
+      - data
+      properties:
+        success:
+          type: boolean
+          const: true
+        message:
+          type: string
+        data:
+          $ref: '#/components/schemas/AdminCategoryDetail'
+    AdminSubcategoryDetailSuccess:
+      type: object
+      additionalProperties: false
+      required:
+      - success
+      - message
+      - data
+      properties:
+        success:
+          type: boolean
+          const: true
+        message:
+          type: string
+        data:
+          $ref: '#/components/schemas/AdminSubcategory'
+    PublicCategoryListSuccess:
+      type: object
+      additionalProperties: false
+      required:
+      - success
+      - message
+      - data
+      - meta
+      properties:
+        success:
+          type: boolean
+          const: true
+        message:
+          type: string
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/PublicCategoryListItem'
+          description: All visible root Categories. Every item includes its visible localized Subcategories; the public list is unpaginated.
+        meta:
+          $ref: '#/components/schemas/PublicLocaleMeta'
+    PublicCategorySuccess:
+      type: object
+      additionalProperties: false
+      required:
+      - success
+      - message
+      - data
+      - meta
+      properties:
+        success:
+          type: boolean
+          const: true
+        message:
+          type: string
+        data:
+          $ref: '#/components/schemas/PublicCategoryDetail'
+          description: One visible localized Category with its visible localized Subcategories.
+        meta:
+          $ref: '#/components/schemas/PublicDetailMeta'
+    PublicSubcategoryListSuccess:
+      type: object
+      additionalProperties: false
+      required:
+      - success
+      - message
+      - data
+      - meta
+      properties:
+        success:
+          type: boolean
+          const: true
+        message:
+          type: string
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/PublicSubcategoryListItem'
+        meta:
+          $ref: '#/components/schemas/PublicDetailMeta'
+    PublicSubcategorySuccess:
+      type: object
+      additionalProperties: false
+      required:
+      - success
+      - message
+      - data
+      - meta
+      properties:
+        success:
+          type: boolean
+          const: true
+        message:
+          type: string
+        data:
+          $ref: '#/components/schemas/PublicSubcategory'
+        meta:
+          $ref: '#/components/schemas/PublicDetailMeta'
+    MutationSuccess:
+      type: object
+      additionalProperties: false
+      required:
+      - success
+      - message
+      - data
+      properties:
+        success:
+          type: boolean
+          const: true
+        message:
+          type: string
+        data:
+          type: 'null'
+    ErrorResponse:
+      type: object
+      additionalProperties: false
+      required:
+      - success
+      - message
+      - code
+      - errors
+      properties:
+        success:
+          type: boolean
+          const: false
+        message:
+          type: string
+        code:
+          type: string
+        errors:
+          oneOf:
+          - type: 'null'
+          - type: object
+            additionalProperties:
+              type: array
+              items:
+                type: string
+    LocaleLinks:
+      type: object
+      additionalProperties: false
+      required:
+      - ar
+      - en
+      properties:
+        ar:
+          type: string
+          example: /api/v1/public/categories/خدمات-المنازل
+        en:
+          type: string
+          example: /api/v1/public/categories/home-services
+    PublicLocaleMeta:
+      type: object
+      additionalProperties: false
+      required:
+      - locale
+      - direction
+      properties:
+        locale:
+          type: string
+          enum:
+          - ar
+          - en
+        direction:
+          type: string
+          enum:
+          - rtl
+          - ltr
+    PublicDetailMeta:
+      type: object
+      additionalProperties: false
+      required:
+      - locale
+      - direction
+      - localeLinks
+      properties:
+        locale:
+          type: string
+          enum:
+          - ar
+          - en
+        direction:
+          type: string
+          enum:
+          - rtl
+          - ltr
+        localeLinks:
+          $ref: '#/components/schemas/LocaleLinks'
+    PublicCategoryListItem:
+      type: object
+      additionalProperties: false
+      required:
+      - name
+      - description
+      - slug
+      - subcategories
+      properties:
+        name:
+          type: string
+        description:
+          type:
+          - string
+          - 'null'
+        slug:
+          type: string
+        subcategories:
+          type: array
+          description: Visible Subcategories localized into the resolved response locale.
+          items:
+            $ref: '#/components/schemas/PublicSubcategoryListItem'
+    PublicCategoryDetail:
+      type: object
+      additionalProperties: false
+      required:
+      - name
+      - description
+      - slug
+      - subcategories
+      properties:
+        name:
+          type: string
+        description:
+          type:
+          - string
+          - 'null'
+        slug:
+          type: string
+        subcategories:
+          type: array
+          description: Visible Subcategories localized into the resolved response locale.
+          items:
+            $ref: '#/components/schemas/PublicSubcategoryListItem'
+    AdminSubcategoryListItem:
+      type: object
+      additionalProperties: false
+      required:
+      - id
+      - name
+      - description
+      - slug
+      - sortOrder
+      - isActive
+      - createdAt
+      - updatedAt
+      - deletedAt
+      properties:
+        id:
+          type: integer
+          minimum: 1
+        name:
+          type: string
+        description:
+          type:
+          - string
+          - 'null'
+        slug:
+          type: string
+        sortOrder:
+          type: integer
+          minimum: 0
+        isActive:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        deletedAt:
+          type:
+          - string
+          - 'null'
+          format: date-time
+  headers:
+    ContentLanguage:
+      description: Resolved response locale
+      schema:
+        type: string
+        enum:
+        - ar
+        - en
+    VaryAcceptLanguage:
+      description: The Vary header must include Accept-Language and may include other field names such as Origin.
+      schema:
+        type: string
+        pattern: (^|,\s*)Accept-Language(\s*,|$)
+        example: Accept-Language, Origin

@@ -1,7 +1,7 @@
 {
   "info": {
-    "name": "Service Commerce - Identity and Authentication",
-    "description": "Service Commerce admin API collection for Feature 001 Identity and Authentication plus Feature 002 Customers and Addresses. Requests go directly to the Laravel Backend API at {{baseUrl}}. Example request bodies use fake values that mirror the backend contract. Login and refresh keep accessToken and refreshToken available as Postman variables for follow-up admin requests.",
+    "name": "Service Commerce - Admin API Collection",
+    "description": "Service Commerce admin and public API collection for Feature 001 Identity and Authentication, Feature 002 Customers and Addresses, and Feature 003 Categories and Subcategories. Requests go directly to the Laravel Backend API at {{baseUrl}}. Example request bodies use fake values that mirror the backend contract. For customer and customer-address responses, Egyptian phone numbers are returned in local format such as 01001234567 without country code or spaces. Login and refresh keep accessToken and refreshToken available as Postman variables for follow-up protected admin requests.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -201,6 +201,7 @@
     },
     {
       "name": "Admin Customers",
+      "description": "Customer and customer-address endpoints. Egyptian phone numbers in API responses are returned as local national digits like 01001234567 without country code or spaces.",
       "item": [
         {
           "name": "List Customers",
@@ -215,6 +216,7 @@
         },
         {
           "name": "Create Customer",
+          "description": "Creates an admin-managed customer. Egyptian phone numbers in the response return as local digits like 01001234567.",
           "request": {
             "method": "POST",
             "header": [
@@ -232,6 +234,7 @@
         },
         {
           "name": "Show Customer",
+          "description": "Returns the customer resource. Egyptian phone numbers are returned as local digits like 01001234567.",
           "request": {
             "method": "GET",
             "header": [
@@ -243,6 +246,7 @@
         },
         {
           "name": "Update Customer",
+          "description": "Updates mutable customer fields. Egyptian phone numbers in the response return as local digits like 01001234567.",
           "request": {
             "method": "PATCH",
             "header": [
@@ -282,6 +286,7 @@
         },
         {
           "name": "List Customer Addresses",
+          "description": "Lists the selected customer's addresses. Egyptian phone numbers are returned as local digits like 01001234567.",
           "request": {
             "method": "GET",
             "header": [
@@ -293,6 +298,7 @@
         },
         {
           "name": "Create Customer Address",
+          "description": "Creates a customer-owned address. Egyptian phone numbers in the response return as local digits like 01001234567.",
           "request": {
             "method": "POST",
             "header": [
@@ -310,6 +316,7 @@
         },
         {
           "name": "Show Customer Address",
+          "description": "Returns one customer-owned address. Egyptian phone numbers are returned as local digits like 01001234567.",
           "request": {
             "method": "GET",
             "header": [
@@ -321,6 +328,7 @@
         },
         {
           "name": "Update Customer Address",
+          "description": "Updates mutable address fields. Egyptian phone numbers in the response return as local digits like 01001234567.",
           "request": {
             "method": "PATCH",
             "header": [
@@ -367,6 +375,257 @@
               { "key": "Authorization", "value": "Bearer {{accessToken}}" }
             ],
             "url": "{{baseUrl}}/admin/customers/1/addresses/1/default"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin Categories",
+      "description": "Feature 003 protected root Category and nested Subcategory endpoints. Admin list requests support filter[search], filter[isActive], filter[trashed], sort, page, and perPage.",
+      "item": [
+        {
+          "name": "List Categories",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Accept-Language", "value": "en" }
+            ],
+            "url": "{{baseUrl}}/admin/categories?filter[search]=home&filter[isActive]=true&filter[trashed]=without&sort=name&page=1&perPage=20"
+          }
+        },
+        {
+          "name": "Create Category",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Accept-Language", "value": "en" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nameAr\": \"خدمات المنزل\",\n  \"nameEn\": \"Home Services\",\n  \"descriptionAr\": \"خدمات احترافية للمنزل.\",\n  \"descriptionEn\": \"Professional home services.\",\n  \"sortOrder\": 0,\n  \"isActive\": true\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/admin/categories"
+          }
+        },
+        {
+          "name": "Reorder Categories",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"orderedIds\": [3, 1, 2]\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/admin/categories/reorder"
+          }
+        },
+        {
+          "name": "Show Category",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Accept-Language", "value": "ar" }
+            ],
+            "url": "{{baseUrl}}/admin/categories/1"
+          }
+        },
+        {
+          "name": "Update Category",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nameAr\": \"خدمات المنزل المحدثة\",\n  \"nameEn\": \"Updated Home Services\",\n  \"isActive\": true\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/admin/categories/1"
+          }
+        },
+        {
+          "name": "Delete Category",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/admin/categories/1"
+          }
+        },
+        {
+          "name": "Restore Category",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/admin/categories/1/restore"
+          }
+        },
+        {
+          "name": "List Subcategories",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Accept-Language", "value": "en" }
+            ],
+            "url": "{{baseUrl}}/admin/categories/1/subcategories?filter[search]=clean&filter[isActive]=true&filter[trashed]=without&sort=name&page=1&perPage=20"
+          }
+        },
+        {
+          "name": "Create Subcategory",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nameAr\": \"تنظيف\",\n  \"nameEn\": \"Cleaning\",\n  \"descriptionAr\": \"خدمات تنظيف احترافية.\",\n  \"descriptionEn\": \"Professional cleaning services.\",\n  \"sortOrder\": 0,\n  \"isActive\": true\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/admin/categories/1/subcategories"
+          }
+        },
+        {
+          "name": "Reorder Subcategories",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"orderedIds\": [4, 2, 3]\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/admin/categories/1/subcategories/reorder"
+          }
+        },
+        {
+          "name": "Show Subcategory",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Accept-Language", "value": "ar" }
+            ],
+            "url": "{{baseUrl}}/admin/categories/1/subcategories/2"
+          }
+        },
+        {
+          "name": "Update Subcategory",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nameAr\": \"تنظيف محدث\",\n  \"nameEn\": \"Updated Cleaning\",\n  \"isActive\": true\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/admin/categories/1/subcategories/2"
+          }
+        },
+        {
+          "name": "Delete Subcategory",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/admin/categories/1/subcategories/2"
+          }
+        },
+        {
+          "name": "Restore Subcategory",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/admin/categories/1/subcategories/2/restore"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Public Categories",
+      "description": "Feature 003 read-only localized public catalog routes. Use the localized slug that matches the current Accept-Language header.",
+      "item": [
+        {
+          "name": "List Public Categories",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Accept-Language", "value": "en" }
+            ],
+            "url": "{{baseUrl}}/public/categories"
+          }
+        },
+        {
+          "name": "Show Public Category",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Accept-Language", "value": "en" }
+            ],
+            "url": "{{baseUrl}}/public/categories/home-services"
+          }
+        },
+        {
+          "name": "List Public Subcategories",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Accept-Language", "value": "en" }
+            ],
+            "url": "{{baseUrl}}/public/categories/home-services/subcategories"
+          }
+        },
+        {
+          "name": "Show Public Subcategory",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Accept-Language", "value": "en" }
+            ],
+            "url": "{{baseUrl}}/public/categories/home-services/subcategories/cleaning"
           }
         }
       ]

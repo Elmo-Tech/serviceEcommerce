@@ -261,7 +261,8 @@ without requiring the Orders feature to exist yet.
   approved nested not-found outcome.
 - **FR-026**: Customer and address API Resources MUST expose only approved safe
   fields and MUST NOT expose `phoneNormalized`, `addressHash`, authentication
-  fields, or token-related data.
+  fields, or token-related data. Egyptian phone values in responses MUST be
+  returned as local national digits without country code or spaces.
 - **FR-027**: All user-facing messages and validation errors for this feature
   MUST be available in Arabic and English while machine-readable field names,
   route names, permission names, and error codes remain stable English values.

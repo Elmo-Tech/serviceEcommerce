@@ -48,6 +48,7 @@ it('creates customer addresses, enforces one default, and supports localized nes
     ], customerAddressAdminHeaders($accessToken));
 
     $firstAddressResponse->assertCreated()
+        ->assertJsonPath('data.phone', '01003334444')
         ->assertJsonPath('data.isDefault', true)
         ->assertJsonMissingPath('data.addressHash')
         ->assertJsonMissingPath('data.phoneNormalized');
@@ -76,7 +77,8 @@ it('creates customer addresses, enforces one default, and supports localized nes
 
     $listResponse->assertOk()
         ->assertJsonCount(2, 'data')
-        ->assertJsonPath('data.0.label', 'Office');
+        ->assertJsonPath('data.0.label', 'Office')
+        ->assertJsonPath('data.0.phone', '01003334444');
 });
 
 it('rejects duplicate active addresses and enforces the 20 active-address limit', function () {

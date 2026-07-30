@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Resources\Api\V1\Admin\Customers;
 
 use App\Models\Customer;
+use App\Support\Customers\CustomerPhoneFormatter;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -19,7 +20,7 @@ class CustomerDetailResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'email' => $this->email,
-            'phone' => $this->phone,
+            'phone' => CustomerPhoneFormatter::forResponse($this->phone, $this->phone_normalized),
             'isDeleted' => $this->trashed(),
             'deletedAt' => $this->deleted_at?->toJSON(),
             'addressesCount' => (int) ($this->addresses_count ?? 0),

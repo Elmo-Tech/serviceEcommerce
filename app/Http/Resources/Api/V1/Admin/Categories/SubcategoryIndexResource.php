@@ -1,0 +1,33 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Http\Resources\Api\V1\Admin\Categories;
+
+use App\Models\Category;
+use App\Services\Categories\CategoryLocaleService;
+use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\JsonResource;
+
+/**
+ * @mixin Category
+ */
+class SubcategoryIndexResource extends JsonResource
+{
+    public function toArray(Request $request): array
+    {
+        $localeService = app(CategoryLocaleService::class);
+
+        return [
+            'id' => $this->id,
+            'name' => $localeService->value($this->resource, 'name'),
+            'description' => $localeService->value($this->resource, 'description'),
+            'slug' => $localeService->value($this->resource, 'slug'),
+            'sortOrder' => (int) $this->sort_order,
+            'isActive' => (bool) $this->is_active,
+            'createdAt' => $this->created_at?->toJSON(),
+            'updatedAt' => $this->updated_at?->toJSON(),
+            'deletedAt' => $this->deleted_at?->toJSON(),
+        ];
+    }
+}

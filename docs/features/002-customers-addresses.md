@@ -527,13 +527,14 @@ phone_normalized
 Recommended stored representation:
 
 ```text
-internationally formatted display value
+Egyptian numbers: local national digits without country code or spaces
+Non-Egyptian numbers: backend-formatted display value
 ```
 
 Example:
 
 ```text
-+20 100 123 4567
+01001234567
 ```
 
 ### 10.2 `phone_normalized`
@@ -1890,7 +1891,7 @@ Example:
   "id": 12,
   "name": "Customer Name",
   "email": "customer@example.com",
-  "phone": "+20 100 123 4567",
+  "phone": "01001234567",
   "isDeleted": false,
   "addressesCount": 2,
   "createdAt": "2026-07-28T10:00:00Z"
@@ -1901,6 +1902,7 @@ Rules:
 
 - return `id` for administration navigation
 - return display phone only
+- return Egyptian phone values without country code or spaces
 - do not return `phoneNormalized`
 - do not return password/auth fields
 - `addressesCount` counts active addresses unless contract states otherwise
@@ -1916,7 +1918,7 @@ Example:
   "id": 12,
   "name": "Customer Name",
   "email": "customer@example.com",
-  "phone": "+20 100 123 4567",
+  "phone": "01001234567",
   "isDeleted": false,
   "deletedAt": null,
   "addressesCount": 2,
@@ -1924,7 +1926,7 @@ Example:
     {
       "id": 30,
       "label": "Home",
-      "phone": "+20 100 123 4567",
+      "phone": "01001234567",
       "countryCode": "EG",
       "city": "Cairo",
       "area": "Nasr City",

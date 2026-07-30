@@ -44,6 +44,7 @@ it('creates customers, lists them with filters, and returns only approved safe f
         ->assertJsonPath('success', true)
         ->assertJsonPath('data.name', 'Mohamed Hassan')
         ->assertJsonPath('data.email', 'mohamed@example.com')
+        ->assertJsonPath('data.phone', '01001234567')
         ->assertJsonPath('data.isDeleted', false)
         ->assertJsonPath('data.deletedAt', null)
         ->assertJsonPath('data.addressesCount', 0)
@@ -85,6 +86,7 @@ it('creates customers, lists them with filters, and returns only approved safe f
         ->assertJsonPath('meta.total', 1)
         ->assertJsonPath('meta.lastPage', 1)
         ->assertJsonPath('data.0.name', 'Ziad Ali')
+        ->assertJsonPath('data.0.phone', '01005556666')
         ->assertJsonPath('data.0.addressesCount', 1)
         ->assertJsonMissingPath('data.0.phoneNormalized');
 
@@ -92,6 +94,7 @@ it('creates customers, lists them with filters, and returns only approved safe f
 
     $showResponse->assertOk()
         ->assertJsonPath('data.id', $customer->getKey())
+        ->assertJsonPath('data.phone', '01001234567')
         ->assertJsonPath('data.addressesCount', 0)
         ->assertJsonMissingPath('data.phoneNormalized');
 });

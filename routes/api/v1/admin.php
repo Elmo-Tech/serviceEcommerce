@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\Api\V1\Admin\Categories\CategoryController;
+use App\Http\Controllers\Api\V1\Admin\Categories\SubcategoryController;
 use App\Http\Controllers\Api\V1\Admin\Customers\CustomerAddressController;
 use App\Http\Controllers\Api\V1\Admin\Customers\CustomerController;
 use Illuminate\Support\Facades\Route;
@@ -39,4 +41,49 @@ Route::middleware([
         ->middleware('permission:customer-addresses.restore');
     Route::put('/customers/{customer}/addresses/{address}/default', [CustomerAddressController::class, 'setDefault'])
         ->middleware('permission:customer-addresses.set-default');
+
+    Route::get('/categories', [CategoryController::class, 'index'])
+        ->middleware('permission:categories.view');
+    Route::post('/categories', [CategoryController::class, 'store'])
+        ->middleware('permission:categories.create');
+    Route::patch('/categories/reorder', [CategoryController::class, 'reorder'])
+        ->middleware('permission:categories.reorder');
+    Route::get('/categories/{category}', [CategoryController::class, 'show'])
+        ->whereNumber('category')
+        ->middleware('permission:categories.view');
+    Route::patch('/categories/{category}', [CategoryController::class, 'update'])
+        ->whereNumber('category')
+        ->middleware('permission:categories.update');
+    Route::delete('/categories/{category}', [CategoryController::class, 'destroy'])
+        ->whereNumber('category')
+        ->middleware('permission:categories.delete');
+    Route::post('/categories/{category}/restore', [CategoryController::class, 'restore'])
+        ->whereNumber('category')
+        ->middleware('permission:categories.restore');
+
+    Route::get('/categories/{category}/subcategories', [SubcategoryController::class, 'index'])
+        ->whereNumber('category')
+        ->middleware('permission:subcategories.view');
+    Route::post('/categories/{category}/subcategories', [SubcategoryController::class, 'store'])
+        ->whereNumber('category')
+        ->middleware('permission:subcategories.create');
+    Route::patch('/categories/{category}/subcategories/reorder', [SubcategoryController::class, 'reorder'])
+        ->whereNumber('category')
+        ->middleware('permission:subcategories.reorder');
+    Route::get('/categories/{category}/subcategories/{subcategory}', [SubcategoryController::class, 'show'])
+        ->whereNumber('category')
+        ->whereNumber('subcategory')
+        ->middleware('permission:subcategories.view');
+    Route::patch('/categories/{category}/subcategories/{subcategory}', [SubcategoryController::class, 'update'])
+        ->whereNumber('category')
+        ->whereNumber('subcategory')
+        ->middleware('permission:subcategories.update');
+    Route::delete('/categories/{category}/subcategories/{subcategory}', [SubcategoryController::class, 'destroy'])
+        ->whereNumber('category')
+        ->whereNumber('subcategory')
+        ->middleware('permission:subcategories.delete');
+    Route::post('/categories/{category}/subcategories/{subcategory}/restore', [SubcategoryController::class, 'restore'])
+        ->whereNumber('category')
+        ->whereNumber('subcategory')
+        ->middleware('permission:subcategories.restore');
 });

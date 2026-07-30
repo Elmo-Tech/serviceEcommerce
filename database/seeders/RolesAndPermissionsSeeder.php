@@ -30,6 +30,18 @@ class RolesAndPermissionsSeeder extends Seeder
             'customer-addresses.delete',
             'customer-addresses.restore',
             'customer-addresses.set-default',
+            'categories.view',
+            'categories.create',
+            'categories.update',
+            'categories.delete',
+            'categories.restore',
+            'categories.reorder',
+            'subcategories.view',
+            'subcategories.create',
+            'subcategories.update',
+            'subcategories.delete',
+            'subcategories.restore',
+            'subcategories.reorder',
         ];
 
         foreach ($permissionNames as $permissionName) {
