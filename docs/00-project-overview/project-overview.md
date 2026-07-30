@@ -279,8 +279,11 @@ Category
       -> Services
 ```
 
-A root category groups one or more subcategories, and each service belongs to
-one subcategory.
+A root category groups one or more subcategories, and services may be:
+
+- unclassified
+- assigned directly to one root category only
+- assigned to one root category and one subcategory
 
 The following MVP rules apply:
 
@@ -288,8 +291,11 @@ The following MVP rules apply:
 - a category may contain multiple subcategories
 - a subcategory belongs to exactly one category
 - a subcategory may contain multiple services
-- each service belongs to exactly one subcategory
-- a service belongs indirectly to the parent category of its subcategory
+- a service may have no category and no subcategory
+- a service may belong to one root category only
+- a service may belong to one root category and one subcategory
+- a service may never belong to a subcategory without also belonging to that
+  subcategory's parent category
 - categories and subcategories may be active or inactive
 - category and subcategory names and slugs must follow approved uniqueness
   rules
@@ -1540,7 +1546,8 @@ The initial product is successful when:
 5. A customer can have multiple addresses with one default address.
 6. The Super Admin can manage root categories and their subcategories.
 7. Every subcategory belongs to exactly one root category.
-8. Every service belongs to exactly one subcategory.
+8. Services support approved unclassified, category-only, and
+   category-plus-subcategory assignments.
 9. Public service lists support approved category and subcategory filtering.
 10. The system prevents category hierarchy deeper than two levels.
 11. The Super Admin can manage service publication and availability separately.
@@ -1618,21 +1625,20 @@ The initial feature specification sequence is:
 001 Identity and Authentication
 002 Roles and Permissions
 003 Customers
-004 Service Categories and Subcategories
-005 Services Catalog
-006 Service Media and Specifications
-007 Service Order Options
-008 Service Order Questions
-009 Quote Pricing and Review
-010 Orders and Order Items
-011 Order Attachments
-012 Site Settings
-013 Hero Sections
-014 Contact Inbox
-015 Testimonials
-016 FAQs
-017 Featured and Best-Selling Services
-018 Dashboard and Reports
+004 Services Catalog
+005 Service Media and Specifications
+006 Service Order Options
+007 Service Order Questions
+008 Quote Pricing and Review
+009 Orders and Order Items
+010 Order Attachments
+011 Site Settings
+012 Hero Sections
+013 Contact Inbox
+014 Testimonials
+015 FAQs
+016 Featured and Best-Selling Services
+017 Dashboard and Reports
 ```
 
 For the MVP, the `009 Quote Pricing and Review` feature represents quote-required pricing

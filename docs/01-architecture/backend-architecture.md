@@ -60,7 +60,8 @@ The architecture preserves these product rules:
 - customer matching during guest checkout uses normalized phone numbers
 - the catalogue uses two active levels: Category -> Subcategory
 - each subcategory belongs to exactly one root category
-- each service belongs to exactly one subcategory
+- services may be unclassified, assigned directly to one root category only,
+  or assigned to one root category and one subcategory
 - a third category level is not supported in the MVP
 - service publication and availability are separate states
 - services may use fixed, starting-from, or quote-required pricing
@@ -264,7 +265,8 @@ Responsibilities:
 - subcategory management
 - category and subcategory activation and deactivation
 - assigning each subcategory to exactly one root category
-- assigning each service to exactly one subcategory
+- assigning each service to the approved root-category and optional
+  subcategory combination
 - category and subcategory search, filters, sorting, and pagination
 - public category and subcategory navigation
 - soft deletion when allowed
@@ -2856,8 +2858,10 @@ Feature tests cover:
 - subcategory creation under a root category
 - invalid third-level category rejection
 - circular category relationship rejection
-- service assignment to a subcategory
-- direct service assignment to a root category rejection
+- service assignment to a root category only
+- service assignment to a root category and one of its subcategories
+- subcategory assignment rejection when the parent root category is absent or
+  mismatched
 - category and subcategory service filtering
 - inactive parent-category exclusion
 - inactive subcategory exclusion
@@ -2944,7 +2948,8 @@ The test suite must prove that:
 - a subcategory belongs to one root category
 - a third category level cannot be created
 - circular category relationships are rejected
-- a service belongs to a subcategory, not directly to a root category
+- a service may be unclassified, root-category only, or root-category plus one
+  matching subcategory
 - category filtering includes services from all child subcategories
 - subcategory filtering includes only directly assigned services
 - inactive root categories prevent child services from being ordered
@@ -3100,7 +3105,8 @@ The test suite must prove that:
 4. Public and administration APIs are separated under approved route groups.
 5. Auto-incrementing internal IDs are used consistently.
 6. Root categories and subcategories form an active two-level hierarchy.
-7. Every service belongs to exactly one subcategory.
+7. Services support the approved unclassified, root-category-only, and
+   root-category-plus-subcategory assignments.
 8. Third-level and circular category relationships are rejected.
 9. Public services support category and subcategory filtering.
 10. Inactive categories or subcategories prevent affected services from being

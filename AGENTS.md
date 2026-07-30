@@ -289,10 +289,14 @@ authoritative.
 - Every subcategory belongs to exactly one root category.
 - A subcategory cannot contain another subcategory.
 - Third-level and circular hierarchy relationships are prohibited.
-- Every service belongs directly to one subcategory.
-- Do not store both root category and subcategory IDs on a service.
-- Public ordering eligibility requires an active root category and active
-  subcategory.
+- A service may be unclassified, assigned to one root category only, or
+  assigned to one root category and one subcategory.
+- A service may never belong to a subcategory without also belonging to that
+  subcategory's parent root category.
+- Store the root category relationship directly on the service and keep the
+  subcategory relationship nullable for services that stop at the root level.
+- Public category or subcategory visibility and filtering must respect the
+  active, non-deleted hierarchy records that are still valid for the service.
 
 ### 5.7 Services
 
