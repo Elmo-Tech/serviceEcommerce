@@ -95,7 +95,13 @@ php artisan db:seed --class=Database\\Seeders\\CustomerPermissionsSeeder
   "name": "Mohamed Hassan",
   "email": "mohamed@example.com",
   "phone": "01001234567",
-  "phoneCountryCode": "EG"
+  "address": {
+    "phone": "01001234567",
+    "province": "Cairo",
+    "city": "Nasr City",
+    "address": "Nasr City | Street 10",
+    "notes": "Ring bell"
+  }
 }
 ```
 
@@ -105,6 +111,8 @@ Expected outcome:
 - `success=true`
 - approved customer detail resource returned
 - response includes `isDeleted`, `addressesCount`, and `addresses`
+- when the nested `address` object is sent, the saved address is returned as
+  the initial default address
 - `phoneNormalized` is persisted internally but not exposed
 
 ### Scenario B — Reject duplicate normalized phone or duplicate non-null email
@@ -176,7 +184,7 @@ Run focused domain tests proving:
 - deleted customer restore by normalized phone
 - active address reuse by canonical address identity
 - deleted address restore by canonical address identity
-- no auto-overwrite of saved customer name/email or address label/phone/notes
+- no auto-overwrite of saved customer name/email or address phone/notes
 
 ## 7. Automated Verification Commands
 

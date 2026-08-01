@@ -177,7 +177,7 @@ paths:
         '404':
           $ref: '#/components/responses/CategoryNotFound'
         '409':
-          $ref: '#/components/responses/CategoryHasSubcategories'
+          $ref: '#/components/responses/CategoryDeleteConflict'
   /admin/categories/{category}/restore:
     post:
       operationId: restoreCategory
@@ -695,6 +695,38 @@ components:
                 success: false
                 message: Localized safe message
                 code: CATEGORY_HAS_SUBCATEGORIES
+                errors: null
+    CategoryHasServices:
+      description: Root category cannot be deleted because direct non-deleted services still exist
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            hasServices:
+              value:
+                success: false
+                message: Localized safe message
+                code: CATEGORY_HAS_SERVICES
+                errors: null
+    CategoryDeleteConflict:
+      description: Root category cannot be deleted because dependent records still exist
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            hasSubcategories:
+              value:
+                success: false
+                message: Localized safe message
+                code: CATEGORY_HAS_SUBCATEGORIES
+                errors: null
+            hasServices:
+              value:
+                success: false
+                message: Localized safe message
+                code: CATEGORY_HAS_SERVICES
                 errors: null
     SubcategoryHasServices:
       description: Subcategory cannot be deleted because non-deleted services still exist

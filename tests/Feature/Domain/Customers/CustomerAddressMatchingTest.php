@@ -16,26 +16,22 @@ it('reuses an active matching address and does not create a duplicate record', f
     ]);
 
     $address = $customer->addresses()->create([
-        'label' => 'Saved Address',
         'phone' => '+20 100 888 1111',
         'phone_normalized' => '+201008881111',
-        'country_code' => 'EG',
-        'city' => 'Cairo',
-        'area' => 'Maadi',
-        'street' => 'Street 9',
+        'province' => 'Cairo',
+        'city' => 'Maadi',
+        'address' => 'Maadi | Street 9',
         'notes' => 'Saved notes',
-        'address_hash' => hash('sha256', 'eg|cairo|maadi|street 9'),
+        'address_hash' => hash('sha256', 'cairo|maadi|maadi | street 9'),
         'is_default' => true,
     ]);
 
     $result = app(ResolveGuestCustomerAddressAction::class)->execute($customer, [
-        'label' => 'Guest Label',
         'phone' => '01008881111',
         'phoneCountryCode' => 'EG',
-        'countryCode' => 'EG',
-        'city' => 'Cairo',
-        'area' => 'Maadi',
-        'street' => 'Street 9',
+        'province' => 'Cairo',
+        'city' => 'Maadi',
+        'address' => 'Maadi | Street 9',
         'notes' => 'Guest notes',
     ]);
 
@@ -52,27 +48,23 @@ it('restores a soft-deleted matching address and rejects new unmatched addresses
     ]);
 
     $deletedAddress = $customer->addresses()->create([
-        'label' => 'Deleted Address',
         'phone' => '+20 100 888 2222',
         'phone_normalized' => '+201008882222',
-        'country_code' => 'EG',
-        'city' => 'Giza',
-        'area' => null,
-        'street' => 'Restore Street',
+        'province' => 'Giza',
+        'city' => 'Dokki',
+        'address' => 'Restore Street',
         'notes' => null,
-        'address_hash' => hash('sha256', 'eg|giza||restore street'),
+        'address_hash' => hash('sha256', 'giza|dokki|restore street'),
         'is_default' => true,
     ]);
     $deletedAddress->delete();
 
     $restoreResult = app(ResolveGuestCustomerAddressAction::class)->execute($customer, [
-        'label' => 'Guest Label',
         'phone' => '01008882222',
         'phoneCountryCode' => 'EG',
-        'countryCode' => 'EG',
-        'city' => 'Giza',
-        'area' => null,
-        'street' => 'Restore Street',
+        'province' => 'Giza',
+        'city' => 'Dokki',
+        'address' => 'Restore Street',
         'notes' => null,
     ]);
 
@@ -82,27 +74,23 @@ it('restores a soft-deleted matching address and rejects new unmatched addresses
 
     foreach (range(1, 19) as $index) {
         $customer->addresses()->create([
-            'label' => 'Address '.$index,
             'phone' => '+20 100 888 2222',
             'phone_normalized' => '+201008882222',
-            'country_code' => 'EG',
+            'province' => 'Province '.$index,
             'city' => 'City '.$index,
-            'area' => null,
-            'street' => 'Street '.$index,
+            'address' => 'Address '.$index,
             'notes' => null,
-            'address_hash' => hash('sha256', 'eg|city '.$index.'||street '.$index),
+            'address_hash' => hash('sha256', mb_strtolower('Province '.$index.'|City '.$index.'|Address '.$index)),
             'is_default' => $index === 1,
         ]);
     }
 
     app(ResolveGuestCustomerAddressAction::class)->execute($customer, [
-        'label' => 'Overflow',
         'phone' => '01008882222',
         'phoneCountryCode' => 'EG',
-        'countryCode' => 'EG',
-        'city' => 'Overflow',
-        'area' => null,
-        'street' => 'Overflow Street',
+        'province' => 'Overflow',
+        'city' => 'Overflow City',
+        'address' => 'Overflow Street',
         'notes' => null,
     ]);
 })->throws(ApiBusinessException::class, 'CUSTOMER_ADDRESS_LIMIT_EXCEEDED');

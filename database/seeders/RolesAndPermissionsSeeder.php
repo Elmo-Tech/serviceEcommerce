@@ -17,36 +17,13 @@ class RolesAndPermissionsSeeder extends Seeder
 
         $guard = (string) config('auth.defaults.guard', 'web');
 
-        $role = Role::findOrCreate('super-admin', $guard);
-        $permissionNames = [
-            'customers.view',
-            'customers.create',
-            'customers.update',
-            'customers.delete',
-            'customers.restore',
-            'customer-addresses.view',
-            'customer-addresses.create',
-            'customer-addresses.update',
-            'customer-addresses.delete',
-            'customer-addresses.restore',
-            'customer-addresses.set-default',
-            'categories.view',
-            'categories.create',
-            'categories.update',
-            'categories.delete',
-            'categories.restore',
-            'categories.reorder',
-            'subcategories.view',
-            'subcategories.create',
-            'subcategories.update',
-            'subcategories.delete',
-            'subcategories.restore',
-            'subcategories.reorder',
-        ];
+        $this->call([
+            CustomerPermissionsSeeder::class,
+            CategoriesPermissionsSeeder::class,
+            ServicesPermissionsSeeder::class,
+        ]);
 
-        foreach ($permissionNames as $permissionName) {
-            Permission::findOrCreate($permissionName, $guard);
-        }
+        $role = Role::findOrCreate('super-admin', $guard);
 
         app(PermissionRegistrar::class)->forgetCachedPermissions();
 

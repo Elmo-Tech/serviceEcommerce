@@ -103,15 +103,13 @@ it('returns safe customer and address resources and localizes customer feature r
     ]);
 
     $customer->addresses()->create([
-        'label' => 'Home',
         'phone' => '+20 100 999 1111',
         'phone_normalized' => '+201009991111',
-        'country_code' => 'EG',
-        'city' => 'Cairo',
-        'area' => 'Maadi',
-        'street' => 'Street 9',
+        'province' => 'Cairo',
+        'city' => 'Maadi',
+        'address' => 'Maadi | Street 9',
         'notes' => 'Near the club',
-        'address_hash' => hash('sha256', 'eg|cairo|maadi|street 9'),
+        'address_hash' => hash('sha256', 'cairo|maadi|maadi | street 9'),
         'is_default' => true,
     ]);
 

@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "Service Commerce - Admin API Collection",
-    "description": "Service Commerce admin and public API collection for Feature 001 Identity and Authentication, Feature 002 Customers and Addresses, and Feature 003 Categories and Subcategories. Requests go directly to the Laravel Backend API at {{baseUrl}}. Example request bodies use fake values that mirror the backend contract. For customer and customer-address responses, Egyptian phone numbers are returned in local format such as 01001234567 without country code or spaces. Login and refresh keep accessToken and refreshToken available as Postman variables for follow-up protected admin requests.",
+    "description": "Service Commerce admin and public API collection for Feature 001 Identity and Authentication, Feature 002 Customers and Addresses, Feature 003 Categories and Subcategories, and Feature 004 Services Catalog. Requests go directly to the Laravel Backend API at {{baseUrl}}. Example request bodies use fake values that mirror the backend contract. For customer and customer-address responses, Egyptian phone numbers are returned in local format such as 01001234567 without country code or spaces. Login and refresh keep accessToken and refreshToken available as Postman variables for follow-up protected admin requests.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -201,10 +201,11 @@
     },
     {
       "name": "Admin Customers",
-      "description": "Customer and customer-address endpoints. Egyptian phone numbers in API responses are returned as local national digits like 01001234567 without country code or spaces.",
+      "description": "Customer and customer-address endpoints. Egyptian phone numbers in API responses are returned as local national digits like 01001234567 without country code or spaces. Customer query keys: filter[search] = text search across customer name, email, and phone; filter[status] = active, deleted, or all; filter[hasAddresses] = true customers with active addresses only / false customers without active addresses only; filter[createdFrom] and filter[createdTo] = date range filters; sort = createdAt, -createdAt, name, -name; page starts at 1; perPage max is 100. Address query keys: filter[status] = active, deleted, or all. Common customer body keys: name = customer display name; email = optional unique email; phone = customer phone number; phoneCountryCode = optional parsing hint, defaults to EG if omitted. Nested create address inside customer create accepts address.phone, address.province, address.city, address.address, and optional address.notes only.",
       "item": [
         {
           "name": "List Customers",
+          "description": "Lists customers with filters and pagination. Query meanings: filter[search] = text search; filter[status] enum active/deleted/all; filter[hasAddresses] boolean; filter[createdFrom] and filter[createdTo] = creation-date boundaries; sort = createdAt, -createdAt, name, -name; page = page number; perPage = results per page.",
           "request": {
             "method": "GET",
             "header": [
@@ -216,7 +217,7 @@
         },
         {
           "name": "Create Customer",
-          "description": "Creates an admin-managed customer. Egyptian phone numbers in the response return as local digits like 01001234567.",
+          "description": "Creates an admin-managed customer. Body keys: name = required customer name; email = optional unique email; phone = required customer phone; phoneCountryCode = optional parsing hint for phone, defaults to EG if omitted. Optional nested address keys: address.phone = first saved address phone; address.province = governorate/province; address.city = city/area name; address.address = free-text street/address line; address.notes = optional notes. When nested address is sent, it is created as the first default address automatically. Egyptian phone numbers in the response return as local digits like 01001234567.",
           "request": {
             "method": "POST",
             "header": [
@@ -226,7 +227,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Customer Example\",\n  \"email\": \"customer@example.test\",\n  \"phone\": \"01001234567\",\n  \"phoneCountryCode\": \"EG\"\n}",
+              "raw": "{\n  \"name\": \"Customer Example\",\n  \"email\": \"customer@example.test\",\n  \"phone\": \"01001234567\",\n  \"address\": {\n    \"phone\": \"01001234567\",\n    \"province\": \"Cairo\",\n    \"city\": \"Nasr City\",\n    \"address\": \"Nasr City | Street 10\",\n    \"notes\": \"Ring bell\"\n  }\n}",
               "options": { "raw": { "language": "json" } }
             },
             "url": "{{baseUrl}}/admin/customers"
@@ -234,7 +235,7 @@
         },
         {
           "name": "Show Customer",
-          "description": "Returns the customer resource. Egyptian phone numbers are returned as local digits like 01001234567.",
+          "description": "Returns one customer resource with safe fields only. The response may include nested addresses and addressesCount. Egyptian phone numbers are returned as local digits like 01001234567.",
           "request": {
             "method": "GET",
             "header": [
@@ -246,7 +247,7 @@
         },
         {
           "name": "Update Customer",
-          "description": "Updates mutable customer fields. Egyptian phone numbers in the response return as local digits like 01001234567.",
+          "description": "Updates mutable customer fields. Supported keys: name, email, phone, phoneCountryCode. phoneCountryCode is only a parsing hint when phone is being changed. Egyptian phone numbers in the response return as local digits like 01001234567.",
           "request": {
             "method": "PATCH",
             "header": [
@@ -286,7 +287,7 @@
         },
         {
           "name": "List Customer Addresses",
-          "description": "Lists the selected customer's addresses. Egyptian phone numbers are returned as local digits like 01001234567.",
+          "description": "Lists the selected customer's addresses. Query meanings: filter[status] = active returns non-deleted only, deleted returns deleted only, all returns both. Egyptian phone numbers are returned as local digits like 01001234567.",
           "request": {
             "method": "GET",
             "header": [
@@ -298,7 +299,7 @@
         },
         {
           "name": "Create Customer Address",
-          "description": "Creates a customer-owned address. Egyptian phone numbers in the response return as local digits like 01001234567.",
+          "description": "Creates a customer-owned address. Body keys: phone = required address phone; phoneCountryCode = optional parsing hint, defaults to EG if omitted; province = required governorate/province; city = required city/area name; address = required free-text street/address line; notes = optional notes; isDefault = true makes this address the default, false keeps existing default unless this is the first address. Egyptian phone numbers in the response return as local digits like 01001234567.",
           "request": {
             "method": "POST",
             "header": [
@@ -308,7 +309,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"label\": \"Home\",\n  \"phone\": \"01001234567\",\n  \"phoneCountryCode\": \"EG\",\n  \"countryCode\": \"EG\",\n  \"city\": \"Cairo\",\n  \"area\": \"Maadi\",\n  \"street\": \"Street 9\",\n  \"notes\": \"Near the club\",\n  \"isDefault\": true\n}",
+              "raw": "{\n  \"phone\": \"01001234567\",\n  \"phoneCountryCode\": \"EG\",\n  \"province\": \"Cairo\",\n  \"city\": \"Maadi\",\n  \"address\": \"Maadi | Street 9\",\n  \"notes\": \"Near the club\",\n  \"isDefault\": true\n}",
               "options": { "raw": { "language": "json" } }
             },
             "url": "{{baseUrl}}/admin/customers/1/addresses"
@@ -316,7 +317,7 @@
         },
         {
           "name": "Show Customer Address",
-          "description": "Returns one customer-owned address. Egyptian phone numbers are returned as local digits like 01001234567.",
+          "description": "Returns one customer-owned address with safe fields only. Egyptian phone numbers are returned as local digits like 01001234567.",
           "request": {
             "method": "GET",
             "header": [
@@ -328,7 +329,7 @@
         },
         {
           "name": "Update Customer Address",
-          "description": "Updates mutable address fields. Egyptian phone numbers in the response return as local digits like 01001234567.",
+          "description": "Updates mutable address fields. Supported keys: phone, phoneCountryCode, province, city, address, notes, isDefault. phoneCountryCode is only a parsing hint when phone is being changed. isDefault=true makes this address the active default. Egyptian phone numbers in the response return as local digits like 01001234567.",
           "request": {
             "method": "PATCH",
             "header": [
@@ -338,7 +339,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"label\": \"Work\",\n  \"city\": \"Giza\",\n  \"street\": \"Street 10\",\n  \"isDefault\": false\n}",
+              "raw": "{\n  \"province\": \"Giza\",\n  \"city\": \"Dokki\",\n  \"address\": \"Street 10\",\n  \"isDefault\": false\n}",
               "options": { "raw": { "language": "json" } }
             },
             "url": "{{baseUrl}}/admin/customers/1/addresses/1"
@@ -346,6 +347,7 @@
         },
         {
           "name": "Delete Customer Address",
+          "description": "Soft-deletes one customer-owned address. If the deleted address is the current default and another active address exists, the newest remaining active address becomes the new default automatically.",
           "request": {
             "method": "DELETE",
             "header": [
@@ -357,6 +359,7 @@
         },
         {
           "name": "Restore Customer Address",
+          "description": "Restores one previously deleted customer-owned address if restore rules allow it. Restore can fail when it would collide with an active duplicate address or break the active-address limit.",
           "request": {
             "method": "POST",
             "header": [
@@ -368,6 +371,7 @@
         },
         {
           "name": "Set Default Customer Address",
+          "description": "Marks one active customer-owned address as the default. After success, exactly one active default address remains for that customer.",
           "request": {
             "method": "PUT",
             "header": [
@@ -381,10 +385,11 @@
     },
     {
       "name": "Admin Categories",
-      "description": "Feature 003 protected root Category and nested Subcategory endpoints. Admin list requests support filter[search], filter[isActive], filter[trashed], sort, page, and perPage.",
+      "description": "Feature 003 protected root Category and nested Subcategory endpoints. Common query keys: filter[search] = text search across Arabic/English names, descriptions, and slugs; filter[isActive] = true shows active only, false shows inactive only; filter[trashed] = without means non-deleted only, with means deleted + non-deleted, only means deleted only; sort = sortOrder, -sortOrder, name, -name, createdAt, -createdAt, updatedAt, -updatedAt; page = page number; perPage = results per page. Common body keys: nameAr/nameEn = required Arabic/English names; descriptionAr/descriptionEn = optional Arabic/English descriptions; sortOrder = display order starting from 0; isActive = true means visible/active, false means inactive/hidden from public catalog.",
       "item": [
         {
           "name": "List Categories",
+          "description": "Lists root categories only. Query help: filter[search] searches localized names/descriptions/slugs; filter[isActive]=true or false narrows by activation state; filter[trashed]=without|with|only controls deleted records; sort accepts sortOrder, -sortOrder, name, -name, createdAt, -createdAt, updatedAt, -updatedAt; page starts at 1; perPage max is 100.",
           "request": {
             "method": "GET",
             "header": [
@@ -397,6 +402,7 @@
         },
         {
           "name": "Create Category",
+          "description": "Creates a root category. Body keys: nameAr = required Arabic category name; nameEn = required English category name; descriptionAr = optional Arabic description; descriptionEn = optional English description; sortOrder = optional integer order, lower numbers appear first; isActive = true means active/visible, false means inactive/hidden.",
           "request": {
             "method": "POST",
             "header": [
@@ -415,6 +421,7 @@
         },
         {
           "name": "Reorder Categories",
+          "description": "Reorders root categories. orderedIds must contain category IDs in the exact final order from first to last.",
           "request": {
             "method": "PATCH",
             "header": [
@@ -432,6 +439,7 @@
         },
         {
           "name": "Show Category",
+          "description": "Returns one root category. Accept-Language controls which localized public-facing name/slug is considered the resolved locale in response metadata where applicable.",
           "request": {
             "method": "GET",
             "header": [
@@ -444,6 +452,7 @@
         },
         {
           "name": "Update Category",
+          "description": "Updates mutable root-category fields. You may send any subset of: nameAr, nameEn, descriptionAr, descriptionEn, sortOrder, isActive. isActive=true means active, isActive=false means inactive.",
           "request": {
             "method": "PATCH",
             "header": [
@@ -461,6 +470,7 @@
         },
         {
           "name": "Delete Category",
+          "description": "Deletes a root category when it has no active subcategories and no direct non-deleted services. A blocked delete can return CATEGORY_HAS_SUBCATEGORIES or CATEGORY_HAS_SERVICES.",
           "request": {
             "method": "DELETE",
             "header": [
@@ -483,6 +493,7 @@
         },
         {
           "name": "List Subcategories",
+          "description": "Lists subcategories under one root category. Uses the same query keys and meanings as List Categories, but scoped to the parent category in the URL.",
           "request": {
             "method": "GET",
             "header": [
@@ -495,6 +506,7 @@
         },
         {
           "name": "Create Subcategory",
+          "description": "Creates a subcategory under the parent category in the URL. Body keys: nameAr = required Arabic subcategory name; nameEn = required English subcategory name; descriptionAr/descriptionEn = optional descriptions; sortOrder = optional integer order; isActive = true means active/visible, false means inactive/hidden.",
           "request": {
             "method": "POST",
             "header": [
@@ -512,6 +524,7 @@
         },
         {
           "name": "Reorder Subcategories",
+          "description": "Reorders subcategories inside the parent category only. orderedIds must contain scoped subcategory IDs in the exact final order.",
           "request": {
             "method": "PATCH",
             "header": [
@@ -529,6 +542,7 @@
         },
         {
           "name": "Show Subcategory",
+          "description": "Returns one scoped subcategory under the parent category.",
           "request": {
             "method": "GET",
             "header": [
@@ -541,6 +555,7 @@
         },
         {
           "name": "Update Subcategory",
+          "description": "Updates mutable subcategory fields. You may send any subset of: nameAr, nameEn, descriptionAr, descriptionEn, sortOrder, isActive. isActive=true means active, isActive=false means inactive.",
           "request": {
             "method": "PATCH",
             "header": [
@@ -558,6 +573,7 @@
         },
         {
           "name": "Delete Subcategory",
+          "description": "Deletes a scoped subcategory when it has no non-deleted services. A blocked delete can return SUBCATEGORY_HAS_SERVICES.",
           "request": {
             "method": "DELETE",
             "header": [
@@ -581,11 +597,422 @@
       ]
     },
     {
+      "name": "Admin Services",
+      "description": "Feature 004 protected service-catalog routes. Common list query keys: filter[search] = text search across localized names/descriptions/slugs; filter[categoryId] = root category ID; filter[subcategoryId] = subcategory ID; filter[priceType] enum: 0 = fixed price, 1 = starting from; filter[isActive] = true active only / false inactive only; filter[isAvailable] = true available only / false unavailable only; filter[trashed] = without non-deleted only, with deleted + non-deleted, only deleted only; sort/page/perPage follow the same pagination pattern. Common boolean keys: isActive true = published/active, false = inactive; isAvailable true = available to order, false = unavailable. Common integer enums: priceType 0 = fixed, 1 = starting_from; pricingOptions[*].inputType 0 = select, 1 = multi_select, 2 = radio, 3 = checkbox; media[*].type 0 = image, 1 = video; values[*].actionStatus in pricing-option update accepts create, update, delete, or empty string for unchanged existing rows.",
+      "item": [
+        {
+          "name": "List Services",
+          "description": "Lists services with admin filters. Query keys: filter[search] = text search; filter[categoryId] and filter[subcategoryId] = classification IDs; filter[priceType] enum 0 fixed / 1 starting_from; filter[isActive] boolean; filter[isAvailable] boolean; filter[trashed] = without|with|only; sort uses documented allow-list; page starts at 1; perPage max is 100.",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Accept-Language", "value": "en" }
+            ],
+            "url": "{{baseUrl}}/admin/services?filter[search]=clean&filter[categoryId]=1&filter[subcategoryId]=2&filter[priceType]=1&filter[isActive]=true&filter[isAvailable]=true&filter[trashed]=without&sort=-createdAt&page=1&perPage=20"
+          }
+        },
+        {
+          "name": "Create Service",
+          "description": "Multipart bracket-notation request. Top-level keys: nameAr/nameEn = required Arabic/English names; shortDescriptionAr/shortDescriptionEn = required short localized summaries; descriptionAr/descriptionEn = required full localized descriptions; slugAr/slugEn = required localized slugs; categoryId = root category ID; subcategoryId = subcategory ID; priceType enum 0 = fixed, 1 = starting_from; basePrice = decimal string used with supported price types; isActive = true active/published, false inactive; isAvailable = true available for ordering, false unavailable; productionTimeAr/productionTimeEn = optional localized duration text; seoTitleAr/seoTitleEn and seoDescriptionAr/seoDescriptionEn = optional SEO text. Nested keys: specifications[*][labelAr|labelEn|valueAr|valueEn] = bilingual display specs; orderFields[*][labelAr|labelEn|isRequired] = bilingual order questions where isRequired true means mandatory answer; pricingOptions[*][nameAr|nameEn|inputType|isRequired] where inputType enum is 0 select, 1 multi_select, 2 radio, 3 checkbox; pricingOptions[*][values][*][labelAr|labelEn|priceAdjustment|isActive] where isActive true means selectable and false means disabled; media[*][file|type|isMain|altAr|altEn] where type enum is 0 image, 1 video and isMain=true marks the main media item. Sending nested specifications, orderFields, pricingOptions, or media also requires the matching nested-resource permission.",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Accept-Language", "value": "en" }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "nameAr", "value": "خدمة تنظيف", "type": "text" },
+                { "key": "nameEn", "value": "Cleaning Service", "type": "text" },
+                { "key": "shortDescriptionAr", "value": "وصف مختصر للخدمة", "type": "text" },
+                { "key": "shortDescriptionEn", "value": "Short service description", "type": "text" },
+                { "key": "descriptionAr", "value": "وصف كامل للخدمة", "type": "text" },
+                { "key": "descriptionEn", "value": "Full service description", "type": "text" },
+                { "key": "slugAr", "value": "خدمة-تنظيف", "type": "text" },
+                { "key": "slugEn", "value": "cleaning-service", "type": "text" },
+                { "key": "categoryId", "value": "1", "type": "text" },
+                { "key": "subcategoryId", "value": "2", "type": "text" },
+                { "key": "priceType", "value": "1", "type": "text" },
+                { "key": "basePrice", "value": "250.00", "type": "text" },
+                { "key": "isActive", "value": "true", "type": "text" },
+                { "key": "isAvailable", "value": "true", "type": "text" },
+                { "key": "productionTimeAr", "value": "يوم واحد", "type": "text" },
+                { "key": "productionTimeEn", "value": "One day", "type": "text" },
+                { "key": "seoTitleAr", "value": "عنوان سيو", "type": "text" },
+                { "key": "seoTitleEn", "value": "SEO Title", "type": "text" },
+                { "key": "seoDescriptionAr", "value": "وصف سيو", "type": "text" },
+                { "key": "seoDescriptionEn", "value": "SEO Description", "type": "text" },
+                { "key": "specifications[0][labelAr]", "value": "المادة", "type": "text" },
+                { "key": "specifications[0][labelEn]", "value": "Material", "type": "text" },
+                { "key": "specifications[0][valueAr]", "value": "قطن", "type": "text" },
+                { "key": "specifications[0][valueEn]", "value": "Cotton", "type": "text" },
+                { "key": "orderFields[0][labelAr]", "value": "تعليمات إضافية", "type": "text" },
+                { "key": "orderFields[0][labelEn]", "value": "Extra instructions", "type": "text" },
+                { "key": "orderFields[0][isRequired]", "value": "true", "type": "text" },
+                { "key": "pricingOptions[0][nameAr]", "value": "الباقة", "type": "text" },
+                { "key": "pricingOptions[0][nameEn]", "value": "Package", "type": "text" },
+                { "key": "pricingOptions[0][inputType]", "value": "0", "type": "text" },
+                { "key": "pricingOptions[0][isRequired]", "value": "true", "type": "text" },
+                { "key": "pricingOptions[0][values][0][labelAr]", "value": "أساسي", "type": "text" },
+                { "key": "pricingOptions[0][values][0][labelEn]", "value": "Basic", "type": "text" },
+                { "key": "pricingOptions[0][values][0][priceAdjustment]", "value": "25.00", "type": "text" },
+                { "key": "pricingOptions[0][values][0][isActive]", "value": "true", "type": "text" },
+                { "key": "media[0][file]", "type": "file", "src": "" },
+                { "key": "media[0][type]", "value": "0", "type": "text" },
+                { "key": "media[0][isMain]", "value": "true", "type": "text" },
+                { "key": "media[0][altAr]", "value": "صورة رئيسية", "type": "text" },
+                { "key": "media[0][altEn]", "value": "Main image", "type": "text" }
+              ]
+            },
+            "url": "{{baseUrl}}/admin/services"
+          }
+        },
+        {
+          "name": "Show Service",
+          "description": "Returns one service with its nested admin details. Accept-Language affects locale-oriented response fields where the contract exposes resolved text.",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Accept-Language", "value": "ar" }
+            ],
+            "url": "{{baseUrl}}/admin/services/1"
+          }
+        },
+        {
+          "name": "Update Service",
+          "description": "Updates mutable service fields. Common keys: categoryId and subcategoryId = classification IDs; priceType enum 0 fixed / 1 starting_from; basePrice = decimal string; isActive true = active/published, false = inactive; isAvailable true = available, false = unavailable. Send only the fields you want to change.",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nameAr\": \"خدمة تنظيف محدثة\",\n  \"nameEn\": \"Updated Cleaning Service\",\n  \"categoryId\": 1,\n  \"subcategoryId\": 2,\n  \"priceType\": 1,\n  \"basePrice\": 300,\n  \"isActive\": true,\n  \"isAvailable\": true\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/admin/services/1"
+          }
+        },
+        {
+          "name": "Delete Service",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/admin/services/1"
+          }
+        },
+        {
+          "name": "Restore Service",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/admin/services/1/restore"
+          }
+        },
+        {
+          "name": "List Service Specifications",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/admin/services/1/specifications"
+          }
+        },
+        {
+          "name": "Create Service Specification",
+          "description": "Creates one display-only service specification. labelAr/labelEn = bilingual spec label; valueAr/valueEn = bilingual display value; sortOrder = optional order index starting from 0.",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"labelAr\": \"المقاس\",\n  \"labelEn\": \"Size\",\n  \"valueAr\": \"كبير\",\n  \"valueEn\": \"Large\",\n  \"sortOrder\": 0\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/admin/services/1/specifications"
+          }
+        },
+        {
+          "name": "Show Service Specification",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/admin/services/1/specifications/1"
+          }
+        },
+        {
+          "name": "Update Service Specification",
+          "description": "Updates a specification row. You may send any subset of labelAr, labelEn, valueAr, valueEn, sortOrder.",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"valueAr\": \"متوسط\",\n  \"valueEn\": \"Medium\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/admin/services/1/specifications/1"
+          }
+        },
+        {
+          "name": "Delete Service Specification",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/admin/services/1/specifications/1"
+          }
+        },
+        {
+          "name": "List Service Order Fields",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/admin/services/1/order-fields"
+          }
+        },
+        {
+          "name": "Create Service Order Field",
+          "description": "Creates one bilingual order field/question. labelAr/labelEn = field label shown to admins/public clients by locale; isRequired = true means answer is mandatory, false means optional; sortOrder = optional order index starting from 0.",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"labelAr\": \"ملاحظات\",\n  \"labelEn\": \"Notes\",\n  \"isRequired\": true,\n  \"sortOrder\": 0\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/admin/services/1/order-fields"
+          }
+        },
+        {
+          "name": "Show Service Order Field",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/admin/services/1/order-fields/1"
+          }
+        },
+        {
+          "name": "Update Service Order Field",
+          "description": "Updates an order field. You may send any subset of labelAr, labelEn, isRequired, sortOrder.",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"labelAr\": \"ملاحظات العميل\",\n  \"labelEn\": \"Customer notes\",\n  \"isRequired\": false\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/admin/services/1/order-fields/1"
+          }
+        },
+        {
+          "name": "Delete Service Order Field",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/admin/services/1/order-fields/1"
+          }
+        },
+        {
+          "name": "List Service Pricing Options",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/admin/services/1/pricing-options"
+          }
+        },
+        {
+          "name": "Create Service Pricing Option",
+          "description": "Creates one pricing option group. nameAr/nameEn = bilingual option-group name; inputType enum: 0 select, 1 multi_select, 2 radio, 3 checkbox; isRequired = true means customer must choose; sortOrder = order index. values[*] keys: labelAr/labelEn = bilingual option label; priceAdjustment = decimal string added to base pricing logic; isActive = true selectable, false disabled; sortOrder = order index.",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nameAr\": \"الباقة\",\n  \"nameEn\": \"Package\",\n  \"inputType\": 0,\n  \"isRequired\": true,\n  \"sortOrder\": 0,\n  \"values\": [\n    {\n      \"labelAr\": \"أساسي\",\n      \"labelEn\": \"Basic\",\n      \"priceAdjustment\": 20,\n      \"isActive\": true,\n      \"sortOrder\": 0\n    }\n  ]\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/admin/services/1/pricing-options"
+          }
+        },
+        {
+          "name": "Show Service Pricing Option",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/admin/services/1/pricing-options/1"
+          }
+        },
+        {
+          "name": "Update Service Pricing Option",
+          "description": "Updates one pricing option group and its values. Top-level keys: nameAr, nameEn, inputType, isRequired, sortOrder. values[*].actionStatus meanings: create = add a new value row, update = modify an existing value identified by id, delete = remove the existing value identified by id, empty string = keep existing row with no direct action. values[*].isActive true = selectable, false = disabled.",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nameAr\": \"الباقة المحدثة\",\n  \"nameEn\": \"Updated Package\",\n  \"values\": [\n    {\n      \"id\": 1,\n      \"actionStatus\": \"update\",\n      \"labelAr\": \"مميز\",\n      \"labelEn\": \"Premium\",\n      \"priceAdjustment\": 40,\n      \"isActive\": true,\n      \"sortOrder\": 0\n    },\n    {\n      \"actionStatus\": \"create\",\n      \"labelAr\": \"إضافي\",\n      \"labelEn\": \"Extra\",\n      \"priceAdjustment\": 15,\n      \"isActive\": true,\n      \"sortOrder\": 1\n    }\n  ]\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/admin/services/1/pricing-options/1"
+          }
+        },
+        {
+          "name": "Delete Service Pricing Option",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/admin/services/1/pricing-options/1"
+          }
+        },
+        {
+          "name": "List Service Media",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/admin/services/1/media"
+          }
+        },
+        {
+          "name": "Upload Service Media",
+          "description": "Uploads service media. media[*][file] = binary file; media[*][type] enum 0 image / 1 video; media[*][isMain] true marks this item as the main media; media[*][altAr|altEn] = optional localized alt text. Use only one main media item at a time.",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "media[0][file]", "type": "file", "src": "" },
+                { "key": "media[0][type]", "value": "0", "type": "text" },
+                { "key": "media[0][isMain]", "value": "true", "type": "text" },
+                { "key": "media[0][altAr]", "value": "صورة", "type": "text" },
+                { "key": "media[0][altEn]", "value": "Image", "type": "text" }
+              ]
+            },
+            "url": "{{baseUrl}}/admin/services/1/media"
+          }
+        },
+        {
+          "name": "Update Service Media Alt Text",
+          "description": "Updates localized alt text only. altAr = Arabic alt text, altEn = English alt text.",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"altAr\": \"صورة محدثة\",\n  \"altEn\": \"Updated image\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/admin/services/1/media/1"
+          }
+        },
+        {
+          "name": "Delete Service Media",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/admin/services/1/media/1"
+          }
+        },
+        {
+          "name": "Set Service Media As Main",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/admin/services/1/media/1/set-as-main"
+          }
+        }
+      ]
+    },
+    {
       "name": "Public Categories",
-      "description": "Feature 003 read-only localized public catalog routes. Use the localized slug that matches the current Accept-Language header.",
+      "description": "Feature 003 read-only localized public catalog routes. Use the localized slug that matches the current Accept-Language header. Public responses return only visible active catalog data. Common notes: Accept-Language=en returns English-localized names/slugs where available, Accept-Language=ar returns Arabic-localized values; these routes do not support admin-only trashed filters.",
       "item": [
         {
           "name": "List Public Categories",
+          "description": "Returns all visible root categories with their visible subcategories in the resolved locale. No pagination is used here. Accept-Language controls localized fields such as name and slug.",
           "request": {
             "method": "GET",
             "header": [
@@ -597,6 +1024,7 @@
         },
         {
           "name": "Show Public Category",
+          "description": "Returns one visible root category by localized slug. The slug in the URL should match the same locale sent in Accept-Language.",
           "request": {
             "method": "GET",
             "header": [
@@ -608,6 +1036,7 @@
         },
         {
           "name": "List Public Subcategories",
+          "description": "Returns visible subcategories for the resolved public catalog. Query help: filter[category] = localized root-category slug; Accept-Language controls the locale of returned names/slugs.",
           "request": {
             "method": "GET",
             "header": [
@@ -619,6 +1048,7 @@
         },
         {
           "name": "Show Public Subcategory",
+          "description": "Returns one visible subcategory by localized slug under the public catalog rules.",
           "request": {
             "method": "GET",
             "header": [
@@ -626,6 +1056,36 @@
               { "key": "Accept-Language", "value": "en" }
             ],
             "url": "{{baseUrl}}/public/categories/home-services/subcategories/cleaning"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Public Services",
+      "description": "Feature 004 read-only localized public service routes. Public list accepts only filter query parameters and intentionally does not support sort. Public filter meanings: filter[search] = text search across visible localized content; filter[category] = localized root-category slug; filter[subcategory] = localized subcategory slug; filter[priceFrom] = minimum price boundary; filter[priceTo] = maximum price boundary; filter[isAvailable] = true available only / false unavailable only; page starts at 1; perPage limits result size.",
+      "item": [
+        {
+          "name": "List Public Services",
+          "description": "Lists visible public services only. Query keys: filter[search] = text search; filter[category] = localized category slug; filter[subcategory] = localized subcategory slug; filter[priceFrom] and filter[priceTo] = numeric range filters; filter[isAvailable] boolean = availability filter; page/perPage = pagination controls. No sort parameter is supported on this public endpoint.",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Accept-Language", "value": "en" }
+            ],
+            "url": "{{baseUrl}}/public/services?filter[search]=clean&filter[category]=home-services&filter[subcategory]=cleaning&filter[priceFrom]=100&filter[priceTo]=500&filter[isAvailable]=true&page=1&perPage=12"
+          }
+        },
+        {
+          "name": "Show Public Service",
+          "description": "Returns one visible public service by localized slug. Accept-Language must match the slug locale you are requesting.",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Accept-Language", "value": "ar" }
+            ],
+            "url": "{{baseUrl}}/public/services/cleaning-service"
           }
         }
       ]

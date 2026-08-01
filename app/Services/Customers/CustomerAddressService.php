@@ -131,20 +131,17 @@ class CustomerAddressService
         }
 
         $identity = $this->addressNormalizationService->normalizeIdentity(
-            (string) $payload['countryCode'],
+            (string) $payload['province'],
             (string) $payload['city'],
-            array_key_exists('area', $payload) ? $payload['area'] : null,
-            (string) $payload['street'],
+            (string) $payload['address'],
         );
 
         return [
-            'label' => $this->addressNormalizationService->normalizeOptionalText($payload['label'] ?? null),
             'phone' => $phone['display'],
             'phone_normalized' => $phone['normalized'],
-            'country_code' => $identity['countryCode'],
+            'province' => $identity['province'],
             'city' => $identity['city'],
-            'area' => $identity['area'],
-            'street' => $identity['street'],
+            'address' => $identity['address'],
             'notes' => $this->addressNormalizationService->normalizeOptionalText($payload['notes'] ?? null),
             'address_hash' => $identity['addressHash'],
             'is_default' => (bool) ($payload['isDefault'] ?? false),
@@ -155,7 +152,7 @@ class CustomerAddressService
     {
         $attributes = [];
 
-        foreach (['label', 'notes'] as $optionalField) {
+        foreach (['notes'] as $optionalField) {
             if (array_key_exists($optionalField, $payload)) {
                 $attributes[$optionalField] = $this->addressNormalizationService->normalizeOptionalText($payload[$optionalField]);
             }
@@ -181,22 +178,20 @@ class CustomerAddressService
         }
 
         $identityFieldsTouched = array_intersect(
-            ['countryCode', 'city', 'area', 'street'],
+            ['province', 'city', 'address'],
             array_keys($payload),
         ) !== [];
 
         if ($identityFieldsTouched) {
             $identity = $this->addressNormalizationService->normalizeIdentity(
-                (string) ($payload['countryCode'] ?? $address->country_code),
+                (string) ($payload['province'] ?? $address->province),
                 (string) ($payload['city'] ?? $address->city),
-                array_key_exists('area', $payload) ? $payload['area'] : $address->area,
-                (string) ($payload['street'] ?? $address->street),
+                (string) ($payload['address'] ?? $address->address),
             );
 
-            $attributes['country_code'] = $identity['countryCode'];
+            $attributes['province'] = $identity['province'];
             $attributes['city'] = $identity['city'];
-            $attributes['area'] = $identity['area'];
-            $attributes['street'] = $identity['street'];
+            $attributes['address'] = $identity['address'];
             $attributes['address_hash'] = $identity['addressHash'];
         }
 

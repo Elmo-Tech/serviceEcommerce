@@ -257,7 +257,7 @@ Task generation MUST place this audit before schema or source-code creation.
   invariant.
 - customer identity is `phone_normalized` only.
 - address identity is a backend-generated deterministic hash from normalized
-  `countryCode`, `city`, `area`, and `street`.
+  `province`, `city`, and `address`.
 
 ### Authorization Surface
 

@@ -37,7 +37,13 @@ it('creates customers, lists them with filters, and returns only approved safe f
         'name' => '  Mohamed   Hassan  ',
         'email' => '  MOHAMED@example.com ',
         'phone' => '01001234567',
-        'phoneCountryCode' => 'eg',
+        'address' => [
+            'phone' => '01001234567',
+            'province' => 'Cairo',
+            'city' => 'Nasr City',
+            'address' => 'Nasr City | Street 10',
+            'notes' => 'Ring bell',
+        ],
     ], customerAdminHeaders($accessToken));
 
     $createResponse->assertCreated()
@@ -47,8 +53,12 @@ it('creates customers, lists them with filters, and returns only approved safe f
         ->assertJsonPath('data.phone', '01001234567')
         ->assertJsonPath('data.isDeleted', false)
         ->assertJsonPath('data.deletedAt', null)
-        ->assertJsonPath('data.addressesCount', 0)
-        ->assertJsonPath('data.addresses', [])
+        ->assertJsonPath('data.addressesCount', 1)
+        ->assertJsonPath('data.addresses.0.phone', '01001234567')
+        ->assertJsonPath('data.addresses.0.province', 'Cairo')
+        ->assertJsonPath('data.addresses.0.city', 'Nasr City')
+        ->assertJsonPath('data.addresses.0.address', 'Nasr City | Street 10')
+        ->assertJsonPath('data.addresses.0.isDefault', true)
         ->assertJsonMissingPath('data.phoneNormalized')
         ->assertJsonMissingPath('data.password')
         ->assertJsonMissingPath('data.tokens');
@@ -56,7 +66,8 @@ it('creates customers, lists them with filters, and returns only approved safe f
     $customer = Customer::query()->sole();
 
     expect($customer->phone_normalized)->toBe('+201001234567')
-        ->and($customer->phone)->toStartWith('+20');
+        ->and($customer->phone)->toStartWith('+20')
+        ->and($customer->addresses)->toHaveCount(1);
 
     $withAddress = Customer::factory()->create([
         'name' => 'Ziad Ali',
@@ -65,15 +76,13 @@ it('creates customers, lists them with filters, and returns only approved safe f
     ]);
 
     $withAddress->addresses()->create([
-        'label' => 'Home',
         'phone' => '+20 100 555 6666',
         'phone_normalized' => '+201005556666',
-        'country_code' => 'EG',
-        'city' => 'Cairo',
-        'area' => 'Nasr City',
-        'street' => 'Street 10',
+        'province' => 'Cairo',
+        'city' => 'Nasr City',
+        'address' => 'Nasr City | Street 10',
         'notes' => null,
-        'address_hash' => hash('sha256', 'eg|cairo|nasr city|street 10'),
+        'address_hash' => hash('sha256', 'cairo|nasr city|nasr city | street 10'),
         'is_default' => true,
     ]);
 
@@ -83,19 +92,19 @@ it('creates customers, lists them with filters, and returns only approved safe f
         ->assertJsonPath('success', true)
         ->assertJsonPath('meta.currentPage', 1)
         ->assertJsonPath('meta.perPage', 20)
-        ->assertJsonPath('meta.total', 1)
+        ->assertJsonPath('meta.total', 2)
         ->assertJsonPath('meta.lastPage', 1)
-        ->assertJsonPath('data.0.name', 'Ziad Ali')
-        ->assertJsonPath('data.0.phone', '01005556666')
-        ->assertJsonPath('data.0.addressesCount', 1)
         ->assertJsonMissingPath('data.0.phoneNormalized');
+
+    expect(collect($listResponse->json('data'))->pluck('name')->all())
+        ->toBe(['Mohamed Hassan', 'Ziad Ali']);
 
     $showResponse = $this->getJson('/api/v1/admin/customers/'.$customer->getKey(), customerAdminHeaders($accessToken));
 
     $showResponse->assertOk()
         ->assertJsonPath('data.id', $customer->getKey())
         ->assertJsonPath('data.phone', '01001234567')
-        ->assertJsonPath('data.addressesCount', 0)
+        ->assertJsonPath('data.addressesCount', 1)
         ->assertJsonMissingPath('data.phoneNormalized');
 });
 
@@ -141,15 +150,13 @@ it('soft deletes customers with their active addresses and restores only the cus
     ]);
 
     $address = $customer->addresses()->create([
-        'label' => 'Home',
         'phone' => '+20 100 111 2222',
         'phone_normalized' => '+201001112222',
-        'country_code' => 'EG',
-        'city' => 'Cairo',
-        'area' => 'Heliopolis',
-        'street' => 'Street 1',
+        'province' => 'Cairo',
+        'city' => 'Heliopolis',
+        'address' => 'Heliopolis | Street 1',
         'notes' => null,
-        'address_hash' => hash('sha256', 'eg|cairo|heliopolis|street 1'),
+        'address_hash' => hash('sha256', 'cairo|heliopolis|heliopolis | street 1'),
         'is_default' => true,
     ]);
 

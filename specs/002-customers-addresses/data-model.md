@@ -97,13 +97,11 @@ Represents a reusable service address belonging to one customer.
 |---|---|---:|---|
 | `id` | unsigned big integer | No | Primary key |
 | `customer_id` | unsigned big integer | No | FK to `customers.id` |
-| `label` | string(100) | Yes | Presentation metadata only |
 | `phone` | string(30) | No | Display/international format |
 | `phone_normalized` | string(20) | No | E.164 format for the address phone |
-| `country_code` | char(2) | No | Uppercase ISO alpha-2 |
+| `province` | string(150) | No | Plain text |
 | `city` | string(150) | No | Plain text |
-| `area` | string(150) | Yes | Plain text or `null` |
-| `street` | string(255) | No | Plain text |
+| `address` | string(500) | No | Plain text |
 | `notes` | text | Yes | Plain text or `null` |
 | `address_hash` | char(64) | No | Backend-generated deterministic identity |
 | `is_default` | boolean | No | Default `false` |
@@ -130,16 +128,14 @@ Represents a reusable service address belonging to one customer.
 
 The backend-generated identity uses only:
 
-- `country_code`
+- normalized `province`
 - normalized `city`
-- normalized `area` (or empty canonical value)
-- normalized `street`
+- normalized `address`
 
 ### Address Identity Exclusions
 
 The backend-generated identity does not include:
 
-- label
 - phone
 - notes
 - customer-entered display formatting
@@ -198,8 +194,7 @@ This is an internal application contract, not a public API resource.
 - index on `(customer_id, deleted_at)`
 - index on `(customer_id, is_default, deleted_at)`
 - index on `(customer_id, address_hash)`
-- index on `country_code`
-- index on `city`
+- index on `province`
 
 ### Constraint strategy
 
@@ -364,13 +359,11 @@ snapshot boundary:
 
 ### CustomerAddress
 
-- `label`: optional, max 100
 - `phone`: required, valid libphonenumber-compatible parse, no extension
 - `phoneCountryCode`: optional parse hint when needed
-- `countryCode`: required, uppercase ISO alpha-2
+- `province`: required, plain text, max 150
 - `city`: required, plain text, max 150
-- `area`: optional, plain text, max 150, empty => `null`
-- `street`: required, plain text, max 255
+- `address`: required, plain text, max 500
 - `notes`: optional, plain text, max 1000, empty => `null`
 - `isDefault`: optional boolean on create/update where supported
 
@@ -399,12 +392,10 @@ Never expose:
 Safe output includes:
 
 - `id`
-- `label`
 - `phone`
-- `countryCode`
+- `province`
 - `city`
-- `area`
-- `street`
+- `address`
 - `notes`
 - `isDefault`
 - `createdAt`

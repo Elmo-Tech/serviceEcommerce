@@ -19,13 +19,11 @@ class CustomerAddress extends Model
 
     protected $fillable = [
         'customer_id',
-        'label',
         'phone',
         'phone_normalized',
-        'country_code',
+        'province',
         'city',
-        'area',
-        'street',
+        'address',
         'notes',
         'address_hash',
         'is_default',

@@ -37,13 +37,11 @@ it('creates customer addresses, enforces one default, and supports localized nes
     ]);
 
     $firstAddressResponse = $this->postJson('/api/v1/admin/customers/'.$customer->getKey().'/addresses', [
-        'label' => 'Home',
         'phone' => '01003334444',
         'phoneCountryCode' => 'EG',
-        'countryCode' => 'EG',
-        'city' => 'Cairo',
-        'area' => 'Nasr City',
-        'street' => 'Street 10',
+        'province' => 'Cairo',
+        'city' => 'Nasr City',
+        'address' => 'Nasr City | Street 10',
         'notes' => 'Ring bell',
     ], customerAddressAdminHeaders($accessToken));
 
@@ -56,13 +54,11 @@ it('creates customer addresses, enforces one default, and supports localized nes
     $firstAddressId = (int) $firstAddressResponse->json('data.id');
 
     $secondAddressResponse = $this->postJson('/api/v1/admin/customers/'.$customer->getKey().'/addresses', [
-        'label' => 'Office',
         'phone' => '01003334444',
         'phoneCountryCode' => 'EG',
-        'countryCode' => 'EG',
-        'city' => 'Giza',
-        'area' => null,
-        'street' => 'Office Street',
+        'province' => 'Giza',
+        'city' => 'Dokki',
+        'address' => 'Office Street',
         'notes' => null,
         'isDefault' => true,
     ], customerAddressAdminHeaders($accessToken, 'ar'));
@@ -77,7 +73,8 @@ it('creates customer addresses, enforces one default, and supports localized nes
 
     $listResponse->assertOk()
         ->assertJsonCount(2, 'data')
-        ->assertJsonPath('data.0.label', 'Office')
+        ->assertJsonPath('data.0.province', 'Giza')
+        ->assertJsonPath('data.0.city', 'Dokki')
         ->assertJsonPath('data.0.phone', '01003334444');
 });
 
@@ -89,13 +86,11 @@ it('rejects duplicate active addresses and enforces the 20 active-address limit'
     ]);
 
     $payload = [
-        'label' => 'Home',
         'phone' => '01004445555',
         'phoneCountryCode' => 'EG',
-        'countryCode' => 'EG',
-        'city' => 'Cairo',
-        'area' => 'Maadi',
-        'street' => 'Street 5',
+        'province' => 'Cairo',
+        'city' => 'Maadi',
+        'address' => 'Maadi | Street 5',
         'notes' => null,
     ];
 
@@ -113,22 +108,21 @@ it('rejects duplicate active addresses and enforces the 20 active-address limit'
 
     foreach (range(1, 20) as $index) {
         $customer->addresses()->create([
-            'label' => 'Address '.$index,
             'phone' => '+20 100 444 6666',
             'phone_normalized' => '+201004446666',
-            'country_code' => 'EG',
+            'province' => 'Province '.$index,
             'city' => 'City '.$index,
-            'area' => null,
-            'street' => 'Street '.$index,
+            'address' => 'Address '.$index,
             'notes' => null,
-            'address_hash' => hash('sha256', 'eg|city '.$index.'||street '.$index),
+            'address_hash' => hash('sha256', mb_strtolower('Province '.$index.'|City '.$index.'|Address '.$index)),
             'is_default' => $index === 1,
         ]);
     }
 
     $this->postJson('/api/v1/admin/customers/'.$customer->getKey().'/addresses', array_merge($payload, [
+        'province' => 'Overflow',
         'city' => 'Overflow City',
-        'street' => 'Overflow Street',
+        'address' => 'Overflow Street',
     ]), customerAddressAdminHeaders($accessToken))
         ->assertUnprocessable()
         ->assertJsonPath('code', 'CUSTOMER_ADDRESS_LIMIT_EXCEEDED');
@@ -142,28 +136,24 @@ it('reassigns the default to the newest remaining active address when deleting t
     ]);
 
     $oldDefault = $customer->addresses()->create([
-        'label' => 'Old Default',
         'phone' => '+20 100 555 1111',
         'phone_normalized' => '+201005551111',
-        'country_code' => 'EG',
-        'city' => 'Cairo',
-        'area' => null,
-        'street' => 'Old Street',
+        'province' => 'Cairo',
+        'city' => 'Nasr City',
+        'address' => 'Old Street',
         'notes' => null,
-        'address_hash' => hash('sha256', 'eg|cairo||old street'),
+        'address_hash' => hash('sha256', 'cairo|nasr city|old street'),
         'is_default' => true,
     ]);
 
     $newest = $customer->addresses()->create([
-        'label' => 'Newest',
         'phone' => '+20 100 555 1111',
         'phone_normalized' => '+201005551111',
-        'country_code' => 'EG',
-        'city' => 'Giza',
-        'area' => null,
-        'street' => 'Newest Street',
+        'province' => 'Giza',
+        'city' => 'Dokki',
+        'address' => 'Newest Street',
         'notes' => null,
-        'address_hash' => hash('sha256', 'eg|giza||newest street'),
+        'address_hash' => hash('sha256', 'giza|dokki|newest street'),
         'is_default' => false,
     ]);
 
@@ -186,15 +176,13 @@ it('returns scoped 404s for nested address routes outside the customer scope', f
     ]);
 
     $address = $otherCustomer->addresses()->create([
-        'label' => 'Other',
         'phone' => '+20 100 666 2222',
         'phone_normalized' => '+201006662222',
-        'country_code' => 'EG',
-        'city' => 'Alex',
-        'area' => null,
-        'street' => 'Street 1',
+        'province' => 'Alex',
+        'city' => 'Smouha',
+        'address' => 'Street 1',
         'notes' => null,
-        'address_hash' => hash('sha256', 'eg|alex||street 1'),
+        'address_hash' => hash('sha256', 'alex|smouha|street 1'),
         'is_default' => true,
     ]);
 
@@ -234,29 +222,25 @@ it('returns restore conflicts when a deleted address collides with an active dup
     ]);
 
     $deletedAddress = $customer->addresses()->create([
-        'label' => 'Deleted',
         'phone' => '+20 100 666 1111',
         'phone_normalized' => '+201006661111',
-        'country_code' => 'EG',
-        'city' => 'Cairo',
-        'area' => null,
-        'street' => 'Conflict Street',
+        'province' => 'Cairo',
+        'city' => 'Helwan',
+        'address' => 'Conflict Street',
         'notes' => null,
-        'address_hash' => hash('sha256', 'eg|cairo||conflict street'),
+        'address_hash' => hash('sha256', 'cairo|helwan|conflict street'),
         'is_default' => true,
     ]);
     $deletedAddress->delete();
 
     $customer->addresses()->create([
-        'label' => 'Active Duplicate',
         'phone' => '+20 100 666 1111',
         'phone_normalized' => '+201006661111',
-        'country_code' => 'EG',
-        'city' => 'Cairo',
-        'area' => null,
-        'street' => 'Conflict Street',
+        'province' => 'Cairo',
+        'city' => 'Helwan',
+        'address' => 'Conflict Street',
         'notes' => null,
-        'address_hash' => hash('sha256', 'eg|cairo||conflict street'),
+        'address_hash' => hash('sha256', 'cairo|helwan|conflict street'),
         'is_default' => false,
     ]);
 

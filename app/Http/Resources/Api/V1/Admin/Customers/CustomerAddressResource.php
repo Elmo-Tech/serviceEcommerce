@@ -18,12 +18,10 @@ class CustomerAddressResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'label' => $this->label,
             'phone' => CustomerPhoneFormatter::forResponse($this->phone, $this->phone_normalized),
-            'countryCode' => $this->country_code,
+            'province' => $this->province,
             'city' => $this->city,
-            'area' => $this->area,
-            'street' => $this->street,
+            'address' => $this->address,
             'notes' => $this->notes,
             'isDefault' => $this->is_default,
             'isDeleted' => $this->trashed(),

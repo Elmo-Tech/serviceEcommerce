@@ -6,6 +6,11 @@ use App\Http\Controllers\Api\V1\Admin\Categories\CategoryController;
 use App\Http\Controllers\Api\V1\Admin\Categories\SubcategoryController;
 use App\Http\Controllers\Api\V1\Admin\Customers\CustomerAddressController;
 use App\Http\Controllers\Api\V1\Admin\Customers\CustomerController;
+use App\Http\Controllers\Api\V1\Admin\Services\ServiceController;
+use App\Http\Controllers\Api\V1\Admin\Services\ServiceMediaController;
+use App\Http\Controllers\Api\V1\Admin\Services\ServiceOrderFieldController;
+use App\Http\Controllers\Api\V1\Admin\Services\ServicePricingOptionController;
+use App\Http\Controllers\Api\V1\Admin\Services\ServiceSpecificationController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware([
@@ -60,6 +65,99 @@ Route::middleware([
     Route::post('/categories/{category}/restore', [CategoryController::class, 'restore'])
         ->whereNumber('category')
         ->middleware('permission:categories.restore');
+
+    Route::get('/services', [ServiceController::class, 'index'])
+        ->middleware('permission:services.view');
+    Route::post('/services', [ServiceController::class, 'store'])
+        ->middleware('permission:services.create');
+    Route::post('/services/{service}/restore', [ServiceController::class, 'restore'])
+        ->whereNumber('service')
+        ->middleware('permission:services.restore');
+    Route::get('/services/{service}', [ServiceController::class, 'show'])
+        ->whereNumber('service')
+        ->middleware('permission:services.view');
+    Route::patch('/services/{service}', [ServiceController::class, 'update'])
+        ->whereNumber('service')
+        ->middleware('permission:services.update');
+    Route::delete('/services/{service}', [ServiceController::class, 'destroy'])
+        ->whereNumber('service')
+        ->middleware('permission:services.delete');
+
+    Route::get('/services/{service}/specifications', [ServiceSpecificationController::class, 'index'])
+        ->whereNumber('service')
+        ->middleware('permission:service-specifications.view');
+    Route::post('/services/{service}/specifications', [ServiceSpecificationController::class, 'store'])
+        ->whereNumber('service')
+        ->middleware('permission:service-specifications.create');
+    Route::get('/services/{service}/specifications/{specification}', [ServiceSpecificationController::class, 'show'])
+        ->whereNumber('service')
+        ->whereNumber('specification')
+        ->middleware('permission:service-specifications.view');
+    Route::patch('/services/{service}/specifications/{specification}', [ServiceSpecificationController::class, 'update'])
+        ->whereNumber('service')
+        ->whereNumber('specification')
+        ->middleware('permission:service-specifications.update');
+    Route::delete('/services/{service}/specifications/{specification}', [ServiceSpecificationController::class, 'destroy'])
+        ->whereNumber('service')
+        ->whereNumber('specification')
+        ->middleware('permission:service-specifications.delete');
+
+    Route::get('/services/{service}/order-fields', [ServiceOrderFieldController::class, 'index'])
+        ->whereNumber('service')
+        ->middleware('permission:service-order-fields.view');
+    Route::post('/services/{service}/order-fields', [ServiceOrderFieldController::class, 'store'])
+        ->whereNumber('service')
+        ->middleware('permission:service-order-fields.create');
+    Route::get('/services/{service}/order-fields/{orderField}', [ServiceOrderFieldController::class, 'show'])
+        ->whereNumber('service')
+        ->whereNumber('orderField')
+        ->middleware('permission:service-order-fields.view');
+    Route::patch('/services/{service}/order-fields/{orderField}', [ServiceOrderFieldController::class, 'update'])
+        ->whereNumber('service')
+        ->whereNumber('orderField')
+        ->middleware('permission:service-order-fields.update');
+    Route::delete('/services/{service}/order-fields/{orderField}', [ServiceOrderFieldController::class, 'destroy'])
+        ->whereNumber('service')
+        ->whereNumber('orderField')
+        ->middleware('permission:service-order-fields.delete');
+
+    Route::get('/services/{service}/pricing-options', [ServicePricingOptionController::class, 'index'])
+        ->whereNumber('service')
+        ->middleware('permission:service-pricing-options.view');
+    Route::post('/services/{service}/pricing-options', [ServicePricingOptionController::class, 'store'])
+        ->whereNumber('service')
+        ->middleware('permission:service-pricing-options.create');
+    Route::get('/services/{service}/pricing-options/{pricingOption}', [ServicePricingOptionController::class, 'show'])
+        ->whereNumber('service')
+        ->whereNumber('pricingOption')
+        ->middleware('permission:service-pricing-options.view');
+    Route::patch('/services/{service}/pricing-options/{pricingOption}', [ServicePricingOptionController::class, 'update'])
+        ->whereNumber('service')
+        ->whereNumber('pricingOption')
+        ->middleware('permission:service-pricing-options.update');
+    Route::delete('/services/{service}/pricing-options/{pricingOption}', [ServicePricingOptionController::class, 'destroy'])
+        ->whereNumber('service')
+        ->whereNumber('pricingOption')
+        ->middleware('permission:service-pricing-options.delete');
+
+    Route::get('/services/{service}/media', [ServiceMediaController::class, 'index'])
+        ->whereNumber('service')
+        ->middleware('permission:service-media.view');
+    Route::post('/services/{service}/media', [ServiceMediaController::class, 'store'])
+        ->whereNumber('service')
+        ->middleware('permission:service-media.create');
+    Route::patch('/services/{service}/media/{media}/set-as-main', [ServiceMediaController::class, 'setAsMain'])
+        ->whereNumber('service')
+        ->whereNumber('media')
+        ->middleware('permission:service-media.set-main');
+    Route::patch('/services/{service}/media/{media}', [ServiceMediaController::class, 'update'])
+        ->whereNumber('service')
+        ->whereNumber('media')
+        ->middleware('permission:service-media.update');
+    Route::delete('/services/{service}/media/{media}', [ServiceMediaController::class, 'destroy'])
+        ->whereNumber('service')
+        ->whereNumber('media')
+        ->middleware('permission:service-media.delete');
 
     Route::get('/categories/{category}/subcategories', [SubcategoryController::class, 'index'])
         ->whereNumber('category')

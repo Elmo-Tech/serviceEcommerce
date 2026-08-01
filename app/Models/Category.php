@@ -51,6 +51,16 @@ class Category extends Model
         return $this->hasMany(self::class, 'parent_id');
     }
 
+    public function directServices(): HasMany
+    {
+        return $this->hasMany(Service::class, 'category_id');
+    }
+
+    public function subcategoryServices(): HasMany
+    {
+        return $this->hasMany(Service::class, 'subcategory_id');
+    }
+
     public function scopeRoots(Builder $query): Builder
     {
         return $query->whereNull('parent_id');

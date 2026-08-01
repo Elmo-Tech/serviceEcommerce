@@ -1,0 +1,2502 @@
+openapi: 3.1.0
+info:
+  title: Service Commerce Backend — Feature 004 Services Catalog
+  version: 1.1.0
+  description: Canonical contract for Feature 004. Contains exactly 26 protected Admin operations and 2 public read
+    operations. Existing Feature 003 category/subcategory DELETE contracts must additionally document CATEGORY_HAS_SERVICES
+    and SUBCATEGORY_HAS_SERVICES conflicts.
+servers:
+- url: https://api.example-backend.net/api/v1
+tags:
+- name: Admin Services
+- name: Admin Specifications
+- name: Admin Order Fields
+- name: Admin Pricing Options
+- name: Admin Media
+- name: Public Services
+x-feature-003-contract-updates:
+  categoryDeleteConflict: CATEGORY_HAS_SERVICES
+  subcategoryDeleteConflict: SUBCATEGORY_HAS_SERVICES
+paths:
+  /admin/services:
+    get:
+      operationId: adminListServices
+      summary: List services for administrators
+      tags:
+      - Admin Services
+      security:
+      - bearerAuth: []
+      x-permission: services.view
+      parameters:
+      - $ref: '#/components/parameters/AcceptLanguage'
+      - $ref: '#/components/parameters/Page'
+      - $ref: '#/components/parameters/PerPageAdmin'
+      - $ref: '#/components/parameters/ServiceFilterSearch'
+      - $ref: '#/components/parameters/ServiceFilterCategoryId'
+      - $ref: '#/components/parameters/ServiceFilterSubcategoryId'
+      - $ref: '#/components/parameters/ServiceFilterPriceType'
+      - $ref: '#/components/parameters/ServiceFilterIsActive'
+      - $ref: '#/components/parameters/ServiceFilterIsAvailable'
+      - $ref: '#/components/parameters/ServiceFilterTrashed'
+      - $ref: '#/components/parameters/ServiceSortAdmin'
+      responses:
+        '200':
+          description: Paginated localized Admin service list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminServiceListSuccess'
+        '401': &id001
+          $ref: '#/components/responses/Unauthenticated'
+        '403': &id002
+          $ref: '#/components/responses/Forbidden'
+        '429': &id003
+          $ref: '#/components/responses/RateLimited'
+        '500': &id004
+          $ref: '#/components/responses/InternalError'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+      description: Only the documented filters and sorts are accepted. Unsupported query properties are rejected
+        by the established Query Builder contract.
+    post:
+      operationId: adminCreateService
+      summary: Create a service with optional nested records and media
+      tags:
+      - Admin Services
+      security:
+      - bearerAuth: []
+      x-permission: services.create
+      parameters:
+      - $ref: '#/components/parameters/AcceptLanguage'
+      responses:
+        '201':
+          description: Service created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminServiceDetailSuccess'
+        '401': *id001
+        '403': *id002
+        '429': *id003
+        '500': *id004
+        '422':
+          $ref: '#/components/responses/ValidationError'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AdminCreateServiceRequest'
+      x-conditional-permissions:
+        specifications: service-specifications.create
+        orderFields: service-order-fields.create
+        pricingOptions: service-pricing-options.create
+        media: service-media.create
+      description: Requires services.create. Each submitted nested collection additionally requires its matching
+        x-conditional-permissions entry. The request uses multipart bracket notation and does not accept a JSON
+        payload field.
+  /admin/services/{service}:
+    get:
+      operationId: adminShowService
+      summary: Show one service
+      tags:
+      - Admin Services
+      security:
+      - bearerAuth: []
+      x-permission: services.view
+      parameters:
+      - $ref: '#/components/parameters/AcceptLanguage'
+      - $ref: '#/components/parameters/ServiceId'
+      responses:
+        '200':
+          description: Admin service detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminServiceDetailSuccess'
+        '401': *id001
+        '403': *id002
+        '429': *id003
+        '500': *id004
+        '404':
+          $ref: '#/components/responses/NotFound'
+    patch:
+      operationId: adminUpdateService
+      summary: Update service-level fields only
+      tags:
+      - Admin Services
+      security:
+      - bearerAuth: []
+      x-permission: services.update
+      parameters:
+      - $ref: '#/components/parameters/AcceptLanguage'
+      - $ref: '#/components/parameters/ServiceId'
+      responses:
+        '200':
+          description: Service updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminServiceDetailSuccess'
+        '401': *id001
+        '403': *id002
+        '429': *id003
+        '500': *id004
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminUpdateServiceRequest'
+    delete:
+      operationId: adminDeleteService
+      summary: Soft delete a service
+      tags:
+      - Admin Services
+      security:
+      - bearerAuth: []
+      x-permission: services.delete
+      parameters:
+      - $ref: '#/components/parameters/AcceptLanguage'
+      - $ref: '#/components/parameters/ServiceId'
+      responses:
+        '200':
+          description: Service soft deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteSuccess'
+        '401': *id001
+        '403': *id002
+        '429': *id003
+        '500': *id004
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /admin/services/{service}/restore:
+    post:
+      operationId: adminRestoreService
+      summary: Restore a soft-deleted service as inactive
+      tags:
+      - Admin Services
+      security:
+      - bearerAuth: []
+      x-permission: services.restore
+      parameters:
+      - $ref: '#/components/parameters/AcceptLanguage'
+      - $ref: '#/components/parameters/ServiceId'
+      responses:
+        '200':
+          description: Service restored
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminServiceDetailSuccess'
+        '401': *id001
+        '403': *id002
+        '429': *id003
+        '500': *id004
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+  /admin/services/{service}/specifications:
+    get:
+      operationId: adminListServiceSpecifications
+      summary: List service specifications
+      tags:
+      - Admin Specifications
+      security:
+      - bearerAuth: []
+      x-permission: service-specifications.view
+      parameters:
+      - $ref: '#/components/parameters/AcceptLanguage'
+      - &id005
+        $ref: '#/components/parameters/ServiceId'
+      responses:
+        '200':
+          description: Unpaginated specification list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpecificationListSuccess'
+        '401': *id001
+        '403': *id002
+        '429': *id003
+        '500': *id004
+        '404':
+          $ref: '#/components/responses/NotFound'
+    post:
+      operationId: adminCreateServiceSpecification
+      summary: Create one specification
+      tags:
+      - Admin Specifications
+      security:
+      - bearerAuth: []
+      x-permission: service-specifications.create
+      parameters:
+      - $ref: '#/components/parameters/AcceptLanguage'
+      - *id005
+      responses:
+        '201':
+          description: Specification created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpecificationDetailSuccess'
+        '401': *id001
+        '403': *id002
+        '429': *id003
+        '500': *id004
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SpecificationCreate'
+  /admin/services/{service}/specifications/{specification}:
+    get:
+      operationId: adminShowServiceSpecification
+      summary: Show one specification
+      tags:
+      - Admin Specifications
+      security:
+      - bearerAuth: []
+      x-permission: service-specifications.view
+      parameters:
+      - $ref: '#/components/parameters/AcceptLanguage'
+      - *id005
+      - &id006
+        $ref: '#/components/parameters/SpecificationId'
+      responses:
+        '200':
+          description: Specification detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpecificationDetailSuccess'
+        '401': *id001
+        '403': *id002
+        '429': *id003
+        '500': *id004
+        '404':
+          $ref: '#/components/responses/NotFound'
+    patch:
+      operationId: adminUpdateServiceSpecification
+      summary: Update one specification
+      tags:
+      - Admin Specifications
+      security:
+      - bearerAuth: []
+      x-permission: service-specifications.update
+      parameters:
+      - $ref: '#/components/parameters/AcceptLanguage'
+      - *id005
+      - *id006
+      responses:
+        '200':
+          description: Specification updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpecificationDetailSuccess'
+        '401': *id001
+        '403': *id002
+        '429': *id003
+        '500': *id004
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SpecificationUpdate'
+    delete:
+      operationId: adminDeleteServiceSpecification
+      summary: Soft delete one specification
+      tags:
+      - Admin Specifications
+      security:
+      - bearerAuth: []
+      x-permission: service-specifications.delete
+      parameters:
+      - $ref: '#/components/parameters/AcceptLanguage'
+      - *id005
+      - *id006
+      responses:
+        '200':
+          description: Specification soft deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteSuccess'
+        '401': *id001
+        '403': *id002
+        '429': *id003
+        '500': *id004
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /admin/services/{service}/order-fields:
+    get:
+      operationId: adminListServiceOrderFields
+      summary: List service orderfields
+      tags:
+      - Admin Order Fields
+      security:
+      - bearerAuth: []
+      x-permission: service-order-fields.view
+      parameters:
+      - $ref: '#/components/parameters/AcceptLanguage'
+      - &id007
+        $ref: '#/components/parameters/ServiceId'
+      responses:
+        '200':
+          description: Unpaginated orderfield list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderFieldListSuccess'
+        '401': *id001
+        '403': *id002
+        '429': *id003
+        '500': *id004
+        '404':
+          $ref: '#/components/responses/NotFound'
+    post:
+      operationId: adminCreateServiceOrderField
+      summary: Create one orderfield
+      tags:
+      - Admin Order Fields
+      security:
+      - bearerAuth: []
+      x-permission: service-order-fields.create
+      parameters:
+      - $ref: '#/components/parameters/AcceptLanguage'
+      - *id007
+      responses:
+        '201':
+          description: OrderField created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderFieldDetailSuccess'
+        '401': *id001
+        '403': *id002
+        '429': *id003
+        '500': *id004
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrderFieldCreate'
+  /admin/services/{service}/order-fields/{orderField}:
+    get:
+      operationId: adminShowServiceOrderField
+      summary: Show one orderfield
+      tags:
+      - Admin Order Fields
+      security:
+      - bearerAuth: []
+      x-permission: service-order-fields.view
+      parameters:
+      - $ref: '#/components/parameters/AcceptLanguage'
+      - *id007
+      - &id008
+        $ref: '#/components/parameters/OrderFieldId'
+      responses:
+        '200':
+          description: OrderField detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderFieldDetailSuccess'
+        '401': *id001
+        '403': *id002
+        '429': *id003
+        '500': *id004
+        '404':
+          $ref: '#/components/responses/NotFound'
+    patch:
+      operationId: adminUpdateServiceOrderField
+      summary: Update one orderfield
+      tags:
+      - Admin Order Fields
+      security:
+      - bearerAuth: []
+      x-permission: service-order-fields.update
+      parameters:
+      - $ref: '#/components/parameters/AcceptLanguage'
+      - *id007
+      - *id008
+      responses:
+        '200':
+          description: OrderField updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderFieldDetailSuccess'
+        '401': *id001
+        '403': *id002
+        '429': *id003
+        '500': *id004
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrderFieldUpdate'
+    delete:
+      operationId: adminDeleteServiceOrderField
+      summary: Soft delete one orderfield
+      tags:
+      - Admin Order Fields
+      security:
+      - bearerAuth: []
+      x-permission: service-order-fields.delete
+      parameters:
+      - $ref: '#/components/parameters/AcceptLanguage'
+      - *id007
+      - *id008
+      responses:
+        '200':
+          description: OrderField soft deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteSuccess'
+        '401': *id001
+        '403': *id002
+        '429': *id003
+        '500': *id004
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /admin/services/{service}/pricing-options:
+    get:
+      operationId: adminListServicePricingOptions
+      summary: List service pricing options
+      tags:
+      - Admin Pricing Options
+      security:
+      - bearerAuth: []
+      x-permission: service-pricing-options.view
+      parameters:
+      - $ref: '#/components/parameters/AcceptLanguage'
+      - &id009
+        $ref: '#/components/parameters/ServiceId'
+      responses:
+        '200':
+          description: Unpaginated pricing option list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PricingOptionListSuccess'
+        '401': *id001
+        '403': *id002
+        '429': *id003
+        '500': *id004
+        '404':
+          $ref: '#/components/responses/NotFound'
+    post:
+      operationId: adminCreateServicePricingOption
+      summary: Create one pricing option with optional values
+      tags:
+      - Admin Pricing Options
+      security:
+      - bearerAuth: []
+      x-permission: service-pricing-options.create
+      parameters:
+      - $ref: '#/components/parameters/AcceptLanguage'
+      - *id009
+      responses:
+        '201':
+          description: Pricing option created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PricingOptionDetailSuccess'
+        '401': *id001
+        '403': *id002
+        '429': *id003
+        '500': *id004
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PricingOptionCreate'
+  /admin/services/{service}/pricing-options/{pricingOption}:
+    get:
+      operationId: adminShowServicePricingOption
+      summary: Show one pricing option
+      tags:
+      - Admin Pricing Options
+      security:
+      - bearerAuth: []
+      x-permission: service-pricing-options.view
+      parameters:
+      - $ref: '#/components/parameters/AcceptLanguage'
+      - *id009
+      - &id010
+        $ref: '#/components/parameters/PricingOptionId'
+      responses:
+        '200':
+          description: Pricing option detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PricingOptionDetailSuccess'
+        '401': *id001
+        '403': *id002
+        '429': *id003
+        '500': *id004
+        '404':
+          $ref: '#/components/responses/NotFound'
+    patch:
+      operationId: adminUpdateServicePricingOption
+      summary: Update one pricing option and transactional nested value actions
+      tags:
+      - Admin Pricing Options
+      security:
+      - bearerAuth: []
+      x-permission: service-pricing-options.update
+      parameters:
+      - $ref: '#/components/parameters/AcceptLanguage'
+      - *id009
+      - *id010
+      responses:
+        '200':
+          description: Pricing option updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PricingOptionDetailSuccess'
+        '401': *id001
+        '403': *id002
+        '429': *id003
+        '500': *id004
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PricingOptionUpdate'
+    delete:
+      operationId: adminDeleteServicePricingOption
+      summary: Soft delete one pricing option and all values
+      tags:
+      - Admin Pricing Options
+      security:
+      - bearerAuth: []
+      x-permission: service-pricing-options.delete
+      parameters:
+      - $ref: '#/components/parameters/AcceptLanguage'
+      - *id009
+      - *id010
+      responses:
+        '200':
+          description: Pricing option soft deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteSuccess'
+        '401': *id001
+        '403': *id002
+        '429': *id003
+        '500': *id004
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /admin/services/{service}/media:
+    get:
+      operationId: adminListServiceMedia
+      summary: List service media
+      tags:
+      - Admin Media
+      security:
+      - bearerAuth: []
+      x-permission: service-media.view
+      parameters:
+      - $ref: '#/components/parameters/AcceptLanguage'
+      - $ref: '#/components/parameters/ServiceId'
+      responses:
+        '200':
+          description: Ordered media list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MediaListSuccess'
+        '401': *id001
+        '403': *id002
+        '429': *id003
+        '500': *id004
+        '404':
+          $ref: '#/components/responses/NotFound'
+    post:
+      operationId: adminUploadServiceMedia
+      summary: Upload one or more service media files
+      tags:
+      - Admin Media
+      security:
+      - bearerAuth: []
+      x-permission: service-media.create
+      parameters:
+      - $ref: '#/components/parameters/AcceptLanguage'
+      - $ref: '#/components/parameters/ServiceId'
+      responses:
+        '201':
+          description: Uploaded media
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MediaListSuccess'
+        '401': *id001
+        '403': *id002
+        '429': *id003
+        '500': *id004
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/MediaUploadRequest'
+  /admin/services/{service}/media/{media}:
+    patch:
+      operationId: adminUpdateServiceMediaAltText
+      summary: Update bilingual media alt text only
+      tags:
+      - Admin Media
+      security:
+      - bearerAuth: []
+      x-permission: service-media.update
+      parameters:
+      - $ref: '#/components/parameters/AcceptLanguage'
+      - $ref: '#/components/parameters/ServiceId'
+      - $ref: '#/components/parameters/MediaId'
+      responses:
+        '200':
+          description: Media alt text updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MediaDetailSuccess'
+        '401': *id001
+        '403': *id002
+        '429': *id003
+        '500': *id004
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MediaAltUpdate'
+    delete:
+      operationId: adminDeleteServiceMedia
+      summary: Hard delete service media and physical file
+      tags:
+      - Admin Media
+      security:
+      - bearerAuth: []
+      x-permission: service-media.delete
+      parameters:
+      - $ref: '#/components/parameters/AcceptLanguage'
+      - $ref: '#/components/parameters/ServiceId'
+      - $ref: '#/components/parameters/MediaId'
+      responses:
+        '200':
+          description: Media deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteSuccess'
+        '401': *id001
+        '403': *id002
+        '429': *id003
+        '500': *id004
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /admin/services/{service}/media/{media}/set-as-main:
+    patch:
+      operationId: adminSetServiceMediaAsMain
+      summary: Set image media as the service main image
+      tags:
+      - Admin Media
+      security:
+      - bearerAuth: []
+      x-permission: service-media.set-main
+      parameters:
+      - $ref: '#/components/parameters/AcceptLanguage'
+      - $ref: '#/components/parameters/ServiceId'
+      - $ref: '#/components/parameters/MediaId'
+      responses:
+        '200':
+          description: Main media updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MediaDetailSuccess'
+        '401': *id001
+        '403': *id002
+        '429': *id003
+        '500': *id004
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+  /public/services:
+    get:
+      operationId: publicListServices
+      summary: List active public services
+      tags:
+      - Public Services
+      security: []
+      parameters:
+      - $ref: '#/components/parameters/AcceptLanguage'
+      - $ref: '#/components/parameters/Page'
+      - $ref: '#/components/parameters/PerPagePublic'
+      - $ref: '#/components/parameters/ServiceFilterSearch'
+      - $ref: '#/components/parameters/PublicFilterCategory'
+      - $ref: '#/components/parameters/PublicFilterSubcategory'
+      - $ref: '#/components/parameters/PublicFilterPriceFrom'
+      - $ref: '#/components/parameters/PublicFilterPriceTo'
+      - $ref: '#/components/parameters/PublicFilterIsAvailable'
+      responses:
+        '200':
+          description: Paginated localized service list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublicServiceListSuccess'
+          headers:
+            Content-Language:
+              $ref: '#/components/headers/ContentLanguage'
+            Vary:
+              $ref: '#/components/headers/VaryAcceptLanguage'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/InternalError'
+      description: Only the documented public filters are accepted. No client-controlled sort parameter exists;
+        internal order is created_at DESC, id DESC.
+  /public/services/{serviceSlug}:
+    get:
+      operationId: publicShowService
+      summary: Show one active public service by localized slug
+      tags:
+      - Public Services
+      security: []
+      parameters:
+      - $ref: '#/components/parameters/AcceptLanguage'
+      - $ref: '#/components/parameters/ServiceSlug'
+      responses:
+        '200':
+          description: Localized public service detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublicServiceDetailSuccess'
+          headers:
+            Content-Language:
+              $ref: '#/components/headers/ContentLanguage'
+            Vary:
+              $ref: '#/components/headers/VaryAcceptLanguage'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/InternalError'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: Feature 001 Sanctum Bearer access token.
+  headers:
+    ContentLanguage:
+      description: Resolved response locale.
+      schema:
+        type: string
+        enum:
+        - ar
+        - en
+    VaryAcceptLanguage:
+      description: Cache variance includes Accept-Language.
+      schema:
+        type: string
+        examples:
+        - Accept-Language
+  parameters:
+    AcceptLanguage:
+      name: Accept-Language
+      in: header
+      required: false
+      schema:
+        type: string
+        enum:
+        - ar
+        - en
+        default: ar
+      description: Controls localized messages and projections where the contract returns one locale.
+    Page:
+      name: page
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+    PerPageAdmin:
+      name: perPage
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 15
+    PerPagePublic:
+      name: perPage
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 50
+        default: 12
+    ServiceFilterSearch:
+      name: filter[search]
+      in: query
+      required: false
+      schema:
+        type: string
+        maxLength: 255
+      description: Searches approved Arabic and English columns.
+    ServiceFilterCategoryId:
+      name: filter[categoryId]
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+    ServiceFilterSubcategoryId:
+      name: filter[subcategoryId]
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+    ServiceFilterPriceType:
+      name: filter[priceType]
+      in: query
+      required: false
+      schema:
+        type: integer
+        enum:
+        - 0
+        - 1
+    ServiceFilterIsActive:
+      name: filter[isActive]
+      in: query
+      required: false
+      schema:
+        type: boolean
+    ServiceFilterIsAvailable:
+      name: filter[isAvailable]
+      in: query
+      required: false
+      schema:
+        type: boolean
+    ServiceFilterTrashed:
+      name: filter[trashed]
+      in: query
+      required: false
+      schema:
+        type: string
+        enum:
+        - without
+        - with
+        - only
+        default: without
+    ServiceSortAdmin:
+      name: sort
+      in: query
+      required: false
+      schema:
+        type: string
+        enum:
+        - basePrice
+        - -basePrice
+        - createdAt
+        - -createdAt
+    PublicFilterCategory:
+      name: filter[category]
+      in: query
+      required: false
+      schema:
+        type: string
+        maxLength: 180
+      description: Localized category slug with alternate-locale fallback.
+    PublicFilterSubcategory:
+      name: filter[subcategory]
+      in: query
+      required: false
+      schema:
+        type: string
+        maxLength: 180
+      description: Localized subcategory slug with alternate-locale fallback.
+    PublicFilterPriceFrom:
+      name: filter[priceFrom]
+      in: query
+      required: false
+      schema:
+        type: number
+        format: double
+        exclusiveMinimum: 0
+    PublicFilterPriceTo:
+      name: filter[priceTo]
+      in: query
+      required: false
+      schema:
+        type: number
+        format: double
+        exclusiveMinimum: 0
+    PublicFilterIsAvailable:
+      name: filter[isAvailable]
+      in: query
+      required: false
+      schema:
+        type: boolean
+    ServiceId:
+      name: service
+      in: path
+      required: true
+      schema:
+        type: integer
+        minimum: 1
+      description: Numeric service identifier.
+    SpecificationId:
+      name: specification
+      in: path
+      required: true
+      schema:
+        type: integer
+        minimum: 1
+      description: Numeric specification identifier.
+    OrderFieldId:
+      name: orderField
+      in: path
+      required: true
+      schema:
+        type: integer
+        minimum: 1
+      description: Numeric order field identifier.
+    PricingOptionId:
+      name: pricingOption
+      in: path
+      required: true
+      schema:
+        type: integer
+        minimum: 1
+      description: Numeric pricing option identifier.
+    MediaId:
+      name: media
+      in: path
+      required: true
+      schema:
+        type: integer
+        minimum: 1
+      description: Numeric media identifier.
+    ServiceSlug:
+      name: serviceSlug
+      in: path
+      required: true
+      schema:
+        type: string
+        minLength: 1
+        maxLength: 180
+      description: Localized service slug. Request-locale lookup first, alternate locale fallback second.
+  schemas:
+    ErrorEnvelope:
+      type: object
+      additionalProperties: false
+      required:
+      - success
+      - message
+      - code
+      - errors
+      properties:
+        success:
+          type: boolean
+          const: false
+        message:
+          type: string
+        code:
+          type: string
+        errors:
+          oneOf:
+          - type: object
+            additionalProperties:
+              type: array
+              items:
+                type: string
+          - type: 'null'
+    PaginationMeta:
+      type: object
+      additionalProperties: false
+      required:
+      - currentPage
+      - perPage
+      - total
+      - lastPage
+      properties:
+        currentPage:
+          type: integer
+          minimum: 1
+        perPage:
+          type: integer
+          minimum: 1
+        total:
+          type: integer
+          minimum: 0
+        lastPage:
+          type: integer
+          minimum: 1
+    DeleteSuccess:
+      type: object
+      additionalProperties: false
+      required:
+      - success
+      - message
+      - data
+      properties:
+        success:
+          type: boolean
+          const: true
+        message:
+          type: string
+        data:
+          type: 'null'
+    AdminClassificationSummary:
+      type: object
+      additionalProperties: false
+      required:
+      - id
+      - nameAr
+      - nameEn
+      - slugAr
+      - slugEn
+      - isActive
+      properties:
+        id:
+          type: integer
+          minimum: 1
+        nameAr:
+          type: string
+        nameEn:
+          type: string
+        slugAr:
+          type: string
+        slugEn:
+          type: string
+        isActive:
+          type: boolean
+    PublicClassificationSummary:
+      type: object
+      additionalProperties: false
+      required:
+      - id
+      - name
+      - slug
+      properties:
+        id:
+          type: integer
+          minimum: 1
+        name:
+          type: string
+        slug:
+          type: string
+    AdminMedia:
+      type: object
+      additionalProperties: false
+      required:
+      - id
+      - type
+      - isMain
+      - url
+      - altAr
+      - altEn
+      - createdAt
+      properties:
+        id:
+          type: integer
+          minimum: 1
+        type:
+          type: integer
+          enum:
+          - 0
+          - 1
+        isMain:
+          type: boolean
+        url:
+          type: string
+          format: uri
+        altAr:
+          type:
+          - string
+          - 'null'
+        altEn:
+          type:
+          - string
+          - 'null'
+        createdAt:
+          type: string
+          format: date-time
+    PublicMedia:
+      type: object
+      additionalProperties: false
+      required:
+      - id
+      - type
+      - isMain
+      - url
+      - alt
+      properties:
+        id:
+          type: integer
+          minimum: 1
+        type:
+          type: integer
+          enum:
+          - 0
+          - 1
+        isMain:
+          type: boolean
+        url:
+          type: string
+          format: uri
+        alt:
+          type:
+          - string
+          - 'null'
+    AdminSpecification:
+      type: object
+      additionalProperties: false
+      required:
+      - id
+      - labelAr
+      - labelEn
+      - valueAr
+      - valueEn
+      - sortOrder
+      properties:
+        id:
+          type: integer
+          minimum: 1
+        labelAr:
+          type: string
+          maxLength: 150
+        labelEn:
+          type: string
+          maxLength: 150
+        valueAr:
+          type: string
+          maxLength: 1000
+        valueEn:
+          type: string
+          maxLength: 1000
+        sortOrder:
+          type: integer
+          minimum: 0
+    PublicSpecification:
+      type: object
+      additionalProperties: false
+      required:
+      - id
+      - label
+      - value
+      properties:
+        id:
+          type: integer
+          minimum: 1
+        label:
+          type: string
+        value:
+          type: string
+    AdminOrderField:
+      type: object
+      additionalProperties: false
+      required:
+      - id
+      - labelAr
+      - labelEn
+      - isRequired
+      - sortOrder
+      properties:
+        id:
+          type: integer
+          minimum: 1
+        labelAr:
+          type: string
+          maxLength: 150
+        labelEn:
+          type: string
+          maxLength: 150
+        isRequired:
+          type: boolean
+        sortOrder:
+          type: integer
+          minimum: 0
+    PublicOrderField:
+      type: object
+      additionalProperties: false
+      required:
+      - id
+      - label
+      - isRequired
+      properties:
+        id:
+          type: integer
+          minimum: 1
+        label:
+          type: string
+        isRequired:
+          type: boolean
+    AdminPricingValue:
+      type: object
+      additionalProperties: false
+      required:
+      - id
+      - labelAr
+      - labelEn
+      - priceAdjustment
+      - isActive
+      - sortOrder
+      properties:
+        id:
+          type: integer
+          minimum: 1
+        labelAr:
+          type: string
+          maxLength: 150
+        labelEn:
+          type: string
+          maxLength: 150
+        priceAdjustment: &id011
+          type: string
+          pattern: ^\d{1,10}\.\d{2}$
+          examples:
+          - '15000.00'
+          description: Fixed-precision decimal string.
+        isActive:
+          type: boolean
+        sortOrder:
+          type: integer
+          minimum: 0
+    PublicPricingValue:
+      type: object
+      additionalProperties: false
+      required:
+      - id
+      - label
+      - priceAdjustment
+      - isActive
+      properties:
+        id:
+          type: integer
+          minimum: 1
+        label:
+          type: string
+        priceAdjustment: *id011
+        isActive:
+          type: boolean
+    AdminPricingOption:
+      type: object
+      additionalProperties: false
+      required:
+      - id
+      - nameAr
+      - nameEn
+      - inputType
+      - isRequired
+      - sortOrder
+      - values
+      properties:
+        id:
+          type: integer
+          minimum: 1
+        nameAr:
+          type: string
+          maxLength: 150
+        nameEn:
+          type: string
+          maxLength: 150
+        inputType:
+          type: integer
+          enum:
+          - 0
+          - 1
+          - 2
+          - 3
+        isRequired:
+          type: boolean
+        sortOrder:
+          type: integer
+          minimum: 0
+        values:
+          type: array
+          maxItems: 30
+          items:
+            $ref: '#/components/schemas/AdminPricingValue'
+    PublicPricingOption:
+      type: object
+      additionalProperties: false
+      required:
+      - id
+      - name
+      - inputType
+      - isRequired
+      - values
+      properties:
+        id:
+          type: integer
+          minimum: 1
+        name:
+          type: string
+        inputType:
+          type: integer
+          enum:
+          - 0
+          - 1
+          - 2
+          - 3
+        isRequired:
+          type: boolean
+        values:
+          type: array
+          items:
+            $ref: '#/components/schemas/PublicPricingValue'
+    AdminServiceIndexItem:
+      type: object
+      additionalProperties: false
+      required:
+      - id
+      - name
+      - shortDescription
+      - slug
+      - priceType
+      - basePrice
+      - isActive
+      - isAvailable
+      - mainMedia
+      - category
+      - subcategory
+      - createdAt
+      - updatedAt
+      - deletedAt
+      properties:
+        id:
+          type: integer
+          minimum: 1
+        name:
+          type: string
+        shortDescription:
+          type: string
+        slug:
+          type: string
+        priceType:
+          type: integer
+          enum:
+          - 0
+          - 1
+        basePrice: *id011
+        isActive:
+          type: boolean
+        isAvailable:
+          type: boolean
+        mainMedia:
+          oneOf:
+          - $ref: '#/components/schemas/AdminMedia'
+          - type: 'null'
+        category:
+          oneOf:
+          - $ref: '#/components/schemas/AdminClassificationSummary'
+          - type: 'null'
+        subcategory:
+          oneOf:
+          - $ref: '#/components/schemas/AdminClassificationSummary'
+          - type: 'null'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        deletedAt:
+          type:
+          - string
+          - 'null'
+          format: date-time
+    AdminServiceDetail:
+      type: object
+      additionalProperties: false
+      required:
+      - id
+      - nameAr
+      - nameEn
+      - shortDescriptionAr
+      - shortDescriptionEn
+      - descriptionAr
+      - descriptionEn
+      - slugAr
+      - slugEn
+      - priceType
+      - basePrice
+      - isActive
+      - isAvailable
+      - category
+      - subcategory
+      - productionTimeAr
+      - productionTimeEn
+      - seoTitleAr
+      - seoTitleEn
+      - seoDescriptionAr
+      - seoDescriptionEn
+      - seoTagsAr
+      - seoTagsEn
+      - specifications
+      - orderFields
+      - pricingOptions
+      - media
+      - createdAt
+      - updatedAt
+      - deletedAt
+      properties:
+        id:
+          type: integer
+          minimum: 1
+        nameAr:
+          type: string
+        nameEn:
+          type: string
+        shortDescriptionAr:
+          type: string
+        shortDescriptionEn:
+          type: string
+        descriptionAr:
+          type: string
+        descriptionEn:
+          type: string
+        slugAr:
+          type: string
+        slugEn:
+          type: string
+        priceType:
+          type: integer
+          enum:
+          - 0
+          - 1
+        basePrice: *id011
+        isActive:
+          type: boolean
+        isAvailable:
+          type: boolean
+        category:
+          oneOf:
+          - $ref: '#/components/schemas/AdminClassificationSummary'
+          - type: 'null'
+        subcategory:
+          oneOf:
+          - $ref: '#/components/schemas/AdminClassificationSummary'
+          - type: 'null'
+        productionTimeAr:
+          type:
+          - string
+          - 'null'
+        productionTimeEn:
+          type:
+          - string
+          - 'null'
+        seoTitleAr:
+          type:
+          - string
+          - 'null'
+        seoTitleEn:
+          type:
+          - string
+          - 'null'
+        seoDescriptionAr:
+          type:
+          - string
+          - 'null'
+        seoDescriptionEn:
+          type:
+          - string
+          - 'null'
+        seoTagsAr:
+          oneOf:
+          - type: array
+            items:
+              type: string
+          - type: 'null'
+        seoTagsEn:
+          oneOf:
+          - type: array
+            items:
+              type: string
+          - type: 'null'
+        specifications:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdminSpecification'
+        orderFields:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdminOrderField'
+        pricingOptions:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdminPricingOption'
+        media:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdminMedia'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        deletedAt:
+          type:
+          - string
+          - 'null'
+          format: date-time
+    PublicServiceListItem:
+      type: object
+      additionalProperties: false
+      required:
+      - id
+      - name
+      - shortDescription
+      - slug
+      - priceType
+      - basePrice
+      - isAvailable
+      - mainMedia
+      - category
+      - subcategory
+      properties:
+        id:
+          type: integer
+          minimum: 1
+        name:
+          type: string
+        shortDescription:
+          type: string
+        slug:
+          type: string
+        priceType:
+          type: integer
+          enum:
+          - 0
+          - 1
+        basePrice: *id011
+        isAvailable:
+          type: boolean
+        mainMedia:
+          oneOf:
+          - $ref: '#/components/schemas/PublicMedia'
+          - type: 'null'
+        category:
+          oneOf:
+          - $ref: '#/components/schemas/PublicClassificationSummary'
+          - type: 'null'
+        subcategory:
+          oneOf:
+          - $ref: '#/components/schemas/PublicClassificationSummary'
+          - type: 'null'
+    PublicServiceDetail:
+      type: object
+      additionalProperties: false
+      required:
+      - id
+      - name
+      - shortDescription
+      - description
+      - slug
+      - priceType
+      - basePrice
+      - isAvailable
+      - productionTime
+      - category
+      - subcategory
+      - specifications
+      - orderFields
+      - pricingOptions
+      - media
+      - seoTitle
+      - seoDescription
+      - seoTags
+      properties:
+        id:
+          type: integer
+          minimum: 1
+        name:
+          type: string
+        shortDescription:
+          type: string
+        description:
+          type: string
+        slug:
+          type: string
+        priceType:
+          type: integer
+          enum:
+          - 0
+          - 1
+        basePrice: *id011
+        isAvailable:
+          type: boolean
+        productionTime:
+          type:
+          - string
+          - 'null'
+        category:
+          oneOf:
+          - $ref: '#/components/schemas/PublicClassificationSummary'
+          - type: 'null'
+        subcategory:
+          oneOf:
+          - $ref: '#/components/schemas/PublicClassificationSummary'
+          - type: 'null'
+        specifications:
+          type: array
+          items:
+            $ref: '#/components/schemas/PublicSpecification'
+        orderFields:
+          type: array
+          items:
+            $ref: '#/components/schemas/PublicOrderField'
+        pricingOptions:
+          type: array
+          items:
+            $ref: '#/components/schemas/PublicPricingOption'
+        media:
+          type: array
+          items:
+            $ref: '#/components/schemas/PublicMedia'
+        seoTitle:
+          type: string
+        seoDescription:
+          type: string
+        seoTags:
+          type: array
+          items:
+            type: string
+    SpecificationCreate:
+      type: object
+      additionalProperties: false
+      required:
+      - labelAr
+      - labelEn
+      - valueAr
+      - valueEn
+      properties: &id012
+        labelAr:
+          type: string
+          maxLength: 150
+        labelEn:
+          type: string
+          maxLength: 150
+        valueAr:
+          type: string
+          maxLength: 1000
+        valueEn:
+          type: string
+          maxLength: 1000
+        sortOrder:
+          type: integer
+          minimum: 0
+          default: 0
+    SpecificationUpdate:
+      type: object
+      additionalProperties: false
+      minProperties: 1
+      properties: *id012
+    OrderFieldCreate:
+      type: object
+      additionalProperties: false
+      required:
+      - labelAr
+      - labelEn
+      - isRequired
+      properties: &id013
+        labelAr:
+          type: string
+          maxLength: 150
+        labelEn:
+          type: string
+          maxLength: 150
+        isRequired:
+          type: boolean
+        sortOrder:
+          type: integer
+          minimum: 0
+          default: 0
+    OrderFieldUpdate:
+      type: object
+      additionalProperties: false
+      minProperties: 1
+      properties: *id013
+    PricingValueCreate:
+      type: object
+      additionalProperties: false
+      required:
+      - labelAr
+      - labelEn
+      - priceAdjustment
+      - isActive
+      properties:
+        labelAr:
+          type: string
+          maxLength: 150
+        labelEn:
+          type: string
+          maxLength: 150
+        priceAdjustment:
+          type: number
+          format: double
+          minimum: 0
+        isActive:
+          type: boolean
+        sortOrder:
+          type: integer
+          minimum: 0
+          default: 0
+    PricingValueAction:
+      type: object
+      additionalProperties: false
+      required:
+      - actionStatus
+      properties:
+        id:
+          type: integer
+          minimum: 1
+        actionStatus:
+          type: string
+          enum:
+          - ''
+          - create
+          - update
+          - delete
+        labelAr:
+          type: string
+          maxLength: 150
+        labelEn:
+          type: string
+          maxLength: 150
+        priceAdjustment:
+          type: number
+          format: double
+          minimum: 0
+        isActive:
+          type: boolean
+        sortOrder:
+          type: integer
+          minimum: 0
+      description: create omits id and requires value fields; update/delete require id; empty means no action.
+    PricingOptionCreate:
+      type: object
+      additionalProperties: false
+      required:
+      - nameAr
+      - nameEn
+      - inputType
+      - isRequired
+      properties:
+        nameAr:
+          type: string
+          maxLength: 150
+        nameEn:
+          type: string
+          maxLength: 150
+        inputType:
+          type: integer
+          enum:
+          - 0
+          - 1
+          - 2
+          - 3
+        isRequired:
+          type: boolean
+        sortOrder:
+          type: integer
+          minimum: 0
+          default: 0
+        values:
+          type: array
+          maxItems: 30
+          items:
+            $ref: '#/components/schemas/PricingValueCreate'
+    PricingOptionUpdate:
+      type: object
+      additionalProperties: false
+      minProperties: 1
+      properties:
+        nameAr:
+          type: string
+          maxLength: 150
+        nameEn:
+          type: string
+          maxLength: 150
+        inputType:
+          type: integer
+          enum:
+          - 0
+          - 1
+          - 2
+          - 3
+        isRequired:
+          type: boolean
+        sortOrder:
+          type: integer
+          minimum: 0
+        values:
+          type: array
+          maxItems: 30
+          items:
+            $ref: '#/components/schemas/PricingValueAction'
+          description: Omitted or empty array leaves values unchanged.
+    MediaUploadItem:
+      type: object
+      additionalProperties: false
+      required:
+      - file
+      - type
+      properties:
+        file:
+          type: string
+          format: binary
+        type:
+          type: integer
+          enum:
+          - 0
+          - 1
+        isMain:
+          type: boolean
+          default: false
+        altAr:
+          type:
+          - string
+          - 'null'
+          maxLength: 255
+        altEn:
+          type:
+          - string
+          - 'null'
+          maxLength: 255
+    MediaUploadRequest:
+      type: object
+      additionalProperties: false
+      required:
+      - media
+      properties:
+        media:
+          type: array
+          minItems: 1
+          maxItems: 11
+          items:
+            $ref: '#/components/schemas/MediaUploadItem'
+    MediaAltUpdate:
+      type: object
+      additionalProperties: false
+      required:
+      - altAr
+      - altEn
+      properties:
+        altAr:
+          type:
+          - string
+          - 'null'
+          maxLength: 255
+        altEn:
+          type:
+          - string
+          - 'null'
+          maxLength: 255
+    AdminCreateServiceRequest:
+      type: object
+      additionalProperties: false
+      required:
+      - nameAr
+      - nameEn
+      - shortDescriptionAr
+      - shortDescriptionEn
+      - descriptionAr
+      - descriptionEn
+      - priceType
+      - basePrice
+      properties:
+        nameAr: &id014
+          type: string
+          maxLength: 150
+        nameEn: &id015
+          type: string
+          maxLength: 150
+        shortDescriptionAr: &id016
+          type: string
+          maxLength: 500
+        shortDescriptionEn: &id017
+          type: string
+          maxLength: 500
+        descriptionAr: &id018
+          type: string
+          maxLength: 5000
+        descriptionEn: &id019
+          type: string
+          maxLength: 5000
+        slugAr: &id020
+          type: string
+          maxLength: 180
+        slugEn: &id021
+          type: string
+          maxLength: 180
+        categoryId: &id022
+          type:
+          - integer
+          - 'null'
+          minimum: 1
+        subcategoryId: &id023
+          type:
+          - integer
+          - 'null'
+          minimum: 1
+        priceType: &id024
+          type: integer
+          enum:
+          - 0
+          - 1
+        basePrice: &id025
+          type: number
+          format: double
+          exclusiveMinimum: 0
+        isActive: &id026
+          type: boolean
+          default: false
+        isAvailable: &id027
+          type: boolean
+          default: true
+        productionTimeAr: &id028
+          type:
+          - string
+          - 'null'
+          maxLength: 255
+        productionTimeEn: &id029
+          type:
+          - string
+          - 'null'
+          maxLength: 255
+        seoTitleAr: &id030
+          type:
+          - string
+          - 'null'
+          maxLength: 70
+        seoTitleEn: &id031
+          type:
+          - string
+          - 'null'
+          maxLength: 70
+        seoDescriptionAr: &id032
+          type:
+          - string
+          - 'null'
+          maxLength: 180
+        seoDescriptionEn: &id033
+          type:
+          - string
+          - 'null'
+          maxLength: 180
+        seoTagsAr: &id034
+          oneOf:
+          - type: array
+            maxItems: 20
+            items:
+              type: string
+              maxLength: 50
+          - type: 'null'
+        seoTagsEn: &id035
+          oneOf:
+          - type: array
+            maxItems: 20
+            items:
+              type: string
+              maxLength: 50
+          - type: 'null'
+        specifications:
+          type: array
+          maxItems: 30
+          items:
+            $ref: '#/components/schemas/SpecificationCreate'
+        orderFields:
+          type: array
+          maxItems: 20
+          items:
+            $ref: '#/components/schemas/OrderFieldCreate'
+        pricingOptions:
+          type: array
+          maxItems: 10
+          items:
+            $ref: '#/components/schemas/PricingOptionCreate'
+        media:
+          type: array
+          maxItems: 11
+          items:
+            $ref: '#/components/schemas/MediaUploadItem'
+      description: multipart/form-data. Nested arrays use bracket notation; no JSON payload field.
+      dependentRequired:
+        subcategoryId:
+        - categoryId
+        productionTimeAr:
+        - productionTimeEn
+        productionTimeEn:
+        - productionTimeAr
+        seoTitleAr:
+        - seoTitleEn
+        seoTitleEn:
+        - seoTitleAr
+        seoDescriptionAr:
+        - seoDescriptionEn
+        seoDescriptionEn:
+        - seoDescriptionAr
+        seoTagsAr:
+        - seoTagsEn
+        seoTagsEn:
+        - seoTagsAr
+      allOf:
+      - if:
+          properties:
+            priceType:
+              const: 0
+          required:
+          - priceType
+        then:
+          properties:
+            pricingOptions:
+              type: array
+              maxItems: 0
+    AdminUpdateServiceRequest:
+      type: object
+      additionalProperties: false
+      minProperties: 1
+      properties:
+        nameAr: *id014
+        nameEn: *id015
+        shortDescriptionAr: *id016
+        shortDescriptionEn: *id017
+        descriptionAr: *id018
+        descriptionEn: *id019
+        slugAr: *id020
+        slugEn: *id021
+        categoryId: *id022
+        subcategoryId: *id023
+        priceType: *id024
+        basePrice: *id025
+        isActive: *id026
+        isAvailable: *id027
+        productionTimeAr: *id028
+        productionTimeEn: *id029
+        seoTitleAr: *id030
+        seoTitleEn: *id031
+        seoDescriptionAr: *id032
+        seoDescriptionEn: *id033
+        seoTagsAr: *id034
+        seoTagsEn: *id035
+      description: Service-level fields only; nested resources and media are rejected.
+      dependentRequired:
+        subcategoryId:
+        - categoryId
+        productionTimeAr:
+        - productionTimeEn
+        productionTimeEn:
+        - productionTimeAr
+        seoTitleAr:
+        - seoTitleEn
+        seoTitleEn:
+        - seoTitleAr
+        seoDescriptionAr:
+        - seoDescriptionEn
+        seoDescriptionEn:
+        - seoDescriptionAr
+        seoTagsAr:
+        - seoTagsEn
+        seoTagsEn:
+        - seoTagsAr
+    AdminServiceListSuccess:
+      type: object
+      additionalProperties: false
+      required:
+      - success
+      - message
+      - data
+      - meta
+      properties:
+        success:
+          type: boolean
+          const: true
+        message:
+          type: string
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdminServiceIndexItem'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+    AdminServiceDetailSuccess:
+      type: object
+      additionalProperties: false
+      required:
+      - success
+      - message
+      - data
+      properties:
+        success:
+          type: boolean
+          const: true
+        message:
+          type: string
+        data:
+          $ref: '#/components/schemas/AdminServiceDetail'
+    PublicServiceListSuccess:
+      type: object
+      additionalProperties: false
+      required:
+      - success
+      - message
+      - data
+      - meta
+      properties:
+        success:
+          type: boolean
+          const: true
+        message:
+          type: string
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/PublicServiceListItem'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+    PublicServiceDetailSuccess:
+      type: object
+      additionalProperties: false
+      required:
+      - success
+      - message
+      - data
+      properties:
+        success:
+          type: boolean
+          const: true
+        message:
+          type: string
+        data:
+          $ref: '#/components/schemas/PublicServiceDetail'
+    SpecificationListSuccess:
+      type: object
+      additionalProperties: false
+      required:
+      - success
+      - message
+      - data
+      properties:
+        success:
+          type: boolean
+          const: true
+        message:
+          type: string
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdminSpecification'
+    SpecificationDetailSuccess:
+      type: object
+      additionalProperties: false
+      required:
+      - success
+      - message
+      - data
+      properties:
+        success:
+          type: boolean
+          const: true
+        message:
+          type: string
+        data:
+          $ref: '#/components/schemas/AdminSpecification'
+    OrderFieldListSuccess:
+      type: object
+      additionalProperties: false
+      required:
+      - success
+      - message
+      - data
+      properties:
+        success:
+          type: boolean
+          const: true
+        message:
+          type: string
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdminOrderField'
+    OrderFieldDetailSuccess:
+      type: object
+      additionalProperties: false
+      required:
+      - success
+      - message
+      - data
+      properties:
+        success:
+          type: boolean
+          const: true
+        message:
+          type: string
+        data:
+          $ref: '#/components/schemas/AdminOrderField'
+    PricingOptionListSuccess:
+      type: object
+      additionalProperties: false
+      required:
+      - success
+      - message
+      - data
+      properties:
+        success:
+          type: boolean
+          const: true
+        message:
+          type: string
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdminPricingOption'
+    PricingOptionDetailSuccess:
+      type: object
+      additionalProperties: false
+      required:
+      - success
+      - message
+      - data
+      properties:
+        success:
+          type: boolean
+          const: true
+        message:
+          type: string
+        data:
+          $ref: '#/components/schemas/AdminPricingOption'
+    MediaListSuccess:
+      type: object
+      additionalProperties: false
+      required:
+      - success
+      - message
+      - data
+      properties:
+        success:
+          type: boolean
+          const: true
+        message:
+          type: string
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdminMedia'
+    MediaDetailSuccess:
+      type: object
+      additionalProperties: false
+      required:
+      - success
+      - message
+      - data
+      properties:
+        success:
+          type: boolean
+          const: true
+        message:
+          type: string
+        data:
+          $ref: '#/components/schemas/AdminMedia'
+  responses:
+    Unauthenticated:
+      description: Unauthenticated
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorEnvelope'
+          examples:
+            unauthenticated:
+              summary: UNAUTHENTICATED
+              value:
+                success: false
+                message: حدث خطأ.
+                code: UNAUTHENTICATED
+                errors: null
+    Forbidden:
+      description: Forbidden or inactive administrator
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorEnvelope'
+          examples:
+            forbidden:
+              summary: FORBIDDEN
+              value:
+                success: false
+                message: حدث خطأ.
+                code: FORBIDDEN
+                errors: null
+            user_inactive:
+              summary: USER_INACTIVE
+              value:
+                success: false
+                message: حدث خطأ.
+                code: USER_INACTIVE
+                errors: null
+    NotFound:
+      description: Resource missing or intentionally hidden
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorEnvelope'
+          examples:
+            resource_not_found:
+              summary: RESOURCE_NOT_FOUND
+              value:
+                success: false
+                message: حدث خطأ.
+                code: RESOURCE_NOT_FOUND
+                errors: null
+            service_not_found:
+              summary: SERVICE_NOT_FOUND
+              value:
+                success: false
+                message: حدث خطأ.
+                code: SERVICE_NOT_FOUND
+                errors: null
+    ValidationError:
+      description: Validation failed
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorEnvelope'
+          example:
+            success: false
+            message: البيانات المرسلة غير صالحة.
+            code: VALIDATION_ERROR
+            errors:
+              basePrice:
+              - يجب أن يكون السعر أكبر من صفر.
+    Conflict:
+      description: Current state prevents the operation
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorEnvelope'
+          examples:
+            category_has_services:
+              summary: CATEGORY_HAS_SERVICES
+              value:
+                success: false
+                message: حدث خطأ.
+                code: CATEGORY_HAS_SERVICES
+                errors: null
+            subcategory_has_services:
+              summary: SUBCATEGORY_HAS_SERVICES
+              value:
+                success: false
+                message: حدث خطأ.
+                code: SUBCATEGORY_HAS_SERVICES
+                errors: null
+            service_video_limit_reached:
+              summary: SERVICE_VIDEO_LIMIT_REACHED
+              value:
+                success: false
+                message: حدث خطأ.
+                code: SERVICE_VIDEO_LIMIT_REACHED
+                errors: null
+            service_not_deleted:
+              summary: SERVICE_NOT_DELETED
+              value:
+                success: false
+                message: حدث خطأ.
+                code: SERVICE_NOT_DELETED
+                errors: null
+    RateLimited:
+      description: Rate limit exceeded
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorEnvelope'
+          examples:
+            rate_limited:
+              summary: RATE_LIMITED
+              value:
+                success: false
+                message: حدث خطأ.
+                code: RATE_LIMITED
+                errors: null
+    InternalError:
+      description: Unexpected server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorEnvelope'
+          examples:
+            internal_error:
+              summary: INTERNAL_ERROR
+              value:
+                success: false
+                message: حدث خطأ.
+                code: INTERNAL_ERROR
+                errors: null

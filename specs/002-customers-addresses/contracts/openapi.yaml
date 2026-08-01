@@ -621,6 +621,30 @@ components:
           type: string
           pattern: '^[A-Za-z]{2}$'
           example: EG
+        address:
+          type: object
+          additionalProperties: false
+          required: [phone, province, city, address]
+          properties:
+            phone:
+              type: string
+              minLength: 1
+              maxLength: 30
+            province:
+              type: string
+              minLength: 1
+              maxLength: 150
+            city:
+              type: string
+              minLength: 1
+              maxLength: 150
+            address:
+              type: string
+              minLength: 1
+              maxLength: 500
+            notes:
+              type: [string, 'null']
+              maxLength: 1000
 
     UpdateCustomerRequest:
       type: object
@@ -647,11 +671,8 @@ components:
     CreateCustomerAddressRequest:
       type: object
       additionalProperties: false
-      required: [phone, countryCode, city, street]
+      required: [phone, province, city, address]
       properties:
-        label:
-          type: [string, 'null']
-          maxLength: 100
         phone:
           type: string
           minLength: 1
@@ -660,21 +681,18 @@ components:
           type: string
           pattern: '^[A-Za-z]{2}$'
           example: EG
-        countryCode:
+        province:
           type: string
-          pattern: '^[A-Za-z]{2}$'
-          example: EG
+          minLength: 1
+          maxLength: 150
         city:
           type: string
           minLength: 1
           maxLength: 150
-        area:
-          type: [string, 'null']
-          maxLength: 150
-        street:
+        address:
           type: string
           minLength: 1
-          maxLength: 255
+          maxLength: 500
         notes:
           type: [string, 'null']
           maxLength: 1000
@@ -687,9 +705,6 @@ components:
       additionalProperties: false
       minProperties: 1
       properties:
-        label:
-          type: [string, 'null']
-          maxLength: 100
         phone:
           type: string
           minLength: 1
@@ -698,21 +713,18 @@ components:
           type: string
           pattern: '^[A-Za-z]{2}$'
           example: EG
-        countryCode:
+        province:
           type: string
-          pattern: '^[A-Za-z]{2}$'
-          example: EG
+          minLength: 1
+          maxLength: 150
         city:
           type: string
           minLength: 1
           maxLength: 150
-        area:
-          type: [string, 'null']
-          maxLength: 150
-        street:
+        address:
           type: string
           minLength: 1
-          maxLength: 255
+          maxLength: 500
         notes:
           type: [string, 'null']
           maxLength: 1000
@@ -793,12 +805,10 @@ components:
       additionalProperties: false
       required:
         - id
-        - label
         - phone
-        - countryCode
+        - province
         - city
-        - area
-        - street
+        - address
         - notes
         - isDefault
         - isDeleted
@@ -809,18 +819,13 @@ components:
         id:
           type: integer
           minimum: 1
-        label:
-          type: [string, 'null']
         phone:
           type: string
-        countryCode:
+        province:
           type: string
-          pattern: '^[A-Z]{2}$'
         city:
           type: string
-        area:
-          type: [string, 'null']
-        street:
+        address:
           type: string
         notes:
           type: [string, 'null']

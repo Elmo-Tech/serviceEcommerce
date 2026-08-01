@@ -752,13 +752,11 @@ customer_addresses
 ```text
 id
 customer_id
-label nullable
 phone
 phone_normalized
-country_code
+province
 city
-area nullable
-street
+address
 notes nullable
 address_hash
 is_default
@@ -790,26 +788,20 @@ BIGINT UNSIGNED primary key
 customer_id:
 BIGINT UNSIGNED
 
-label:
-VARCHAR(100) nullable
-
 phone:
 VARCHAR(30)
 
 phone_normalized:
 VARCHAR(20)
 
-country_code:
-CHAR(2)
+province:
+VARCHAR(150)
 
 city:
 VARCHAR(150)
 
-area:
-VARCHAR(150) nullable
-
-street:
-VARCHAR(255)
+address:
+VARCHAR(500)
 
 notes:
 TEXT nullable
@@ -846,7 +838,7 @@ INDEX(customer_id)
 INDEX(customer_id, deleted_at)
 INDEX(customer_id, is_default, deleted_at)
 INDEX(customer_id, address_hash)
-INDEX(country_code)
+INDEX(province)
 INDEX(city)
 ```
 
@@ -871,31 +863,7 @@ The implementation must not depend on an unsafe pre-check alone.
 
 ## 18. Address Fields
 
-### 18.1 Label
-
-```text
-label
-```
-
-Rules:
-
-- optional
-- plain text
-- maximum 100 characters
-
-Examples:
-
-```text
-Home
-Office
-Main Branch
-```
-
-Label is presentation metadata.
-
-It is not part of address identity.
-
-### 18.2 Phone
+### 18.1 Phone
 
 Address phone is required.
 
@@ -915,22 +883,20 @@ Address phone is not part of the address hash.
 A submitted guest-order phone may be preserved in the order snapshot even when
 it differs from the saved address phone.
 
-### 18.3 Country Code
+### 18.2 Province
 
 ```text
-countryCode
+province
 ```
 
 Rules:
 
 - required
-- ISO Alpha-2
-- uppercase
-- exactly two characters
-- default may be `EG` in forms
-- stored as `country_code`
+- plain text
+- trimmed
+- maximum 150 characters
 
-### 18.4 City
+### 18.3 City
 
 ```text
 city
@@ -943,24 +909,10 @@ Rules:
 - trimmed
 - maximum 150 characters
 
-### 18.5 Area
+### 18.4 Address
 
 ```text
-area
-```
-
-Rules:
-
-- optional
-- plain text
-- trimmed
-- maximum 150 characters
-- empty string normalizes to `null`
-
-### 18.6 Street
-
-```text
-street
+address
 ```
 
 Rules:
@@ -968,9 +920,9 @@ Rules:
 - required
 - plain text
 - trimmed
-- maximum 255 characters
+- maximum 500 characters
 
-### 18.7 Notes
+### 18.5 Notes
 
 ```text
 notes
@@ -1104,17 +1056,15 @@ Before calculating identity:
 
 - trim text
 - normalize internal whitespace
-- uppercase country code
 - normalize case according to the approved deterministic strategy
 - convert empty optional fields to `null`
 
 Recommended identity values:
 
 ```text
-country_code
+province
 city
-area
-street
+address
 ```
 
 Removed fields are not included because they do not exist:
@@ -1130,7 +1080,6 @@ recipient_name
 Do not include:
 
 ```text
-label
 notes
 phone
 phone_normalized
@@ -1151,16 +1100,15 @@ SHA-256
 from a canonical representation of:
 
 ```text
-country_code
+province
 city
-area
-street
+address
 ```
 
 Conceptual canonical input:
 
 ```text
-EG|cairo|nasr city|10 example street
+cairo|nasr city|nasr city | 10 example street
 ```
 
 Rules:
@@ -1171,7 +1119,7 @@ Rules:
 - indexed with `customer_id`
 - not returned in API Resources
 - recalculated whenever identity fields change
-- label, notes, and phone changes do not change address identity
+- notes and phone changes do not change address identity
 
 ---
 
@@ -1191,7 +1139,6 @@ When a matching active address exists:
 
 - reuse it
 - do not create a duplicate
-- do not automatically overwrite label
 - do not automatically overwrite phone
 - do not automatically overwrite notes
 - preserve the latest submitted values in the future order snapshot
@@ -1204,7 +1151,7 @@ When a matching deleted address exists during guest order creation:
 - ensure active-address limit permits restoration
 - maintain default-address invariant
 - reuse it
-- do not automatically overwrite label, phone, or notes
+- do not automatically overwrite phone or notes
 
 ### 24.3 Missing Address
 
@@ -1431,10 +1378,9 @@ The future order stores:
 ```text
 address_phone
 address_phone_normalized
-address_country_code
+address_province
 address_city
-address_area nullable
-address_street
+address
 address_notes nullable
 ```
 
@@ -1647,7 +1593,13 @@ All route paths are prefixed by:
   "name": "Customer Name",
   "email": "customer@example.com",
   "phone": "01001234567",
-  "phoneCountryCode": "EG"
+  "address": {
+    "phone": "01001234567",
+    "province": "Cairo",
+    "city": "Nasr City",
+    "address": "Nasr City | Street 10",
+    "notes": "Ring bell"
+  }
 }
 ```
 
@@ -1677,6 +1629,35 @@ string
 size 2
 valid country code
 default EG
+
+address:
+nullable object
+accepted only on customer create
+
+address.phone:
+required with address
+string
+maximum 30
+
+address.province:
+required with address
+string
+maximum 150
+
+address.city:
+required with address
+string
+maximum 150
+
+address.address:
+required with address
+string
+maximum 500
+
+address.notes:
+nullable
+string
+maximum 1000
 ```
 
 Status:
@@ -1684,6 +1665,13 @@ Status:
 ```text
 201 Created
 ```
+
+Rules:
+
+- when `address` is submitted, it creates the customer's first saved address
+- the created address becomes default automatically
+- address create follows the same backend normalization and duplicate rules
+- `address.phoneCountryCode` is not accepted in this nested create payload
 
 ---
 
@@ -1757,13 +1745,11 @@ email
 
 ```json
 {
-  "label": "Home",
   "phone": "01001234567",
   "phoneCountryCode": "EG",
-  "countryCode": "EG",
-  "city": "Cairo",
-  "area": "Nasr City",
-  "street": "Example Street",
+  "province": "Cairo",
+  "city": "Nasr City",
+  "address": "Nasr City | Example Street",
   "notes": "Call before arrival",
   "isDefault": true
 }
@@ -1772,11 +1758,6 @@ email
 Validation:
 
 ```text
-label:
-nullable
-string
-maximum 100
-
 phone:
 required
 string
@@ -1786,28 +1767,22 @@ phoneCountryCode:
 nullable
 string
 size 2
-default to address countryCode, then EG
+default to EG
 
-countryCode:
+province:
 required
 string
-size 2
-valid ISO Alpha-2
+maximum 150
 
 city:
 required
 string
 maximum 150
 
-area:
-nullable
-string
-maximum 150
-
-street:
+address:
 required
 string
-maximum 255
+maximum 500
 
 notes:
 nullable
@@ -1831,13 +1806,11 @@ Status:
 
 ```json
 {
-  "label": "Office",
   "phone": "+201001234567",
   "phoneCountryCode": "EG",
-  "countryCode": "EG",
-  "city": "Giza",
-  "area": null,
-  "street": "Updated Street",
+  "province": "Giza",
+  "city": "Dokki",
+  "address": "Updated Street",
   "notes": "",
   "isDefault": true
 }
@@ -1925,12 +1898,10 @@ Example:
   "addresses": [
     {
       "id": 30,
-      "label": "Home",
       "phone": "01001234567",
-      "countryCode": "EG",
-      "city": "Cairo",
-      "area": "Nasr City",
-      "street": "Example Street",
+      "province": "Cairo",
+      "city": "Nasr City",
+      "address": "Nasr City | Example Street",
       "notes": "Call before arrival",
       "isDefault": true,
       "isDeleted": false,
@@ -1959,12 +1930,10 @@ Fields:
 
 ```text
 id
-label
 phone
-countryCode
+province
 city
-area
-street
+address
 notes
 isDefault
 isDeleted
@@ -2855,7 +2824,7 @@ Focused domain tests must cover:
 ### Address matching
 
 - active matching address is reused
-- saved label, phone, and notes are not overwritten
+- saved phone and notes are not overwritten
 - matching deleted address is restored
 - first active restored/created address becomes default when appropriate
 - active-address limit remains enforced
@@ -3038,8 +3007,7 @@ And exactly one active default remains.
 ## 106. Duplicate Address
 
 Given a customer already has an active address  
-When another request contains the same normalized country, city, area, and
-street  
+When another request contains the same normalized province, city, and address  
 Then no duplicate address is created through matching  
 And administrator manual creation returns
 `CUSTOMER_ADDRESS_ALREADY_EXISTS`.
@@ -3353,13 +3321,12 @@ The Feature is complete only when:
 - Do not add apartment.
 - Do not add postal code.
 - Address phone is required.
-- Address country code is required.
+- Address province is required.
 - Address city is required.
-- Address street is required.
+- Address field is required.
 - Address notes are plain text.
 - Generate address hash on the backend.
-- Address hash uses country, city, area, and street.
-- Do not include label in address hash.
+- Address hash uses province, city, and address.
 - Do not include notes in address hash.
 - Do not include phone in address hash.
 - Restore a matching soft-deleted address automatically.

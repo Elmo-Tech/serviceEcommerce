@@ -16,7 +16,7 @@ class UpdateCustomerAddressRequest extends FormRequest
 
     protected function prepareForValidation(): void
     {
-        foreach (['label', 'area', 'notes'] as $key) {
+        foreach (['province', 'city', 'address', 'notes'] as $key) {
             if ($this->has($key)) {
                 $value = trim((string) $this->input($key));
                 $this->merge([$key => $value === '' ? null : $value]);
@@ -29,23 +29,16 @@ class UpdateCustomerAddressRequest extends FormRequest
             ]);
         }
 
-        if ($this->filled('countryCode')) {
-            $this->merge([
-                'countryCode' => strtoupper(trim((string) $this->input('countryCode'))),
-            ]);
-        }
     }
 
     public function rules(): array
     {
         return [
-            'label' => ['sometimes', 'nullable', 'string', 'max:100'],
             'phone' => ['sometimes', 'required', 'string', 'min:1', 'max:30'],
             'phoneCountryCode' => ['sometimes', 'string', 'size:2', 'alpha'],
-            'countryCode' => ['sometimes', 'string', 'size:2', 'alpha'],
+            'province' => ['sometimes', 'required', 'string', 'min:1', 'max:150'],
             'city' => ['sometimes', 'required', 'string', 'min:1', 'max:150'],
-            'area' => ['sometimes', 'nullable', 'string', 'max:150'],
-            'street' => ['sometimes', 'required', 'string', 'min:1', 'max:255'],
+            'address' => ['sometimes', 'required', 'string', 'min:1', 'max:500'],
             'notes' => ['sometimes', 'nullable', 'string', 'max:1000'],
             'isDefault' => ['sometimes', 'boolean'],
         ];
@@ -58,7 +51,7 @@ class UpdateCustomerAddressRequest extends FormRequest
     {
         return [
             function (Validator $validator): void {
-                $allowedKeys = ['label', 'phone', 'phoneCountryCode', 'countryCode', 'city', 'area', 'street', 'notes', 'isDefault'];
+                $allowedKeys = ['phone', 'phoneCountryCode', 'province', 'city', 'address', 'notes', 'isDefault'];
                 $unexpectedKeys = array_diff(array_keys($this->all()), $allowedKeys);
 
                 if ($unexpectedKeys !== []) {

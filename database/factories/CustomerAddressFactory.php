@@ -18,21 +18,19 @@ class CustomerAddressFactory extends Factory
     public function definition(): array
     {
         $phoneSeed = (string) fake()->numerify('100#######');
+        $province = fake()->city();
         $city = fake()->city();
-        $area = fake()->optional()->streetSuffix();
-        $street = fake()->streetAddress();
+        $address = fake()->streetAddress();
 
         return [
             'customer_id' => Customer::factory(),
-            'label' => fake()->optional()->randomElement(['Home', 'Office', 'Branch']),
             'phone' => '+20 '.$phoneSeed,
             'phone_normalized' => '+20'.$phoneSeed,
-            'country_code' => 'EG',
+            'province' => $province,
             'city' => $city,
-            'area' => $area,
-            'street' => $street,
+            'address' => $address,
             'notes' => fake()->optional()->sentence(),
-            'address_hash' => hash('sha256', mb_strtolower(implode('|', ['EG', $city, $area ?? '', $street]))),
+            'address_hash' => hash('sha256', mb_strtolower(implode('|', [$province, $city, $address]))),
             'is_default' => false,
         ];
     }

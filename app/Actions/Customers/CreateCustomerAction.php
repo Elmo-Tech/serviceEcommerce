@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions\Customers;
 
+use App\Actions\CustomerAddresses\CreateCustomerAddressAction;
 use App\Enums\HttpStatusCode;
 use App\Exceptions\ApiBusinessException;
 use App\Models\Customer;
@@ -15,6 +16,7 @@ class CreateCustomerAction
 {
     public function __construct(
         private readonly PhoneNumberService $phoneNumberService,
+        private readonly CreateCustomerAddressAction $createCustomerAddressAction,
     ) {}
 
     public function execute(array $payload): Customer
@@ -32,13 +34,19 @@ class CreateCustomerAction
         }
 
         try {
-            return DB::transaction(function () use ($name, $email, $phone): Customer {
-                return Customer::query()->create([
+            return DB::transaction(function () use ($name, $email, $phone, $payload): Customer {
+                $customer = Customer::query()->create([
                     'name' => $name,
                     'email' => $email,
                     'phone' => $phone['display'],
                     'phone_normalized' => $phone['normalized'],
                 ]);
+
+                if (is_array($payload['address'] ?? null)) {
+                    $this->createCustomerAddressAction->execute($customer, $payload['address']);
+                }
+
+                return $customer;
             });
         } catch (QueryException $exception) {
             $this->rethrowDuplicateConstraint($exception);

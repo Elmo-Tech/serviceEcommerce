@@ -186,8 +186,9 @@ without requiring the Orders feature to exist yet.
 - **FR-002**: The system MUST provide protected administrator routes to list,
   create, show, update, soft-delete, and restore customers.
 - **FR-003**: The system MUST store each customer with one `name`, optional
-  `email`, display `phone`, canonical `phoneNormalized`, timestamps, and soft
-  deletion support only.
+  `email`, display `phone`, canonical `phoneNormalized`, timestamps, soft
+  deletion support, and MAY accept one optional initial address object during
+  administrator customer creation only.
 - **FR-004**: The system MUST normalize non-null customer email by trimming and
   lowercasing it, convert empty email to `null`, and enforce uniqueness for
   non-null email values only.
@@ -220,17 +221,16 @@ without requiring the Orders feature to exist yet.
   list, create, show, update, soft-delete, restore, and set-default customer
   addresses under a specific customer.
 - **FR-013**: The system MUST store addresses only with the approved fields:
-  `label`, `phone`, `phoneNormalized`, `countryCode`, `city`, optional `area`,
-  `street`, optional `notes`, `addressHash`, default flag, timestamps, and soft
-  deletion support.
+  `phone`, `phoneNormalized`, `province`, `city`, `address`, optional `notes`,
+  `addressHash`, default flag, timestamps, and soft deletion support.
 - **FR-014**: The system MUST NOT add or persist address fields for recipient
   name, building, floor, apartment, or postal code in this feature.
 - **FR-015**: The system MUST enforce a maximum of 20 active addresses per
   customer and MUST reject the twenty-first active address or address restore
   attempt with the stable code `CUSTOMER_ADDRESS_LIMIT_EXCEEDED`.
 - **FR-016**: The system MUST generate the address identity on the backend from
-  normalized country, city, area, and street only; it MUST NOT include label,
-  notes, or phone in the address identity.
+  normalized `province`, `city`, and `address` only; it MUST NOT include notes
+  or phone in the address identity.
 - **FR-017**: The system MUST prevent duplicate active saved addresses for the
   same customer and MUST return the approved duplicate-address outcome with the
   stable code `CUSTOMER_ADDRESS_ALREADY_EXISTS` for manual administrator
@@ -246,7 +246,7 @@ without requiring the Orders feature to exist yet.
   active addresses remain, the customer MUST have zero default addresses.
 - **FR-021**: When a soft-deleted address matches the future guest-order
   submitted address identity, the system MUST restore that address instead of
-  creating a duplicate and MUST NOT auto-update saved label, phone, or notes.
+  creating a duplicate and MUST NOT auto-update saved phone or notes.
 - **FR-022**: Customer soft deletion MUST soft-delete the customer and all
   active addresses inside the same database transaction. Customer restoration
   MUST restore the customer only and MUST NOT automatically restore deleted
@@ -294,9 +294,9 @@ without requiring the Orders feature to exist yet.
   ownership, and soft-delete or restore outcomes; request input MUST NOT be
   authoritative for tokens, administrator identity, permission state,
   `phoneNormalized`, `addressHash`, or historical snapshots.
-- **TR-002**: Customer and address plain-text fields (`name`, `label`, `city`,
-  `area`, `street`, `notes`) MUST remain plain text only, without trusted HTML
-  or Markdown, and responses and logs MUST avoid sensitive leakage.
+- **TR-002**: Customer and address plain-text fields (`name`, `province`,
+  `city`, `address`, `notes`) MUST remain plain text only, without trusted
+  HTML or Markdown, and responses and logs MUST avoid sensitive leakage.
 - **TR-003**: This feature MUST NOT introduce customer file uploads, avatars,
   exports, or any new browser token transport; Feature 001 remains the sole
   owner of authentication and token security.
@@ -335,10 +335,12 @@ without requiring the Orders feature to exist yet.
   `PUT /api/v1/admin/customers/{customer}/addresses/{address}/default`.
 - **API-002**: Customer create and update requests MUST use `camelCase` request
   keys, accept the approved customer fields only, and reject unsupported
-  customer-auth, role, permission, or protected identity fields.
+  customer-auth, role, permission, or protected identity fields. Customer
+  create MAY accept one optional nested `address` object containing only
+  `phone`, `province`, `city`, `address`, and optional `notes`.
 - **API-003**: Address create and update requests MUST use `camelCase` request
-  keys and accept only `label`, `phone`, `phoneCountryCode`, `countryCode`,
-  `city`, `area`, `street`, `notes`, and `isDefault` as applicable.
+  keys and accept only `phone`, `phoneCountryCode`, `province`, `city`,
+  `address`, `notes`, and `isDefault` as applicable.
 - **API-004**: Success responses MUST follow the shared API envelope and return
   only approved customer or address data. Error responses MUST use the shared
   localized envelope with stable English machine codes where applicable,
@@ -397,8 +399,8 @@ without requiring the Orders feature to exist yet.
   normalized phone, with one mutable display name, optional unique email, soft
   delete support, and no authentication capability.
 - **Customer Address**: A customer-owned service address with one backend
-  identity, one optional label, one required phone, one required country and
-  location shape, one default flag, and soft-delete support.
+  identity, one required phone, one required `province`, one required `city`,
+  one required `address`, one default flag, and soft-delete support.
 - **Customer and Address Resolution Contract**: The reusable domain behaviour
   that future guest-order flows use to resolve, create, reuse, or restore
   authoritative customer and address records without mutating historical order
@@ -419,8 +421,7 @@ without requiring the Orders feature to exist yet.
   preserved after create, update, delete, restore, or set-default operations.
 - **SC-004**: Future guest-order resolution can reuse or restore matching
   customer and address records without automatically overwriting saved customer
-  name, saved customer email, saved address label, saved address phone, or
-  saved address notes.
+  name, saved customer email, saved address phone, or saved address notes.
 - **SC-005**: Customer and address management remains administrator-only, with
   no public customer CRUD routes, no customer authentication routes, and no
   Feature 002 token issuance or token acceptance added to the system.

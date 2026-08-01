@@ -4,7 +4,7 @@
 
 **Created**: 2026-07-30
 
-**Status**: Draft
+**Status**: Ready for Planning
 
 **Input**: User description: "[$speckit-specify](C:\\xampp\\htdocs\\serviceEcommerce\\.agents\\skills\\speckit-specify\\SKILL.md) let's build the 4th feature use this file [004-services-catalog.md](docs/features/004-services-catalog.md) as referance to it and commit to each line in it"
 
@@ -221,10 +221,11 @@ delete-versus-update, and restore races.
   one request? The request must fail with `422 VALIDATION_ERROR`.
 - How does the system handle `values: []` on pricing-option update? It must
   leave all existing values unchanged.
-- How does the system handle active service publication when a start-from
-  pricing option has no active values? Activation must be rejected when the
-  approved activation rule requires at least one active value per existing
-  option.
+- How does the system handle activation of a start-from service when an
+  existing non-deleted pricing option has no active, non-deleted values?
+  Activation must be rejected with `422 VALIDATION_ERROR`. Pricing options
+  remain optional, but every existing option must have at least one active,
+  non-deleted value before the service can be active.
 - How does the system handle public filters for inactive or deleted category or
   subcategory slugs? The API must return `200 OK` with an empty collection
   rather than exposing hidden hierarchy state.
@@ -319,6 +320,45 @@ delete-versus-update, and restore races.
   `SUBCATEGORY_HAS_SERVICES` when any non-deleted service is assigned to that
   subcategory.
 
+- **FR-031**: The external integer enum mappings MUST be fixed exactly as
+  follows: service `priceType` uses `0 = fixed` and `1 = start_from`; pricing
+  option `inputType` uses `0 = select`, `1 = multi_select`, `2 = radio`, and
+  `3 = checkbox`; service-media `type` uses `0 = image` and `1 = video`.
+  Internal-only enum mappings MUST be `0 = text` for the order-field type and
+  `0 = add_on` for the pricing-option type.
+- **FR-032**: A service MAY be activated without an image, category,
+  subcategory, or pricing option. Activation MUST require valid bilingual core
+  content, valid localized slugs, a supported price type, and
+  `basePrice > 0`. For a start-from service, every existing non-deleted pricing
+  option MUST contain at least one active, non-deleted value before activation.
+  No zero-adjustment value is required.
+- **FR-033**: `Create Service` MUST accept `multipart/form-data` using nested
+  bracket notation for specifications, order fields, pricing options, values,
+  and media. The request MUST NOT use a JSON `payload` field.
+- **FR-034**: Nested resources included in `Create Service` MUST require both
+  `services.create` and the corresponding nested create permission:
+  `service-specifications.create`, `service-order-fields.create`,
+  `service-pricing-options.create`, or `service-media.create`. Missing any
+  permission required by the submitted nested content MUST return
+  `403 FORBIDDEN`.
+- **FR-035**: Admin `filter[search]` MUST search Arabic and English names,
+  short descriptions, descriptions, and slugs regardless of
+  `Accept-Language`. Public `filter[search]` MUST search Arabic and English
+  names, short descriptions, and descriptions regardless of
+  `Accept-Language`; the response projection remains localized.
+- **FR-036**: Admin `filter[trashed]` MUST accept only `without`, `with`, and
+  `only`, with `without` as the default.
+- **FR-037**: Specification, order-field, pricing-option, and media indexes
+  MUST be unpaginated because their collection sizes are capped. They MUST
+  exclude soft-deleted child rows and MUST NOT support a trashed filter in the
+  MVP. Specifications, order fields, pricing options, and option values MUST
+  use deterministic `sortOrder ASC, id ASC`; media MUST return the main image
+  first, then remaining images by `id ASC`, then the video.
+- **FR-038**: Media `altAr` and `altEn` MUST be an optional complete bilingual
+  pair. Submitting one without the other MUST return `422 VALIDATION_ERROR`.
+  The media update endpoint MUST update alt text only and MUST NOT replace the
+  stored file.
+
 ### Actors and Authorization *(mandatory for protected behaviour)*
 
 - **AR-001**: Only authenticated active administrators may access
@@ -342,6 +382,10 @@ delete-versus-update, and restore races.
 - **AR-009**: Nested pricing-option values and media resources MUST always be
   validated against the parent service or pricing-option in the route and MUST
   not be accessible cross-parent.
+- **AR-010**: Creating a service with nested child records or media MUST
+  authorize each submitted nested collection independently in addition to
+  `services.create`; authorization MUST be evaluated before committing any
+  database row or file.
 
 ### Trust, Security, and Content Boundaries *(mandatory)*
 
@@ -390,8 +434,8 @@ delete-versus-update, and restore races.
 ### API Contract and Localization *(mandatory for API behaviour)*
 
 - **API-001**: Admin routes for this feature MUST live only under
-  `/api/v1/admin/services/*` and public routes only under
-  `/api/v1/public/services/*`.
+  `/api/v1/admin/services*` and public routes only under
+  `/api/v1/public/services*`.
 - **API-002**: Create and update responses MUST use the shared success envelope;
   validation failures MUST use `422 VALIDATION_ERROR`; hierarchy deletion
   conflicts MUST use `409` with stable English machine codes.
@@ -401,8 +445,207 @@ delete-versus-update, and restore races.
   `perPage = 15` and maximum `perPage = 100`; public list pagination MUST use
   default `perPage = 12` and maximum `perPage = 50`.
 - **API-005**: Public filter slugs for category and subcategory MUST resolve by
-  the request locale first and may fall back to the alternate locale column
+  the request locale first and MAY fall back to the alternate locale column
   without changing response localization.
+- **API-006**: All controllers MUST use the project's existing shared
+  `StatusCode` enum rather than hardcoded HTTP status integers. Create returns
+  `201`; list, show, update, delete, restore, set-main, and alt-text update
+  return `200`; delete responses contain `data: null`; `204` is not used.
+- **API-007**: Every route parameter representing a database identifier MUST be
+  constrained to a numeric value, and every nested resource MUST be scoped to
+  the parent identifiers in the route.
+- **API-008**: Pricing-option value `actionStatus` MUST accept only `""`,
+  `create`, `update`, and `delete`. `create` MUST omit `id`; `update` and
+  `delete` MUST include `id`; omitted or empty action status performs no action.
+  Omitting `values` or sending `values: []` leaves existing values unchanged.
+- **API-009**: Admin and public list endpoints MUST use only the approved
+  filters and sorts. Unsupported filters or sorts MUST be rejected consistently
+  by the established Query Builder contract rather than silently ignored.
+
+#### Exact Admin Route Inventory
+
+Core services:
+
+```http
+GET    /api/v1/admin/services
+POST   /api/v1/admin/services
+GET    /api/v1/admin/services/{service}
+PATCH  /api/v1/admin/services/{service}
+DELETE /api/v1/admin/services/{service}
+POST   /api/v1/admin/services/{service}/restore
+```
+
+Specifications:
+
+```http
+GET    /api/v1/admin/services/{service}/specifications
+POST   /api/v1/admin/services/{service}/specifications
+GET    /api/v1/admin/services/{service}/specifications/{specification}
+PATCH  /api/v1/admin/services/{service}/specifications/{specification}
+DELETE /api/v1/admin/services/{service}/specifications/{specification}
+```
+
+Order fields:
+
+```http
+GET    /api/v1/admin/services/{service}/order-fields
+POST   /api/v1/admin/services/{service}/order-fields
+GET    /api/v1/admin/services/{service}/order-fields/{orderField}
+PATCH  /api/v1/admin/services/{service}/order-fields/{orderField}
+DELETE /api/v1/admin/services/{service}/order-fields/{orderField}
+```
+
+Pricing options:
+
+```http
+GET    /api/v1/admin/services/{service}/pricing-options
+POST   /api/v1/admin/services/{service}/pricing-options
+GET    /api/v1/admin/services/{service}/pricing-options/{pricingOption}
+PATCH  /api/v1/admin/services/{service}/pricing-options/{pricingOption}
+DELETE /api/v1/admin/services/{service}/pricing-options/{pricingOption}
+```
+
+Pricing-option values MUST NOT have independent routes.
+
+Media:
+
+```http
+GET    /api/v1/admin/services/{service}/media
+POST   /api/v1/admin/services/{service}/media
+PATCH  /api/v1/admin/services/{service}/media/{media}
+DELETE /api/v1/admin/services/{service}/media/{media}
+PATCH  /api/v1/admin/services/{service}/media/{media}/set-as-main
+```
+
+The regular media `PATCH` updates only `altAr` and `altEn`. The set-main route
+may target image media only.
+
+#### Exact Public Route Inventory
+
+```http
+GET /api/v1/public/services
+GET /api/v1/public/services/{serviceSlug}
+```
+
+No nested public service routes under categories or subcategories and no public
+write routes are permitted.
+
+#### Multipart Create Contract
+
+`POST /api/v1/admin/services` uses:
+
+```http
+Content-Type: multipart/form-data
+```
+
+Nested data MUST use bracket notation, including:
+
+```text
+specifications[0][labelAr]
+specifications[0][labelEn]
+specifications[0][valueAr]
+specifications[0][valueEn]
+
+orderFields[0][labelAr]
+orderFields[0][labelEn]
+orderFields[0][isRequired]
+
+pricingOptions[0][nameAr]
+pricingOptions[0][inputType]
+pricingOptions[0][values][0][labelAr]
+pricingOptions[0][values][0][priceAdjustment]
+
+media[0][file]
+media[0][type]
+media[0][isMain]
+media[0][altAr]
+media[0][altEn]
+```
+
+A JSON-string `payload` field is not part of the approved request contract.
+`actionStatus` is not used during nested creation; all submitted create-time
+values are new records.
+
+#### Admin List Query Contract
+
+Approved filters:
+
+```text
+filter[search]
+filter[categoryId]
+filter[subcategoryId]
+filter[priceType]
+filter[isActive]
+filter[isAvailable]
+filter[trashed]
+```
+
+`filter[trashed]`:
+
+```text
+without | with | only
+default: without
+```
+
+Approved sorts only:
+
+```text
+sort=basePrice
+sort=-basePrice
+sort=createdAt
+sort=-createdAt
+```
+
+Admin search always searches:
+
+```text
+name_ar
+name_en
+short_description_ar
+short_description_en
+description_ar
+description_en
+slug_ar
+slug_en
+```
+
+#### Public List Query Contract
+
+Approved filters only:
+
+```text
+filter[search]
+filter[category]
+filter[subcategory]
+filter[priceFrom]
+filter[priceTo]
+filter[isAvailable]
+```
+
+Public search always searches Arabic and English names, short descriptions, and
+descriptions, while the response projection remains localized by
+`Accept-Language`.
+
+The public endpoint does not accept `sort`; its deterministic internal order is:
+
+```text
+created_at DESC, id DESC
+```
+
+#### Child Index and Media Projection Contract
+
+- Specification, order-field, pricing-option, and media indexes are
+  unpaginated.
+- Soft-deleted specifications, order fields, pricing options, and values are
+  excluded.
+- Child indexes do not support `filter[trashed]`.
+- Specifications, order fields, pricing options, and values use
+  `sortOrder ASC, id ASC`.
+- Media returns the main image first, remaining images by `id ASC`, then the
+  video.
+- `altAr` and `altEn` are optional together; a partial pair is invalid.
+- The media update route changes alt text only and never replaces a file.
+
 - **LOC-001**: Public service list and detail responses MUST resolve localized
   content by `Accept-Language` and return `Content-Language` plus
   `Vary: Accept-Language`.
@@ -424,9 +667,11 @@ delete-versus-update, and restore races.
 - **VR-002**: File tests MUST cover allowed uploads, rejected MIME or size
   violations, one-main-image enforcement, one-video enforcement, main-image
   fallback, and filesystem compensation during failed transactional creation.
-- **VR-003**: Route or architecture tests MUST prove that only the approved
-  admin and public service routes exist, that permissions are mapped correctly,
-  and that no public write routes are introduced.
+- **VR-003**: Route or architecture tests MUST prove that exactly the
+  approved 26 Admin operations and 2 Public operations exist, that all numeric
+  route constraints and parent scoping rules are enforced, that permissions are
+  mapped correctly, that pricing-option values have no independent routes, and
+  that no public write routes are introduced.
 - **VR-004**: Real MySQL concurrency tests MUST prove category/subcategory
   deletion guards, service classification writes, main-image selection, and
   video uniqueness under race conditions.
@@ -472,9 +717,10 @@ delete-versus-update, and restore races.
 - **SC-005**: Category and subcategory deletion guards prevent deletion when a
   non-deleted service still depends on the target hierarchy record in every
   tested success, conflict, and concurrency scenario.
-- **SC-006**: The final repository quality gates for this feature pass, and the
-  implemented API contract remains synchronized across specification, OpenAPI,
-  Postman, and automated tests.
+- **SC-006**: Every approved route, field, integer enum mapping, filter,
+  permission, status outcome, and stable error code is represented consistently
+  across the delivered contract and acceptance evidence, with zero unresolved
+  contract mismatches.
 
 ## Assumptions
 

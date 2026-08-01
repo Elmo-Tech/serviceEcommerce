@@ -73,41 +73,35 @@ it('leaves exactly one active default address after concurrent default changes',
     ]);
 
     $customer->addresses()->create([
-        'label' => 'Original Default',
         'phone' => '+20 100 333 4444',
         'phone_normalized' => '+201003334444',
-        'country_code' => 'EG',
-        'city' => 'Cairo',
-        'area' => 'Nasr City',
-        'street' => 'Street 1',
+        'province' => 'Cairo',
+        'city' => 'Nasr City',
+        'address' => 'Nasr City | Street 1',
         'notes' => null,
-        'address_hash' => hash('sha256', 'eg|cairo|nasr city|street 1'),
+        'address_hash' => hash('sha256', 'cairo|nasr city|nasr city | street 1'),
         'is_default' => true,
     ]);
 
     $firstCandidate = $customer->addresses()->create([
-        'label' => 'First Candidate',
         'phone' => '+20 100 333 4444',
         'phone_normalized' => '+201003334444',
-        'country_code' => 'EG',
-        'city' => 'Giza',
-        'area' => null,
-        'street' => 'Street 2',
+        'province' => 'Giza',
+        'city' => 'Dokki',
+        'address' => 'Street 2',
         'notes' => null,
-        'address_hash' => hash('sha256', 'eg|giza||street 2'),
+        'address_hash' => hash('sha256', 'giza|dokki|street 2'),
         'is_default' => false,
     ]);
 
     $secondCandidate = $customer->addresses()->create([
-        'label' => 'Second Candidate',
         'phone' => '+20 100 333 4444',
         'phone_normalized' => '+201003334444',
-        'country_code' => 'EG',
-        'city' => 'Alexandria',
-        'area' => null,
-        'street' => 'Street 3',
+        'province' => 'Alexandria',
+        'city' => 'Smouha',
+        'address' => 'Street 3',
         'notes' => null,
-        'address_hash' => hash('sha256', 'eg|alexandria||street 3'),
+        'address_hash' => hash('sha256', 'alexandria|smouha|street 3'),
         'is_default' => false,
     ]);
 
@@ -141,13 +135,11 @@ it('keeps one active canonical address when duplicate guest resolution runs conc
     ]);
 
     $payload = json_encode([
-        'label' => 'Guest Address',
         'phone' => '01004445555',
         'phoneCountryCode' => 'EG',
-        'countryCode' => 'EG',
-        'city' => 'Cairo',
-        'area' => 'Maadi',
-        'street' => 'Street 9',
+        'province' => 'Cairo',
+        'city' => 'Maadi',
+        'address' => 'Maadi | Street 9',
         'notes' => 'Same request',
     ], JSON_THROW_ON_ERROR);
 
@@ -170,7 +162,7 @@ it('keeps one active canonical address when duplicate guest resolution runs conc
     $addresses = $customer->addresses()->get();
 
     expect($addresses)->toHaveCount(1)
-        ->and($addresses->first()?->address_hash)->toBe(hash('sha256', 'eg|cairo|maadi|street 9'))
+        ->and($addresses->first()?->address_hash)->toBe(hash('sha256', 'cairo|maadi|maadi | street 9'))
         ->and(collect($results)->pluck('status')->unique()->all())->toBe(['success'])
         ->and(collect($results)->pluck('addressId')->unique())->toHaveCount(1)
         ->and(collect($results)->where('wasCreated', true))->toHaveCount(1)

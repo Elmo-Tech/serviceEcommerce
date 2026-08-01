@@ -22,41 +22,23 @@ class AddressNormalizationService
         return $this->collapseWhitespace($value);
     }
 
-    public function normalizeCountryCode(string $countryCode): string
-    {
-        return strtoupper(trim($countryCode));
-    }
-
     /**
-     * @return array{
-     *     countryCode: string,
-     *     city: string,
-     *     area: ?string,
-     *     street: string,
-     *     addressHash: string
-     * }
+     * @return array{province:string,city:string,address:string,addressHash:string}
      */
-    public function normalizeIdentity(
-        string $countryCode,
-        string $city,
-        ?string $area,
-        string $street,
-    ): array {
-        $normalizedCountryCode = $this->normalizeCountryCode($countryCode);
+    public function normalizeIdentity(string $province, string $city, string $address): array
+    {
+        $normalizedProvince = $this->normalizeRequiredText($province);
         $normalizedCity = $this->normalizeRequiredText($city);
-        $normalizedArea = $this->normalizeOptionalText($area);
-        $normalizedStreet = $this->normalizeRequiredText($street);
+        $normalizedAddress = $this->normalizeRequiredText($address);
 
         return [
-            'countryCode' => $normalizedCountryCode,
+            'province' => $normalizedProvince,
             'city' => $normalizedCity,
-            'area' => $normalizedArea,
-            'street' => $normalizedStreet,
+            'address' => $normalizedAddress,
             'addressHash' => hash('sha256', implode('|', [
-                mb_strtolower($normalizedCountryCode),
+                mb_strtolower($normalizedProvince),
                 mb_strtolower($normalizedCity),
-                mb_strtolower($normalizedArea ?? ''),
-                mb_strtolower($normalizedStreet),
+                mb_strtolower($normalizedAddress),
             ])),
         ];
     }
