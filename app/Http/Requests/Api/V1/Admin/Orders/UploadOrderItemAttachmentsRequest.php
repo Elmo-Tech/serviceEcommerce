@@ -19,6 +19,7 @@ class UploadOrderItemAttachmentsRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'completedAt' => ['prohibited'],
             'files' => ['required', 'array', 'min:1', 'max:3'],
             'files.*' => [
                 'file',

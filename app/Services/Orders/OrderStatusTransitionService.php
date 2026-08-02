@@ -7,6 +7,7 @@ namespace App\Services\Orders;
 use App\Enums\HttpStatusCode;
 use App\Enums\Orders\OrderStatus;
 use App\Exceptions\ApiBusinessException;
+use Carbon\CarbonInterface;
 
 class OrderStatusTransitionService
 {
@@ -44,6 +45,22 @@ class OrderStatusTransitionService
                 HttpStatusCode::CONFLICT,
             );
         }
+    }
+
+    public function resolveCompletedAt(
+        OrderStatus $currentStatus,
+        OrderStatus $targetStatus,
+        ?CarbonInterface $completedAt,
+    ): ?CarbonInterface {
+        if ($completedAt !== null) {
+            return $completedAt;
+        }
+
+        if ($currentStatus !== OrderStatus::COMPLETED && $targetStatus === OrderStatus::COMPLETED) {
+            return now('UTC');
+        }
+
+        return null;
     }
 
     private function normalizeReason(?string $reason): ?string

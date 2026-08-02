@@ -120,9 +120,16 @@ class UpdateOrderAction
                     $reason,
                 );
 
+                $completedAt = $this->orderStatusTransitionService->resolveCompletedAt(
+                    $lockedOrder->status,
+                    $targetStatus,
+                    $lockedOrder->completed_at,
+                );
+
                 $attributes['status'] = $targetStatus;
                 $attributes['cancellation_reason'] = $targetStatus === OrderStatus::CANCELLED ? $reason : null;
                 $attributes['cancelled_at'] = $targetStatus === OrderStatus::CANCELLED ? now() : null;
+                $attributes['completed_at'] = $completedAt;
                 $attributes['cancelled_by_admin_id'] = $targetStatus === OrderStatus::CANCELLED ? $admin->getKey() : null;
             }
 

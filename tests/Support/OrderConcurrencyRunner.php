@@ -200,6 +200,7 @@ try {
                 'status' => 'success',
                 'orderId' => $updatedOrder->getKey(),
                 'orderStatus' => $updatedOrder->status?->value,
+                'completedAt' => $updatedOrder->completed_at?->toJSON(),
             ], JSON_THROW_ON_ERROR);
 
             exit(0);

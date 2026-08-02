@@ -35,6 +35,7 @@ class AdminOrderIndexResource extends JsonResource
             'total' => $this->formatMoney($this->total),
             'paidAmount' => $this->formatMoney($this->paid_amount),
             'remainingAmount' => $payment['remainingAmount'],
+            'completedAt' => $this->completed_at?->toJSON(),
             'createdAt' => $this->created_at?->toJSON(),
         ];
     }

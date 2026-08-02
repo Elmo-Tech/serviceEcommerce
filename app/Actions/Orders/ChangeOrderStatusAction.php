@@ -30,10 +30,17 @@ class ChangeOrderStatusAction
 
             $this->orderStatusTransitionService->ensureTransitionAllowed($lockedOrder->status, $targetStatus, $reason);
 
+            $completedAt = $this->orderStatusTransitionService->resolveCompletedAt(
+                $lockedOrder->status,
+                $targetStatus,
+                $lockedOrder->completed_at,
+            );
+
             $lockedOrder->forceFill([
                 'status' => $targetStatus,
                 'cancellation_reason' => $targetStatus === OrderStatus::CANCELLED ? $reason : null,
                 'cancelled_at' => $targetStatus === OrderStatus::CANCELLED ? now() : null,
+                'completed_at' => $completedAt,
                 'cancelled_by_admin_id' => $targetStatus === OrderStatus::CANCELLED ? $admin->getKey() : null,
             ])->save();
 

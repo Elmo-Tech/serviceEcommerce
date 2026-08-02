@@ -20,6 +20,7 @@ class CreateAdminOrderRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'completedAt' => ['prohibited'],
             'customerId' => ['sometimes', 'integer', 'min:1'],
             'customer' => ['sometimes', 'array'],
             'customer.name' => ['required_with:customer', 'string', 'min:1', 'max:150'],

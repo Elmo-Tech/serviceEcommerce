@@ -18,6 +18,7 @@ class ChangeOrderStatusRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'completedAt' => ['prohibited'],
             'status' => ['required', 'integer', Rule::in(array_map(
                 static fn (OrderStatus $status) => $status->value,
                 OrderStatus::cases(),

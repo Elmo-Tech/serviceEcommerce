@@ -79,6 +79,7 @@ class AdminOrderResource extends JsonResource
                 'id' => $this->createdByAdmin->getKey(),
                 'name' => $this->createdByAdmin->name,
             ],
+            'completedAt' => $this->completed_at?->toJSON(),
             'createdAt' => $this->created_at?->toJSON(),
             'updatedAt' => $this->updated_at?->toJSON(),
         ];

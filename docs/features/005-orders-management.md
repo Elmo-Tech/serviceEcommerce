@@ -2033,3 +2033,10 @@ Public protection:
 - Idempotency-Key required and permanently reserved.
 - 5 attempts per minute by IP + normalized phone.
 ```
+
+## Feature 007 completion timestamp amendment
+
+- Admin Order index and show responses expose `completedAt` as an ISO-8601 UTC timestamp or `null`.
+- `completedAt` records the first transition to `completed` and is preserved by the approved `completed -> cancelled` transition.
+- The field is backend-controlled and is rejected from Public/Admin create, order update, status, payment, item, and attachment mutation requests.
+- Existing completed orders are backfilled from their unchanged `updated_at` value by Feature 007's idempotent migration.

@@ -16,6 +16,7 @@ class CreateOrderItemRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'completedAt' => ['prohibited'],
             'serviceId' => ['required', 'integer', 'min:1'],
             'quantity' => ['required', 'integer', 'min:1'],
             'selectedOptions' => ['sometimes', 'array'],

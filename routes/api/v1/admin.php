@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\V1\Admin\Categories\CategoryController;
 use App\Http\Controllers\Api\V1\Admin\Categories\SubcategoryController;
 use App\Http\Controllers\Api\V1\Admin\Customers\CustomerAddressController;
 use App\Http\Controllers\Api\V1\Admin\Customers\CustomerController;
+use App\Http\Controllers\Api\V1\Admin\Dashboard\DashboardController;
 use App\Http\Controllers\Api\V1\Admin\Orders\OrderController;
 use App\Http\Controllers\Api\V1\Admin\Orders\OrderItemAttachmentController;
 use App\Http\Controllers\Api\V1\Admin\Orders\OrderItemController;
@@ -25,6 +26,9 @@ Route::middleware([
     'admin.user_type',
     'admin.active',
 ])->group(function (): void {
+    Route::get('/dashboard', [DashboardController::class, 'show'])
+        ->middleware('permission:dashboard.view');
+
     Route::get('/customers', [CustomerController::class, 'index'])
         ->middleware('permission:customers.view');
     Route::post('/customers', [CustomerController::class, 'store'])

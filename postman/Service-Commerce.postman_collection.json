@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "Service Commerce - Admin API Collection",
-    "description": "Service Commerce admin and public API collection for Feature 001 Identity and Authentication, Feature 002 Customers and Addresses, Feature 003 Categories and Subcategories, Feature 004 Services Catalog, and Feature 005 Orders Management. Requests go directly to the Laravel Backend API at {{baseUrl}}. Example request bodies use fake values that mirror the backend contract. For customer and customer-address responses, Egyptian phone numbers are returned in local format such as 01001234567 without country code or spaces. Login and refresh keep accessToken and refreshToken available as Postman variables for follow-up protected admin requests.",
+    "description": "Service Commerce admin and public API collection for Features 001 through 007, including Orders Management, Settings Management, and Admin Dashboard Analytics. Requests go directly to the Laravel Backend API at {{baseUrl}}. Example request bodies use fake values that mirror the backend contract. For customer and customer-address responses, Egyptian phone numbers are returned in local format such as 01001234567 without country code or spaces. Login and refresh keep accessToken and refreshToken available as Postman variables for follow-up protected admin requests.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -1064,11 +1064,11 @@
     },
     {
       "name": "Admin Orders",
-      "description": "Feature 005 protected admin order lifecycle routes. Common filter meanings: filter[search] = orderNumber/customer/service text search; filter[status] enum 0 pending, 1 confirmed, 2 in_progress, 3 completed, 4 cancelled; filter[paymentStatus] enum 0 unpaid, 1 partially_paid, 2 paid; filter[orderPlace] enum 0 website, 1 whatsapp; filter[customerId] and filter[serviceId] = exact IDs; filter[createdFrom|createdTo] = UTC date boundaries; filter[totalFrom|totalTo] = final-total range; sort allow-list = createdAt, -createdAt, total, -total, orderNumber, -orderNumber. Update/status rules: completed and cancelled are terminal in Feature 005 flow, and cancellation requires reason.",
+      "description": "Feature 005 protected admin order lifecycle routes. Common filter meanings: filter[search] = orderNumber/customer/service text search; filter[status] enum 0 pending, 1 confirmed, 2 in_progress, 3 completed, 4 cancelled; filter[paymentStatus] enum 0 unpaid, 1 partially_paid, 2 paid; filter[orderPlace] enum 0 website, 1 whatsapp; filter[customerId] and filter[serviceId] = exact IDs; filter[createdFrom|createdTo] = UTC date boundaries; filter[totalFrom|totalTo] = final-total range; sort allow-list = createdAt, -createdAt, total, -total, orderNumber, -orderNumber. Admin index/show responses include read-only completedAt as the first-completion UTC timestamp or null. Clients must never send completedAt in any mutation. Update/status rules: completed and cancelled are terminal in Feature 005 flow, and cancellation requires reason.",
       "item": [
         {
           "name": "List Orders",
-          "description": "Lists orders with allow-listed filters and sorts only. Useful query examples: filter[status]=0 means pending only; filter[paymentStatus]=2 means fully paid only; sort=-createdAt means newest first.",
+          "description": "Lists orders with allow-listed filters and sorts only. Each row includes read-only completedAt (UTC ISO-8601 or null). Useful query examples: filter[status]=0 means pending only; filter[paymentStatus]=2 means fully paid only; sort=-createdAt means newest first.",
           "request": {
             "method": "GET",
             "header": [
@@ -1117,7 +1117,7 @@
         },
         {
           "name": "Show Order",
-          "description": "Returns one localized order with nested items, attachment metadata, totals, payment summary, customer snapshot, and address snapshot.",
+          "description": "Returns one localized order with nested items, attachment metadata, totals, payment summary, customer snapshot, address snapshot, and read-only completedAt (UTC ISO-8601 or null).",
           "request": {
             "method": "GET",
             "header": [
@@ -1493,6 +1493,64 @@
               ]
             },
             "url": "{{baseUrl}}/admin/settings"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin Dashboard",
+      "description": "Feature 007 protected analytics endpoint. Requires dashboard.view. Only the top-level filter object is accepted. Nested keys: filter[ordersPeriod] = today, this_week, this_month, or custom; filter[dateFrom] and filter[dateTo] = paired inclusive UTC YYYY-MM-DD dates (maximum 366 days); filter[status] = exact lexical 0 pending, 1 confirmed, 2 in_progress, 3 completed, or 4 cancelled and affects orders.count only. Empty, repeated, array-shaped, and unknown keys return 422. The implementation performs three bounded Order-data SELECT queries and zero-fills six UTC months.",
+      "item": [
+        {
+          "name": "Show Dashboard Defaults",
+          "description": "Default request: orders use the current UTC day, salesPeriod uses the current UTC month, status is null, and performance contains the current UTC month plus the previous five.",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Accept-Language", "value": "en" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/admin/dashboard"
+          }
+        },
+        {
+          "name": "Show Dashboard With Filters",
+          "description": "Custom order and sales range with exact status filtering. status=0 means pending and changes orders.count only; it never changes financial blocks or performance.",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Accept-Language", "value": "ar" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/admin/dashboard?filter[ordersPeriod]=custom&filter[dateFrom]=2026-01-01&filter[dateTo]=2026-01-31&filter[status]=0"
+          }
+        },
+        {
+          "name": "Reject Repeated Dashboard Status",
+          "description": "Expected 422 VALIDATION_ERROR because repeated nested members are rejected before PHP query normalization.",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Accept-Language", "value": "en" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/admin/dashboard?filter[status]=1&filter[status]=2"
+          }
+        },
+        {
+          "name": "Reject Array Dashboard Status",
+          "description": "Expected 422 VALIDATION_ERROR because array-shaped scalar filter values are not accepted.",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Accept-Language", "value": "en" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/admin/dashboard?filter[status][]=3"
           }
         }
       ]

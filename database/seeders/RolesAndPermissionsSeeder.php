@@ -22,6 +22,7 @@ class RolesAndPermissionsSeeder extends Seeder
             CategoriesPermissionsSeeder::class,
             ServicesPermissionsSeeder::class,
             OrdersPermissionsSeeder::class,
+            DashboardPermissionsSeeder::class,
             SettingsPermissionsSeeder::class,
         ]);
 

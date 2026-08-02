@@ -785,6 +785,13 @@ components:
       pattern: ^-?(0|[1-9][0-9]*)\.[0-9]{2}$
       description: Signed decimal monetary value with exactly two decimal places; remainingAmount may be negative.
       example: '-1000.00'
+    CompletedAt:
+      description: Backend-controlled timestamp of the first transition to completed. Read-only on Admin Order index and show responses.
+      readOnly: true
+      oneOf:
+      - type: string
+        format: date-time
+      - type: 'null'
     CustomerInput:
       type: object
       description: Customer data used for customer resolution and the immutable order snapshot.
@@ -1632,6 +1639,7 @@ components:
       - cancellation
       - items
       - createdByAdmin
+      - completedAt
       - createdAt
       - updatedAt
       properties:
@@ -1715,6 +1723,8 @@ components:
         createdByAdmin:
           $ref: '#/components/schemas/AdminSummary'
           description: Creating Admin or null for Public Create.
+        completedAt:
+          $ref: '#/components/schemas/CompletedAt'
         createdAt:
           type: string
           description: UTC order creation timestamp.
@@ -1740,6 +1750,7 @@ components:
       - total
       - paidAmount
       - remainingAmount
+      - completedAt
       - createdAt
       properties:
         id:
@@ -1796,6 +1807,8 @@ components:
           pattern: ^-?(0|[1-9][0-9]*)\.[0-9]{2}$
           description: Total minus paid amount; may be negative.
           example: '-1000.00'
+        completedAt:
+          $ref: '#/components/schemas/CompletedAt'
         createdAt:
           type: string
           description: UTC creation timestamp.

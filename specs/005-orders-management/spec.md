@@ -634,3 +634,9 @@ nested-resource disclosure behavior.
   attachments, and the final address shape are approved Feature 005 decisions.
 - Any older contradictory wording in shared project documentation is a
   documentation-sync task during planning, not a blocker to `/speckit.plan`.
+
+## Feature 007 synchronized amendment
+
+- **FR-CompletedAt-001**: Admin Order index and show MUST expose read-only `completedAt` as ISO-8601 UTC or `null`.
+- **FR-CompletedAt-002**: The first completed transition MUST set the value; later cancellation MUST preserve it.
+- **FR-CompletedAt-003**: Every Public/Admin order mutation MUST reject a client-supplied `completedAt` value.

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Casts\UtcDateTime;
 use App\Enums\Orders\DiscountType;
 use App\Enums\Orders\OrderPlace;
 use App\Enums\Orders\OrderStatus;
@@ -45,6 +46,7 @@ class Order extends Model
         'paid_amount',
         'cancellation_reason',
         'cancelled_at',
+        'completed_at',
         'cancelled_by_admin_id',
         'created_by_admin_id',
     ];
@@ -64,6 +66,7 @@ class Order extends Model
             'payment_status' => PaymentStatus::class,
             'paid_amount' => 'decimal:2',
             'cancelled_at' => 'datetime',
+            'completed_at' => UtcDateTime::class,
             'cancelled_by_admin_id' => 'integer',
             'created_by_admin_id' => 'integer',
         ];

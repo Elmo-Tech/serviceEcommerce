@@ -17,6 +17,7 @@ class UpdateOrderItemRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'completedAt' => ['prohibited'],
             'quantity' => ['sometimes', 'integer', 'min:1'],
             'selectedOptions' => ['sometimes', 'array'],
             'selectedOptions.*.pricingOptionId' => ['required_with:selectedOptions', 'integer', 'min:1'],

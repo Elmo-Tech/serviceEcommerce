@@ -20,6 +20,7 @@ class CreatePublicOrderRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'completedAt' => ['prohibited'],
             'customer' => ['required', 'array'],
             'customer.name' => ['required', 'string', 'min:1', 'max:150'],
             'customer.email' => ['sometimes', 'nullable', 'string', 'email:rfc', 'max:255'],

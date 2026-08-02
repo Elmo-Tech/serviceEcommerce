@@ -16,6 +16,7 @@ class UpdateOrderPaymentRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'completedAt' => ['prohibited'],
             'paidAmount' => ['required', 'numeric', 'min:0'],
         ];
     }

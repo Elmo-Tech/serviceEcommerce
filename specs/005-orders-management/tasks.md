@@ -651,3 +651,7 @@ With multiple developers:
 - Verify required tests cover the approved behaviour and pass on MySQL
 - Use the existing `HttpStatusCode::*` enum values in application-controlled responses
 - Avoid vague tasks, overlapping file edits in parallel, and hidden cross-story dependencies
+
+## Feature 007 synchronized amendment
+
+- [x] T062 Expose read-only `completedAt` on Admin Order index/show, reject it from every order mutation, and synchronize Feature 005 docs, OpenAPI, Postman, resource tests, and contract tests.

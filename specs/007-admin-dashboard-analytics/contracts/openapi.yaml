@@ -1,0 +1,348 @@
+openapi: 3.1.0
+info:
+  title: Service Commerce Admin Dashboard Analytics API
+  version: 1.0.0
+  description: 'Exact contract for Feature 007. The feature introduces one new endpoint: GET /api/v1/admin/dashboard.
+    The backend uses UTC-only date calculations. Feature 005 Admin Order index/show contracts must separately
+    add the read-only nullable completedAt field defined in components.schemas.CompletedAt.
+
+    '
+x-feature-005-contract-amendment:
+  affectedOutputs:
+  - GET /api/v1/admin/orders
+  - GET /api/v1/admin/orders/{order}
+  field: completedAt
+  schemaRef: '#/components/schemas/CompletedAt'
+  mutationRule: 'completedAt is backend-controlled and must remain absent from every create, update, status-change,
+    payment, item, and other client mutation schema.
+
+    '
+paths:
+  /api/v1/admin/dashboard:
+    get:
+      operationId: showAdminDashboardAnalytics
+      summary: Retrieve Admin dashboard analytics
+      description: "Returns the approved UTC dashboard projection.\n\nQuery contract rules:\n- The only\
+        \ accepted top-level query key is `filter`.\n- `filter` uses deep-object syntax and may contain\
+        \ only `ordersPeriod`,\n  `dateFrom`, `dateTo`, and `status`.\n- Every supplied nested value must\
+        \ be one non-empty scalar.\n- Repeated, array-shaped, empty, whitespace-only, unknown top-level,\
+        \ and\n  unknown nested filter values are rejected.\n- `filter[ordersPeriod]` defaults to `today`.\n\
+        - `filter[dateFrom]` and `filter[dateTo]` must be supplied together.\n- `filter[ordersPeriod]=custom`\
+        \ requires both dates.\n- A valid range is inclusive and may span at most 366 calendar days.\n\
+        - With a non-custom order period, the date pair controls only `sales.period`\n  and `collectedSales.period`.\n\
+        - `filter[status]` accepts only exact lexical values 0 through 4 and affects\n  `orders.count`\
+        \ only.\n"
+      tags:
+      - Admin Dashboard
+      security:
+      - sanctumBearer: []
+      parameters:
+      - name: filter
+        in: query
+        required: false
+        style: deepObject
+        explode: true
+        description: Exact dashboard query-filter object. Use forms such as `filter[ordersPeriod]=this_week`,
+          `filter[dateFrom]=2026-01-01`, `filter[dateTo]=2026-01-31`, and `filter[status]=0`.
+        schema:
+          $ref: '#/components/schemas/DashboardFilter'
+      responses:
+        '200':
+          description: Dashboard analytics retrieved successfully
+          headers:
+            Content-Language:
+              $ref: '#/components/headers/ContentLanguage'
+            Vary:
+              $ref: '#/components/headers/VaryAcceptLanguage'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardSuccessResponse'
+        '401':
+          description: Unauthenticated
+          headers:
+            Content-Language:
+              $ref: '#/components/headers/ContentLanguage'
+            Vary:
+              $ref: '#/components/headers/VaryAcceptLanguage'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Inactive/non-Admin boundary rejection or missing permission
+          headers:
+            Content-Language:
+              $ref: '#/components/headers/ContentLanguage'
+            Vary:
+              $ref: '#/components/headers/VaryAcceptLanguage'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Invalid query shape, lexical value, date pairing, or range
+          headers:
+            Content-Language:
+              $ref: '#/components/headers/ContentLanguage'
+            Vary:
+              $ref: '#/components/headers/VaryAcceptLanguage'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+      x-query-shape-guard:
+        rejectRepeatedNestedMembers: true
+        examplesRejected:
+        - filter[status]=1&filter[status]=2
+        - filter[dateFrom]=2026-01-01&filter[dateFrom]=2026-02-01
+components:
+  securitySchemes:
+    sanctumBearer:
+      type: http
+      scheme: bearer
+      bearerFormat: Token
+  headers:
+    ContentLanguage:
+      description: Resolved API locale
+      schema:
+        type: string
+        enum:
+        - ar
+        - en
+    VaryAcceptLanguage:
+      description: Locale-sensitive response cache variance
+      schema:
+        type: string
+        const: Accept-Language
+  schemas:
+    DashboardFilter:
+      type: object
+      additionalProperties: false
+      properties:
+        ordersPeriod:
+          type: string
+          enum:
+          - today
+          - this_week
+          - this_month
+          - custom
+          default: today
+        dateFrom:
+          type: string
+          format: date
+          pattern: ^\d{4}-\d{2}-\d{2}$
+        dateTo:
+          type: string
+          format: date
+          pattern: ^\d{4}-\d{2}-\d{2}$
+        status:
+          type: string
+          enum:
+          - '0'
+          - '1'
+          - '2'
+          - '3'
+          - '4'
+    CompletedAt:
+      description: 'Read-only first-completion timestamp added to the authoritative Feature 005 Admin
+        Order index and show resources. It is never accepted from a client mutation.
+
+        '
+      readOnly: true
+      oneOf:
+      - type: string
+        format: date-time
+      - type: 'null'
+    DashboardSuccessResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        success:
+          type: boolean
+          const: true
+        message:
+          type: string
+        data:
+          $ref: '#/components/schemas/DashboardPayload'
+      required:
+      - success
+      - message
+      - data
+    DashboardPayload:
+      type: object
+      additionalProperties: false
+      properties:
+        salesPeriod:
+          $ref: '#/components/schemas/SalesPeriod'
+        sales:
+          $ref: '#/components/schemas/SalesBlock'
+        collectedSales:
+          $ref: '#/components/schemas/SalesBlock'
+        uncollectedSales:
+          $ref: '#/components/schemas/UncollectedSalesBlock'
+        orders:
+          $ref: '#/components/schemas/OrdersBlock'
+        performance:
+          type: array
+          minItems: 6
+          maxItems: 6
+          items:
+            $ref: '#/components/schemas/PerformancePoint'
+      required:
+      - salesPeriod
+      - sales
+      - collectedSales
+      - uncollectedSales
+      - orders
+      - performance
+    SalesPeriod:
+      type: object
+      additionalProperties: false
+      properties:
+        dateFrom:
+          type: string
+          format: date
+        dateTo:
+          type: string
+          format: date
+      required:
+      - dateFrom
+      - dateTo
+    MoneyString:
+      type: string
+      pattern: ^\d+\.\d{2}$
+      examples:
+      - '0.00'
+      - '12500.00'
+    SalesBlock:
+      type: object
+      additionalProperties: false
+      properties:
+        total:
+          $ref: '#/components/schemas/MoneyString'
+        today:
+          $ref: '#/components/schemas/MoneyString'
+        period:
+          $ref: '#/components/schemas/MoneyString'
+      required:
+      - total
+      - today
+      - period
+    UncollectedSalesBlock:
+      type: object
+      additionalProperties: false
+      properties:
+        total:
+          $ref: '#/components/schemas/MoneyString'
+        today:
+          $ref: '#/components/schemas/MoneyString'
+      required:
+      - total
+      - today
+    OrdersBlock:
+      type: object
+      additionalProperties: false
+      properties:
+        period:
+          type: string
+          enum:
+          - today
+          - this_week
+          - this_month
+          - custom
+        dateFrom:
+          type: string
+          format: date
+        dateTo:
+          type: string
+          format: date
+        status:
+          oneOf:
+          - type: integer
+            enum:
+            - 0
+            - 1
+            - 2
+            - 3
+            - 4
+          - type: 'null'
+        count:
+          type: integer
+          minimum: 0
+      required:
+      - period
+      - dateFrom
+      - dateTo
+      - status
+      - count
+    PerformancePoint:
+      type: object
+      additionalProperties: false
+      properties:
+        month:
+          type: string
+          pattern: ^\d{4}-\d{2}$
+        label:
+          type: string
+          description: Full localized month name plus four-digit year.
+          examples:
+          - August 2026
+          - أغسطس 2026
+        sales:
+          $ref: '#/components/schemas/MoneyString'
+        ordersCount:
+          type: integer
+          minimum: 0
+      required:
+      - month
+      - label
+      - sales
+      - ordersCount
+    ErrorResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        success:
+          type: boolean
+          const: false
+        message:
+          type: string
+        code:
+          type: string
+        errors:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            type: array
+            items:
+              type: string
+      required:
+      - success
+      - message
+      - code
+      - errors
+    ValidationErrorResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        success:
+          type: boolean
+          const: false
+        message:
+          type: string
+        code:
+          type: string
+          const: VALIDATION_ERROR
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+      required:
+      - success
+      - message
+      - code
+      - errors

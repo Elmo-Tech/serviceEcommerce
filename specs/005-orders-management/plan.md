@@ -559,3 +559,7 @@ One explicitly user-approved governance exception is active for Feature 005:
 - Feature 005 allows `completed -> cancelled`
 - Feature 005 allows conditional order hard delete
 - Feature 005 allows nested order-item hard delete
+
+## 14. Feature 007 synchronized amendment
+
+Feature 007 adds nullable `orders.completed_at`, maintained inside the existing locked status-transition transaction. `AdminOrderIndexResource` and `AdminOrderResource` serialize it as read-only `completedAt`; all mutation Form Requests prohibit the key. The authoritative Feature 005 OpenAPI and Postman contracts are updated in the same change.
