@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Services\Orders\CustomerOrderResolver;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
@@ -59,6 +60,22 @@ class AppServiceProvider extends ServiceProvider
             return Limit::perMinute(5)->by(
                 $this->normalizedEmail((string) $request->input('email', '')).'|'.(string) $request->ip(),
             );
+        });
+
+        RateLimiter::for('public-orders-create', function (Request $request) {
+            $limiterPhone = 'missing-phone';
+            $customer = $request->input('customer');
+
+            if (is_array($customer)) {
+                $normalizedPhone = app(CustomerOrderResolver::class)
+                    ->normalizeEgyptianPhone((string) ($customer['phone'] ?? ''));
+
+                if (is_string($normalizedPhone) && $normalizedPhone !== '') {
+                    $limiterPhone = $normalizedPhone;
+                }
+            }
+
+            return Limit::perMinute(5)->by(((string) $request->ip()).'|'.$limiterPhone);
         });
     }
 

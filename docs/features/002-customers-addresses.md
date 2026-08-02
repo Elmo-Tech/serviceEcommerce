@@ -86,6 +86,27 @@ The system must:
 
 ---
 
+## 2.1 Feature 005 Orders Amendment
+
+Effective with approved Feature 005 Orders Management on 2026-08-01, the
+following Feature 002 customer-identity assumptions are superseded for the
+shared customer domain:
+
+- `customers.phone_normalized` is still the canonical matching field, but it is
+  no longer globally unique.
+- customer `email` remains optional, but it is no longer globally unique.
+- guest order resolution may encounter multiple customers sharing the same
+  normalized phone and must follow Feature 005's exact disambiguation rules.
+- guest order input still must not silently overwrite saved customer name or
+  email values.
+
+This amendment updates the customer-domain invariants used by later features.
+Where older Feature 002 wording mentions unique customer phone or unique
+non-null email, Feature 005's approved customer-resolution behavior takes
+precedence.
+
+---
+
 ## 3. Authoritative Decisions
 
 ```text
@@ -98,8 +119,8 @@ Default country: Egypt
 Default calling code: +20
 International customers: Supported
 Customer name: One field
-Customer email: Optional and unique when present
-Customer phone: Required and unique after normalization
+Customer email: Optional and non-unique
+Customer phone: Required after normalization
 Customer notes: Not included
 Customer active flag: Not included
 Customer soft delete: Included
@@ -3225,11 +3246,12 @@ The Feature is complete only when:
 
 - customers table exists
 - customer-address table exists
-- customer email is nullable and unique when present
+- customer email is nullable
 - customer phone is normalized to E.164
 - Egyptian local phone handling works
 - international phone handling works
-- customer phone is unique
+- customer phone matching uses the canonical normalized value without requiring
+  global uniqueness
 - customer matching uses normalized phone only
 - deleted matching customer restores automatically
 - admin customer CRUD and restore routes exist
@@ -3291,7 +3313,7 @@ The Feature is complete only when:
 - Do not create customer login routes.
 - Use one customer `name` field.
 - Customer email is optional.
-- Non-null customer email is unique.
+- Customer email may be duplicated.
 - Normalize customer email to lowercase.
 - Customer phone is required.
 - Normalize customer phone to E.164.
@@ -3304,7 +3326,7 @@ The Feature is complete only when:
 - Do not auto-update saved customer name from guest orders.
 - Do not auto-update saved customer email from guest orders.
 - Restore a matching soft-deleted customer automatically.
-- Use a database unique constraint for normalized phone.
+- Do not rely on a database global unique constraint for normalized phone.
 - Do not add customer notes.
 - Do not add customer active flag.
 - Use customer soft deletes.

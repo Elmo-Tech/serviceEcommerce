@@ -6,6 +6,11 @@ use App\Http\Controllers\Api\V1\Admin\Categories\CategoryController;
 use App\Http\Controllers\Api\V1\Admin\Categories\SubcategoryController;
 use App\Http\Controllers\Api\V1\Admin\Customers\CustomerAddressController;
 use App\Http\Controllers\Api\V1\Admin\Customers\CustomerController;
+use App\Http\Controllers\Api\V1\Admin\Orders\OrderController;
+use App\Http\Controllers\Api\V1\Admin\Orders\OrderItemAttachmentController;
+use App\Http\Controllers\Api\V1\Admin\Orders\OrderItemController;
+use App\Http\Controllers\Api\V1\Admin\Orders\OrderPaymentController;
+use App\Http\Controllers\Api\V1\Admin\Orders\OrderStatusController;
 use App\Http\Controllers\Api\V1\Admin\Services\ServiceController;
 use App\Http\Controllers\Api\V1\Admin\Services\ServiceMediaController;
 use App\Http\Controllers\Api\V1\Admin\Services\ServiceOrderFieldController;
@@ -184,4 +189,59 @@ Route::middleware([
         ->whereNumber('category')
         ->whereNumber('subcategory')
         ->middleware('permission:subcategories.restore');
+
+    Route::post('/orders', [OrderController::class, 'store'])
+        ->middleware(['permission:orders.create', 'permission:order-items.create']);
+    Route::get('/orders', [OrderController::class, 'index'])
+        ->middleware('permission:orders.view');
+    Route::get('/orders/{order}', [OrderController::class, 'show'])
+        ->whereNumber('order')
+        ->middleware('permission:orders.view');
+    Route::patch('/orders/{order}', [OrderController::class, 'update'])
+        ->whereNumber('order')
+        ->middleware('permission:orders.update');
+    Route::delete('/orders/{order}', [OrderController::class, 'destroy'])
+        ->whereNumber('order')
+        ->middleware('permission:orders.delete');
+    Route::patch('/orders/{order}/status', [OrderStatusController::class, 'update'])
+        ->whereNumber('order')
+        ->middleware('permission:orders.change-status');
+    Route::get('/orders/{order}/payment', [OrderPaymentController::class, 'show'])
+        ->whereNumber('order')
+        ->middleware('permission:orders.manage-payment');
+    Route::patch('/orders/{order}/payment', [OrderPaymentController::class, 'update'])
+        ->whereNumber('order')
+        ->middleware('permission:orders.manage-payment');
+    Route::get('/orders/{order}/items', [OrderItemController::class, 'index'])
+        ->whereNumber('order')
+        ->middleware('permission:order-items.view');
+    Route::post('/orders/{order}/items', [OrderItemController::class, 'store'])
+        ->whereNumber('order')
+        ->middleware('permission:order-items.create');
+    Route::get('/orders/{order}/items/{orderItem}', [OrderItemController::class, 'show'])
+        ->whereNumber('order')
+        ->whereNumber('orderItem')
+        ->middleware('permission:order-items.view');
+    Route::patch('/orders/{order}/items/{orderItem}', [OrderItemController::class, 'update'])
+        ->whereNumber('order')
+        ->whereNumber('orderItem')
+        ->middleware('permission:order-items.update');
+    Route::delete('/orders/{order}/items/{orderItem}', [OrderItemController::class, 'destroy'])
+        ->whereNumber('order')
+        ->whereNumber('orderItem')
+        ->middleware('permission:order-items.delete');
+    Route::post('/orders/{order}/items/{orderItem}/attachments', [OrderItemAttachmentController::class, 'store'])
+        ->whereNumber('order')
+        ->whereNumber('orderItem')
+        ->middleware('permission:order-item-attachments.create');
+    Route::delete('/orders/{order}/items/{orderItem}/attachments/{attachment}', [OrderItemAttachmentController::class, 'destroy'])
+        ->whereNumber('order')
+        ->whereNumber('orderItem')
+        ->whereNumber('attachment')
+        ->middleware('permission:order-item-attachments.delete');
+    Route::get('/orders/{order}/items/{orderItem}/attachments/{attachment}/download', [OrderItemAttachmentController::class, 'download'])
+        ->whereNumber('order')
+        ->whereNumber('orderItem')
+        ->whereNumber('attachment')
+        ->middleware('permission:orders.view');
 });

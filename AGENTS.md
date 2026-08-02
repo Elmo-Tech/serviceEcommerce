@@ -77,6 +77,29 @@ When a request conflicts with approved documentation, the agent MUST identify
 the conflict and update the relevant documentation before implementing the new
 behaviour, unless the user explicitly limits the task to analysis only.
 
+### 1.1 Approved feature-specific governance exception — Feature 005 Orders Management
+
+The user explicitly approved this exception on August 2, 2026.
+
+For `docs/features/005-orders-management.md` and synchronized
+`specs/005-orders-management/*` artifacts only, Feature 005 wins over
+conflicting repository defaults in this `AGENTS.md` for the following narrow
+order-domain rules:
+
+- Feature 005 uses only these external order statuses:
+  `pending`, `confirmed`, `in_progress`, `completed`, and `cancelled`
+- Feature 005 explicitly allows the transition `completed -> cancelled`
+- Feature 005 allows conditional order hard delete only when all are true:
+  `created_by_admin_id IS NOT NULL`, `status = pending`,
+  `payment_status = unpaid`, and `paid_amount = 0`
+- Feature 005 allows nested order-item hard delete, including nested option,
+  value, answer, attachment rows, and physical attachment files, while still
+  preserving the invariant that an order must keep at least one item
+
+This exception does not weaken authentication, authorization, API envelope,
+security, localization, testing, or unrelated data-retention rules elsewhere
+in the repository.
+
 ---
 
 ## 2. Mandatory Session Startup
@@ -417,13 +440,10 @@ Approved order statuses:
 
 ```text
 pending
-awaiting_review
-awaiting_payment
 confirmed
 in_progress
 completed
 cancelled
-rejected
 ```
 
 Terminal states:
@@ -431,10 +451,17 @@ Terminal states:
 ```text
 completed
 cancelled
-rejected
 ```
 
 Terminal orders cannot return to an active state in the MVP.
+
+Approved Feature 005 exception:
+
+- Feature 005 intentionally uses only `pending`, `confirmed`, `in_progress`,
+  `completed`, and `cancelled`
+- Feature 005 explicitly allows `completed -> cancelled`
+- Feature 005 does not use `awaiting_review`, `awaiting_payment`, or
+  `rejected`
 
 ### 5.12 Quote-required pricing
 
@@ -853,7 +880,9 @@ Centralize states such as:
   relational validation, filtering, ordering, reporting, or integrity.
 - Preserve immutable order snapshots.
 - Do not physically delete orders or order items through normal application
-  flows.
+  flows, except for the explicitly approved Feature 005 conditional order hard
+  delete and nested order-item hard delete behaviors recorded in this file and
+  the synchronized Feature 005 artifacts.
 - Services, categories, and customers referenced by historical orders must
   follow the approved soft-delete or retention strategy.
 

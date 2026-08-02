@@ -76,6 +76,14 @@ When a feature genuinely requires an exception to a shared standard:
 6. dependent documentation MUST be synchronized before planning or
    implementation resumes.
 
+Approved exception currently on record:
+
+- Feature 005 Orders Management may override conflicting repository defaults
+  for order-status scope, `completed -> cancelled`, conditional order hard
+  delete, and nested order-item hard delete, because the user explicitly
+  approved that exception and the affected governing documents were amended
+  first.
+
 A general repository workflow rule in `AGENTS.md` MUST NOT silently replace a
 specific approved feature business decision. Feature business decisions remain
 subject to every higher-level cross-cutting safety, architecture, security,
@@ -293,6 +301,10 @@ localization, API contracts, security, database integrity and concurrency,
 tests, quality gates, and documentation. Implementation MUST NOT begin from a
 vague request or before required artifacts are complete.
 
+When an approved exception exists, the plan and synchronized governing
+artifacts MUST state its exact scope and boundaries before implementation
+resumes.
+
 ### XVIII. Governance
 
 Every principle in this constitution is mandatory. Each plan MUST include a
@@ -347,4 +359,4 @@ plan and review MUST verify compliance. Reviewers MUST reject undocumented
 exceptions, missing traceability, failed mandatory gates, or unresolved
 authoritative conflicts.
 
-**Version**: 1.1.0 | **Ratified**: 2026-07-28 | **Last Amended**: 2026-07-28
+**Version**: 1.2.0 | **Ratified**: 2026-07-28 | **Last Amended**: 2026-08-02

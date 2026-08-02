@@ -1,0 +1,2410 @@
+openapi: 3.1.0
+info:
+  title: Service Commerce Backend - Orders Management
+  version: 1.1.0
+  description: Complete Feature 005 contract. Integer enums are documented in every reusable enum schema. UTC is
+    canonical for timestamps and order-number dates.
+servers:
+- url: /api/v1
+  description: Versioned API base path.
+tags:
+- name: Public Orders
+  description: Unauthenticated idempotent guest order creation.
+- name: Admin Orders
+  description: Protected order lifecycle, status, and payment operations.
+- name: Admin Order Items
+  description: Protected nested order-item operations.
+- name: Admin Order Attachments
+  description: Protected nested attachment mutation and download.
+paths:
+  /public/orders:
+    post:
+      operationId: createPublicOrder
+      tags:
+      - Public Orders
+      summary: Create a guest order
+      description: Creates one PENDING WEBSITE order atomically. Requires Idempotency-Key. The backend reserves
+        the unique key and completes its order link in the same transaction, so failed creation leaves no incomplete
+        reservation. Maximum 50 items, 30 total files, and 100 MB combined attachment bytes. First success returns
+        201; identical replay returns 200.
+      parameters:
+      - $ref: '#/components/parameters/AcceptLanguage'
+      - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PublicCreateOrderRequest'
+      responses:
+        '201':
+          $ref: '#/components/responses/PublicOrderCreated'
+        '200':
+          $ref: '#/components/responses/PublicOrderReplay'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/ValidationFailed'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /admin/orders:
+    get:
+      operationId: listAdminOrders
+      tags:
+      - Admin Orders
+      summary: List orders
+      description: Requires orders.view. Returns only allow-listed filters, sorts, and pagination.
+      security:
+      - bearerAuth: []
+      parameters:
+      - $ref: '#/components/parameters/AcceptLanguage'
+      - $ref: '#/components/parameters/FilterSearch'
+      - $ref: '#/components/parameters/FilterStatus'
+      - $ref: '#/components/parameters/FilterPaymentStatus'
+      - $ref: '#/components/parameters/FilterOrderPlace'
+      - $ref: '#/components/parameters/FilterCustomerId'
+      - $ref: '#/components/parameters/FilterServiceId'
+      - $ref: '#/components/parameters/FilterCreatedFrom'
+      - $ref: '#/components/parameters/FilterCreatedTo'
+      - $ref: '#/components/parameters/FilterTotalFrom'
+      - $ref: '#/components/parameters/FilterTotalTo'
+      - $ref: '#/components/parameters/Sort'
+      - $ref: '#/components/parameters/Page'
+      - $ref: '#/components/parameters/PerPage'
+      responses:
+        '200':
+          $ref: '#/components/responses/OrderListOk'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '422':
+          $ref: '#/components/responses/ValidationFailed'
+    post:
+      operationId: createAdminOrder
+      tags:
+      - Admin Orders
+      summary: Create an order as Admin
+      description: Atomic multipart create. Always requires orders.create and order-items.create. Any initial attachment
+        additionally requires order-item-attachments.create.
+      security:
+      - bearerAuth: []
+      parameters:
+      - $ref: '#/components/parameters/AcceptLanguage'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AdminCreateOrderRequest'
+      responses:
+        '201':
+          $ref: '#/components/responses/OrderDetailOk'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/ValidationFailed'
+  /admin/orders/{order}:
+    get:
+      operationId: showAdminOrder
+      tags:
+      - Admin Orders
+      summary: Show one order
+      description: Requires orders.view. Returns localized snapshots and protected attachment metadata.
+      security:
+      - bearerAuth: []
+      parameters:
+      - $ref: '#/components/parameters/AcceptLanguage'
+      - $ref: '#/components/parameters/OrderId'
+      responses:
+        '200':
+          $ref: '#/components/responses/OrderDetailOk'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    patch:
+      operationId: updateAdminOrder
+      tags:
+      - Admin Orders
+      summary: Update order-level data
+      description: Requires orders.update. Including status additionally requires orders.change-status. Omitted
+        customer keys leave the customer unchanged.
+      security:
+      - bearerAuth: []
+      parameters:
+      - $ref: '#/components/parameters/AcceptLanguage'
+      - $ref: '#/components/parameters/OrderId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminUpdateOrderRequest'
+      responses:
+        '200':
+          $ref: '#/components/responses/OrderDetailOk'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/ValidationFailed'
+    delete:
+      operationId: deleteAdminOrder
+      tags:
+      - Admin Orders
+      summary: Conditionally hard delete an order
+      description: Requires orders.delete. Allowed only for Admin-created PENDING, UNPAID orders with paidAmount=0.
+        The allocated number remains consumed.
+      security:
+      - bearerAuth: []
+      parameters:
+      - $ref: '#/components/parameters/OrderId'
+      responses:
+        '200':
+          $ref: '#/components/responses/DeleteOk'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+  /admin/orders/{order}/status:
+    patch:
+      operationId: changeAdminOrderStatus
+      tags:
+      - Admin Orders
+      summary: Change order status
+      description: Requires orders.change-status. No skipping or backward transitions. Cancellation status 4 requires
+        reason.
+      security:
+      - bearerAuth: []
+      parameters:
+      - $ref: '#/components/parameters/AcceptLanguage'
+      - $ref: '#/components/parameters/OrderId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrderStatusRequest'
+      responses:
+        '200':
+          $ref: '#/components/responses/OrderDetailOk'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/ValidationFailed'
+  /admin/orders/{order}/payment:
+    get:
+      operationId: showAdminOrderPayment
+      tags:
+      - Admin Orders
+      summary: Show payment summary
+      description: Requires orders.manage-payment. Payment may be reviewed in every order status.
+      security:
+      - bearerAuth: []
+      parameters:
+      - $ref: '#/components/parameters/AcceptLanguage'
+      - $ref: '#/components/parameters/OrderId'
+      responses:
+        '200':
+          $ref: '#/components/responses/PaymentOk'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    patch:
+      operationId: updateAdminOrderPayment
+      tags:
+      - Admin Orders
+      summary: Replace cumulative paid amount
+      description: Requires orders.manage-payment. Admin may increase or decrease paidAmount in every status. Backend
+        derives paymentStatus and remainingAmount.
+      security:
+      - bearerAuth: []
+      parameters:
+      - $ref: '#/components/parameters/AcceptLanguage'
+      - $ref: '#/components/parameters/OrderId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrderPaymentRequest'
+      responses:
+        '200':
+          $ref: '#/components/responses/PaymentOk'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/ValidationFailed'
+  /admin/orders/{order}/items:
+    get:
+      operationId: listAdminOrderItems
+      tags:
+      - Admin Order Items
+      summary: List order items
+      description: Requires order-items.view and strict order ownership.
+      security:
+      - bearerAuth: []
+      parameters:
+      - $ref: '#/components/parameters/AcceptLanguage'
+      - $ref: '#/components/parameters/OrderId'
+      responses:
+        '200':
+          $ref: '#/components/responses/OrderItemListOk'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    post:
+      operationId: createAdminOrderItem
+      tags:
+      - Admin Order Items
+      summary: Add one order item
+      description: Requires order-items.create. Allowed only while the order is editable.
+      security:
+      - bearerAuth: []
+      parameters:
+      - $ref: '#/components/parameters/AcceptLanguage'
+      - $ref: '#/components/parameters/OrderId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BaseOrderItemRequest'
+      responses:
+        '201':
+          $ref: '#/components/responses/OrderItemOk'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/ValidationFailed'
+  /admin/orders/{order}/items/{orderItem}:
+    get:
+      operationId: showAdminOrderItem
+      tags:
+      - Admin Order Items
+      summary: Show one order item
+      description: Requires order-items.view and strict nested ownership.
+      security:
+      - bearerAuth: []
+      parameters:
+      - $ref: '#/components/parameters/AcceptLanguage'
+      - $ref: '#/components/parameters/OrderId'
+      - $ref: '#/components/parameters/OrderItemId'
+      responses:
+        '200':
+          $ref: '#/components/responses/OrderItemOk'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    patch:
+      operationId: updateAdminOrderItem
+      tags:
+      - Admin Order Items
+      summary: Update one order item
+      description: Requires order-items.update. serviceId cannot change. selectedOptions and answers are full replacements
+        when supplied. Create-time answers use orderFieldId, while this endpoint requires orderItemAnswerId for
+        each existing historical answer snapshot.
+      security:
+      - bearerAuth: []
+      parameters:
+      - $ref: '#/components/parameters/AcceptLanguage'
+      - $ref: '#/components/parameters/OrderId'
+      - $ref: '#/components/parameters/OrderItemId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminOrderItemUpdateRequest'
+      responses:
+        '200':
+          $ref: '#/components/responses/OrderItemOk'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/ValidationFailed'
+    delete:
+      operationId: deleteAdminOrderItem
+      tags:
+      - Admin Order Items
+      summary: Delete one order item
+      description: Requires order-items.delete. Cannot delete the final item.
+      security:
+      - bearerAuth: []
+      parameters:
+      - $ref: '#/components/parameters/OrderId'
+      - $ref: '#/components/parameters/OrderItemId'
+      responses:
+        '200':
+          $ref: '#/components/responses/DeleteOk'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+  /admin/orders/{order}/items/{orderItem}/attachments:
+    post:
+      operationId: uploadAdminOrderItemAttachments
+      tags:
+      - Admin Order Attachments
+      summary: Upload protected item attachments
+      description: Requires order-item-attachments.create. Allowed only in editable statuses. Maximum 3 files for
+        the item and 30 MB combined in this request.
+      security:
+      - bearerAuth: []
+      parameters:
+      - $ref: '#/components/parameters/AcceptLanguage'
+      - $ref: '#/components/parameters/OrderId'
+      - $ref: '#/components/parameters/OrderItemId'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AttachmentUploadRequest'
+      responses:
+        '201':
+          $ref: '#/components/responses/AttachmentsOk'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/ValidationFailed'
+  /admin/orders/{order}/items/{orderItem}/attachments/{attachment}:
+    delete:
+      operationId: deleteAdminOrderItemAttachment
+      tags:
+      - Admin Order Attachments
+      summary: Delete one protected item attachment
+      description: Requires order-item-attachments.delete. Allowed only in editable statuses.
+      security:
+      - bearerAuth: []
+      parameters:
+      - $ref: '#/components/parameters/OrderId'
+      - $ref: '#/components/parameters/OrderItemId'
+      - $ref: '#/components/parameters/AttachmentId'
+      responses:
+        '200':
+          $ref: '#/components/responses/DeleteOk'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+  /admin/orders/{order}/items/{orderItem}/attachments/{attachment}/download:
+    get:
+      operationId: downloadAdminOrderItemAttachment
+      tags:
+      - Admin Order Attachments
+      summary: Download one protected item attachment
+      description: Requires orders.view and strict nested ownership. Download is available in every order status.
+      security:
+      - bearerAuth: []
+      parameters:
+      - $ref: '#/components/parameters/OrderId'
+      - $ref: '#/components/parameters/OrderItemId'
+      - $ref: '#/components/parameters/AttachmentId'
+      responses:
+        '200':
+          description: Protected attachment stream.
+          headers:
+            Content-Disposition:
+              description: Attachment filename disposition.
+              schema:
+                type: string
+                example: attachment; filename="document.pdf"
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+                description: Binary attachment bytes.
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '404':
+          $ref: '#/components/responses/NotFound'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: Sanctum token
+      description: Admin Sanctum Bearer access token.
+  parameters:
+    AcceptLanguage:
+      name: Accept-Language
+      in: header
+      required: false
+      description: Requested localized response language. Defaults according to the project locale middleware.
+      schema:
+        type: string
+        enum:
+        - ar
+        - en
+        example: ar
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      description: UUID permanently binding one Public Create business payload to one order.
+      schema:
+        type: string
+        format: uuid
+    OrderId:
+      name: order
+      in: path
+      required: true
+      description: Numeric order ID.
+      schema:
+        type: integer
+        minimum: 1
+    OrderItemId:
+      name: orderItem
+      in: path
+      required: true
+      description: Numeric order-item ID that must belong to the path order.
+      schema:
+        type: integer
+        minimum: 1
+    AttachmentId:
+      name: attachment
+      in: path
+      required: true
+      description: Numeric attachment ID that must belong to the path order item.
+      schema:
+        type: integer
+        minimum: 1
+    FilterSearch:
+      name: filter[search]
+      in: query
+      description: Searches order number and customer snapshot name, phone, and email.
+      schema:
+        type: string
+        maxLength: 255
+    FilterStatus:
+      name: filter[status]
+      in: query
+      description: 'Order status: 0=PENDING, 1=CONFIRMED, 2=IN_PROGRESS, 3=COMPLETED, 4=CANCELLED.'
+      schema:
+        type: integer
+        enum:
+        - 0
+        - 1
+        - 2
+        - 3
+        - 4
+        description: 'Order status: 0=PENDING, 1=CONFIRMED, 2=IN_PROGRESS, 3=COMPLETED, 4=CANCELLED.'
+        x-enum-varnames:
+        - PENDING
+        - CONFIRMED
+        - IN_PROGRESS
+        - COMPLETED
+        - CANCELLED
+    FilterPaymentStatus:
+      name: filter[paymentStatus]
+      in: query
+      description: 'Payment status: 0=UNPAID, 1=PARTIALLY_PAID, 2=PAID.'
+      schema:
+        type: integer
+        enum:
+        - 0
+        - 1
+        - 2
+        description: 'Payment status: 0=UNPAID, 1=PARTIALLY_PAID, 2=PAID.'
+        x-enum-varnames:
+        - UNPAID
+        - PARTIALLY_PAID
+        - PAID
+    FilterOrderPlace:
+      name: filter[orderPlace]
+      in: query
+      description: 'Order source: 0=WEBSITE, 1=WHATSAPP.'
+      schema:
+        type: integer
+        enum:
+        - 0
+        - 1
+        description: 'Order source: 0=WEBSITE, 1=WHATSAPP.'
+        x-enum-varnames:
+        - WEBSITE
+        - WHATSAPP
+    FilterCustomerId:
+      name: filter[customerId]
+      in: query
+      description: Filters by linked customer ID.
+      schema:
+        type: integer
+        minimum: 1
+    FilterServiceId:
+      name: filter[serviceId]
+      in: query
+      description: Returns orders containing at least one item linked to this service ID.
+      schema:
+        type: integer
+        minimum: 1
+    FilterCreatedFrom:
+      name: filter[createdFrom]
+      in: query
+      description: Inclusive UTC creation timestamp/date lower bound.
+      schema:
+        type: string
+        format: date-time
+    FilterCreatedTo:
+      name: filter[createdTo]
+      in: query
+      description: Inclusive UTC creation timestamp/date upper bound.
+      schema:
+        type: string
+        format: date-time
+    FilterTotalFrom:
+      name: filter[totalFrom]
+      in: query
+      description: Minimum backend-calculated order total.
+      schema:
+        type: string
+        pattern: ^(0|[1-9][0-9]*)\.[0-9]{2}$
+        description: Non-negative decimal monetary value returned with exactly two decimal places.
+        example: '5000.00'
+    FilterTotalTo:
+      name: filter[totalTo]
+      in: query
+      description: Maximum backend-calculated order total.
+      schema:
+        type: string
+        pattern: ^(0|[1-9][0-9]*)\.[0-9]{2}$
+        description: Non-negative decimal monetary value returned with exactly two decimal places.
+        example: '5000.00'
+    Sort:
+      name: sort
+      in: query
+      description: Allowed sort. A leading minus means descending. Default is created_at DESC, id DESC.
+      schema:
+        type: string
+        enum:
+        - createdAt
+        - -createdAt
+        - total
+        - -total
+        example: -createdAt
+    Page:
+      name: page
+      in: query
+      description: Pagination page number.
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+    PerPage:
+      name: perPage
+      in: query
+      description: Rows per page. Default 15, maximum 100.
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 15
+  schemas:
+    OrderStatus:
+      type: integer
+      enum:
+      - 0
+      - 1
+      - 2
+      - 3
+      - 4
+      description: 'Order status: 0=PENDING, 1=CONFIRMED, 2=IN_PROGRESS, 3=COMPLETED, 4=CANCELLED.'
+      x-enum-varnames:
+      - PENDING
+      - CONFIRMED
+      - IN_PROGRESS
+      - COMPLETED
+      - CANCELLED
+    PaymentStatus:
+      type: integer
+      enum:
+      - 0
+      - 1
+      - 2
+      description: 'Payment status: 0=UNPAID, 1=PARTIALLY_PAID, 2=PAID.'
+      x-enum-varnames:
+      - UNPAID
+      - PARTIALLY_PAID
+      - PAID
+    DiscountType:
+      type:
+      - integer
+      - 'null'
+      enum:
+      - 0
+      - 1
+      - null
+      description: 'Discount type: 0=FIXED, 1=PERCENTAGE, null=no discount.'
+    OrderPlace:
+      type: integer
+      enum:
+      - 0
+      - 1
+      description: 'Order source: 0=WEBSITE, 1=WHATSAPP.'
+      x-enum-varnames:
+      - WEBSITE
+      - WHATSAPP
+    PriceType:
+      type: integer
+      enum:
+      - 0
+      - 1
+      description: 'Service price type snapshot: 0=FIXED, 1=START_FROM.'
+      x-enum-varnames:
+      - FIXED
+      - START_FROM
+    PricingInputType:
+      type: integer
+      enum:
+      - 0
+      - 1
+      - 2
+      - 3
+      description: 'Pricing input type: 0=SELECT, 1=MULTI_SELECT, 2=RADIO, 3=CHECKBOX.'
+      x-enum-varnames:
+      - SELECT
+      - MULTI_SELECT
+      - RADIO
+      - CHECKBOX
+    OrderFieldType:
+      type: integer
+      enum:
+      - 0
+      description: 'Order field type: 0=TEXT.'
+      x-enum-varnames:
+      - TEXT
+    Money:
+      type: string
+      pattern: ^(0|[1-9][0-9]*)\.[0-9]{2}$
+      description: Non-negative decimal monetary value returned with exactly two decimal places.
+      example: '5000.00'
+    SignedMoney:
+      type: string
+      pattern: ^-?(0|[1-9][0-9]*)\.[0-9]{2}$
+      description: Signed decimal monetary value with exactly two decimal places; remainingAmount may be negative.
+      example: '-1000.00'
+    CustomerInput:
+      type: object
+      description: Customer data used for customer resolution and the immutable order snapshot.
+      required:
+      - name
+      - phone
+      properties:
+        name:
+          type: string
+          description: Customer name.
+          maxLength: 150
+          example: Mohamed Hassan
+        phone:
+          type: string
+          description: Egyptian local mobile number. Supported equivalent international input is normalized by the
+            backend.
+          pattern: ^01[0-9]{9}$
+          example: 01012345678
+        email:
+          type:
+          - string
+          - 'null'
+          format: email
+          maxLength: 255
+          description: Optional non-unique customer email.
+          example: mohamed@example.com
+      additionalProperties: false
+    AddressInput:
+      type: object
+      description: Optional address. When supplied, province, city, and address are all required.
+      required:
+      - province
+      - city
+      - address
+      properties:
+        province:
+          type: string
+          description: Province or governorate.
+          maxLength: 150
+          example: Cairo
+        city:
+          type: string
+          description: City or district-level city value.
+          maxLength: 150
+          example: Nasr City
+        address:
+          type: string
+          description: Detailed street and location text.
+          maxLength: 1000
+          example: 15 Abbas El Akkad Street
+      additionalProperties: false
+    SelectedOptionRequest:
+      type: object
+      description: One selected pricing option and its selected value IDs.
+      required:
+      - pricingOptionId
+      - valueIds
+      properties:
+        pricingOptionId:
+          type: integer
+          description: Pricing option ID belonging to the selected service.
+          minimum: 1
+        valueIds:
+          type: array
+          description: Unique selected value IDs. Multiplicity is validated from the option input type.
+          items:
+            type: integer
+            minimum: 1
+          minItems: 1
+          uniqueItems: true
+      additionalProperties: false
+    OrderAnswerRequest:
+      type: object
+      description: Create-time answer to a current Service Order Field. Used by Public Create, Admin Create, and
+        Add Order Item.
+      required:
+      - orderFieldId
+      - answer
+      properties:
+        orderFieldId:
+          type: integer
+          description: Current Service Order Field ID. Used only while creating a new Order Item snapshot.
+          minimum: 1
+        answer:
+          type: string
+          description: Plain-text answer. Required answers reject empty and whitespace-only values.
+          minLength: 1
+          maxLength: 2000
+          example: 200 × 100 cm
+      additionalProperties: false
+    BaseOrderItemRequest:
+      type: object
+      description: New order item. Backend loads the service, validates configuration, snapshots data, and calculates
+        prices.
+      required:
+      - serviceId
+      - quantity
+      properties:
+        serviceId:
+          type: integer
+          description: Active and available service ID.
+          minimum: 1
+        quantity:
+          type: integer
+          description: Positive item quantity.
+          minimum: 1
+          example: 1
+        selectedOptions:
+          type: array
+          description: Selected options. Duplicate option and value IDs are rejected.
+          items:
+            $ref: '#/components/schemas/SelectedOptionRequest'
+          default: []
+        answers:
+          type: array
+          description: Answered service order fields. All currently required fields must be answered.
+          items:
+            $ref: '#/components/schemas/OrderAnswerRequest'
+          default: []
+        itemNote:
+          type:
+          - string
+          - 'null'
+          maxLength: 2000
+          description: Optional plain-text note for this item.
+      additionalProperties: false
+    CreateOrderItemRequest:
+      type: object
+      description: Public/Admin initial order item. Supports up to three item attachments. The complete create request
+        supports at most 30 files and 100 MB combined.
+      required:
+      - serviceId
+      - quantity
+      properties:
+        serviceId:
+          type: integer
+          description: Active and available service ID.
+          minimum: 1
+        quantity:
+          type: integer
+          description: Positive item quantity.
+          minimum: 1
+          example: 1
+        selectedOptions:
+          type: array
+          description: Selected options. Duplicate option and value IDs are rejected.
+          items:
+            $ref: '#/components/schemas/SelectedOptionRequest'
+          default: []
+        answers:
+          type: array
+          description: Answered service order fields. All currently required fields must be answered.
+          items:
+            $ref: '#/components/schemas/OrderAnswerRequest'
+          default: []
+        itemNote:
+          type:
+          - string
+          - 'null'
+          maxLength: 2000
+          description: Optional plain-text note for this item.
+        attachments:
+          type: array
+          description: Optional initial item files; maximum three files for this item.
+          items: &id001
+            type: string
+            format: binary
+            description: 'Allowed file: png, jpg, jpeg, webp, pdf, doc, or docx; maximum 10 MB.'
+          maxItems: 3
+      additionalProperties: false
+    AdminOrderItemUpdateRequest:
+      type: object
+      description: Partial item update. serviceId is intentionally unsupported. selectedOptions and answers are
+        full replacements when present.
+      minProperties: 1
+      properties:
+        quantity:
+          type: integer
+          description: New positive quantity. A quantity-only update keeps the stored unitPrice snapshot.
+          minimum: 1
+        selectedOptions:
+          type: array
+          description: Full replacement validated against current Service pricing configuration. An empty array
+            clears selections only when required-option rules remain valid.
+          items:
+            $ref: '#/components/schemas/SelectedOptionRequest'
+        answers:
+          type: array
+          description: Full replacement of existing stored answer snapshots. Each entry uses orderItemAnswerId,
+            not orderFieldId. Required stored snapshots cannot be omitted; unsnapshotted optional questions cannot
+            be introduced.
+          items:
+            $ref: '#/components/schemas/OrderItemAnswerUpdateRequest'
+        itemNote:
+          type:
+          - string
+          - 'null'
+          maxLength: 2000
+          description: Replacement item note; null clears it.
+      additionalProperties: false
+    DiscountInput:
+      type: object
+      description: Discount input. Send discountType null to clear the discount.
+      properties:
+        discountType:
+          allOf:
+          - $ref: '#/components/schemas/DiscountType'
+          description: 0=FIXED, 1=PERCENTAGE, null=remove discount.
+        discountValue:
+          type:
+          - string
+          - 'null'
+          pattern: ^(0|[1-9][0-9]*)(\.[0-9]{1,2})?$
+          description: Fixed amount or percentage input according to discountType.
+          example: '10.00'
+        discountReason:
+          type:
+          - string
+          - 'null'
+          minLength: 1
+          maxLength: 1000
+          description: Required non-empty reason whenever a discount exists.
+      additionalProperties: false
+    PublicCreateOrderRequest:
+      type: object
+      description: Public guest order. Always multipart. Backend forces orderPlace=WEBSITE, status=PENDING, paymentStatus=UNPAID,
+        paidAmount=0, and no discount.
+      required:
+      - customer
+      - items
+      properties:
+        customer:
+          $ref: '#/components/schemas/CustomerInput'
+          description: Required guest customer input.
+        address:
+          oneOf:
+          - $ref: '#/components/schemas/AddressInput'
+          - type: 'null'
+          description: Optional order-only address snapshot; it is not saved as a customer address.
+        customerNote:
+          type:
+          - string
+          - 'null'
+          maxLength: 2000
+          description: Optional customer/general order note.
+        items:
+          type: array
+          description: Order items; minimum 1 and maximum 50.
+          minItems: 1
+          maxItems: 50
+          items:
+            $ref: '#/components/schemas/CreateOrderItemRequest'
+      additionalProperties: false
+    AdminCreateOrderRequest:
+      type: object
+      description: Atomic Admin order create. Requires orders.create and order-items.create; initial attachments
+        additionally require order-item-attachments.create.
+      required:
+      - orderPlace
+      - items
+      properties:
+        customerId:
+          type: integer
+          description: Existing customer ID. Mutually exclusive with customer.
+          minimum: 1
+        customer:
+          $ref: '#/components/schemas/CustomerInput'
+          description: Nested customer data. Mutually exclusive with customerId.
+        customerAddressId:
+          type: integer
+          description: Saved address ID belonging to the selected/resolved customer. Mutually exclusive with address.
+          minimum: 1
+        address:
+          oneOf:
+          - $ref: '#/components/schemas/AddressInput'
+          - type: 'null'
+          description: New saved customer address plus order snapshot. Mutually exclusive with customerAddressId.
+        orderPlace:
+          allOf:
+          - $ref: '#/components/schemas/OrderPlace'
+          description: 'Business order source: 0=WEBSITE or 1=WHATSAPP.'
+        customerNote:
+          type:
+          - string
+          - 'null'
+          maxLength: 2000
+          description: Optional customer/general order note.
+        adminNote:
+          type:
+          - string
+          - 'null'
+          maxLength: 2000
+          description: Optional internal Admin note.
+        discountType:
+          allOf:
+          - $ref: '#/components/schemas/DiscountType'
+          description: Optional discount type; null means no discount.
+        discountValue:
+          type:
+          - string
+          - 'null'
+          pattern: ^(0|[1-9][0-9]*)(\.[0-9]{1,2})?$
+          description: Fixed amount or percentage input.
+        discountReason:
+          type:
+          - string
+          - 'null'
+          maxLength: 1000
+          description: Required when a discount exists.
+        items:
+          type: array
+          description: Initial items; minimum 1 and maximum 50.
+          minItems: 1
+          maxItems: 50
+          items:
+            $ref: '#/components/schemas/CreateOrderItemRequest'
+      allOf:
+      - oneOf:
+        - required:
+          - customerId
+          not:
+            required:
+            - customer
+        - required:
+          - customer
+          not:
+            required:
+            - customerId
+      - not:
+          required:
+          - customerAddressId
+          - address
+      additionalProperties: false
+    AdminUpdateOrderRequest:
+      type: object
+      description: Partial order-level update. Customer keys may both be omitted. Items, attachments, and payment
+        are managed through separate endpoints.
+      minProperties: 1
+      properties:
+        customerId:
+          type: integer
+          description: Replacement existing customer ID; mutually exclusive with customer.
+          minimum: 1
+        customer:
+          $ref: '#/components/schemas/CustomerInput'
+          description: Replacement nested customer; mutually exclusive with customerId.
+        customerAddressId:
+          type: integer
+          description: Replacement saved address ID; mutually exclusive with address.
+          minimum: 1
+        address:
+          oneOf:
+          - $ref: '#/components/schemas/AddressInput'
+          - type: 'null'
+          description: Replacement address object or null to clear; mutually exclusive with customerAddressId.
+        customerNote:
+          type:
+          - string
+          - 'null'
+          maxLength: 2000
+          description: Replacement customer/general note.
+        adminNote:
+          type:
+          - string
+          - 'null'
+          maxLength: 2000
+          description: Replacement internal Admin note.
+        discountType:
+          allOf:
+          - $ref: '#/components/schemas/DiscountType'
+          description: Replacement discount type or null to clear.
+        discountValue:
+          type:
+          - string
+          - 'null'
+          pattern: ^(0|[1-9][0-9]*)(\.[0-9]{1,2})?$
+          description: Replacement discount input value.
+        discountReason:
+          type:
+          - string
+          - 'null'
+          maxLength: 1000
+          description: Replacement discount reason; required when discount exists.
+        orderPlace:
+          allOf:
+          - $ref: '#/components/schemas/OrderPlace'
+          description: Replacement order source.
+        status:
+          allOf:
+          - $ref: '#/components/schemas/OrderStatus'
+          description: Requested next status. Requires orders.change-status in addition to orders.update.
+        reason:
+          type:
+          - string
+          - 'null'
+          minLength: 1
+          maxLength: 1000
+          description: Required cancellation reason when status=4.
+      allOf:
+      - not:
+          required:
+          - customerId
+          - customer
+      - not:
+          required:
+          - customerAddressId
+          - address
+      additionalProperties: false
+    OrderStatusRequest:
+      type: object
+      description: Requests one allowed next order status.
+      required:
+      - status
+      properties:
+        status:
+          allOf:
+          - $ref: '#/components/schemas/OrderStatus'
+          description: Requested next status integer.
+        reason:
+          type:
+          - string
+          - 'null'
+          minLength: 1
+          maxLength: 1000
+          description: Required only when status=4 (CANCELLED).
+      additionalProperties: false
+    OrderPaymentRequest:
+      type: object
+      description: Replaces the cumulative paid amount; this is not a new payment transaction.
+      required:
+      - paidAmount
+      properties:
+        paidAmount:
+          type: string
+          pattern: ^(0|[1-9][0-9]*)(\.[0-9]{1,2})?$
+          description: Cumulative amount paid up to now. Admin may increase or decrease it.
+          example: '7000.00'
+      additionalProperties: false
+    AttachmentUploadRequest:
+      type: object
+      description: Standalone Admin attachment upload. Maximum three files and 30 MB combined.
+      required:
+      - files
+      properties:
+        files:
+          type: array
+          description: One to three protected item attachments.
+          items: *id001
+          minItems: 1
+          maxItems: 3
+      additionalProperties: false
+    CustomerSnapshot:
+      type: object
+      description: Historical customer data captured for the order.
+      required:
+      - name
+      - phone
+      - email
+      properties:
+        name:
+          type: string
+          description: Snapshotted customer name.
+        phone:
+          type: string
+          description: Snapshotted customer phone.
+        email:
+          type:
+          - string
+          - 'null'
+          description: Snapshotted optional customer email.
+    AddressSnapshot:
+      type:
+      - object
+      - 'null'
+      description: Historical address snapshot or null when no address exists.
+      properties:
+        province:
+          type: string
+          description: Snapshotted province.
+        city:
+          type: string
+          description: Snapshotted city.
+        address:
+          type: string
+          description: Snapshotted detailed address.
+      required:
+      - province
+      - city
+      - address
+    DiscountSummary:
+      type:
+      - object
+      - 'null'
+      description: Calculated discount details or null.
+      properties:
+        type:
+          allOf:
+          - $ref: '#/components/schemas/DiscountType'
+          description: 0=FIXED or 1=PERCENTAGE.
+        value:
+          type: string
+          pattern: ^(0|[1-9][0-9]*)\.[0-9]{2}$
+          description: Original fixed or percentage input value.
+          example: '5000.00'
+        amount:
+          type: string
+          pattern: ^(0|[1-9][0-9]*)\.[0-9]{2}$
+          description: Actual monetary discount calculated by the backend.
+          example: '5000.00'
+        reason:
+          type: string
+          description: Stored discount reason.
+          maxLength: 1000
+      required:
+      - type
+      - value
+      - amount
+      - reason
+    PaymentSummary:
+      type: object
+      description: Current derived order payment summary.
+      required:
+      - paymentStatus
+      - paidAmount
+      - remainingAmount
+      properties:
+        paymentStatus:
+          allOf:
+          - $ref: '#/components/schemas/PaymentStatus'
+          description: Derived payment status.
+        paidAmount:
+          type: string
+          pattern: ^(0|[1-9][0-9]*)\.[0-9]{2}$
+          description: Cumulative amount recorded as paid.
+          example: '5000.00'
+        remainingAmount:
+          type: string
+          pattern: ^-?(0|[1-9][0-9]*)\.[0-9]{2}$
+          description: Computed total minus paidAmount; may be negative.
+          example: '-1000.00'
+    ServiceSnapshot:
+      type: object
+      description: Localized historical service snapshot.
+      required:
+      - name
+      - slug
+      - priceType
+      - basePrice
+      properties:
+        name:
+          type: string
+          description: Service name in the resolved response language.
+        slug:
+          type: string
+          description: Service slug in the resolved response language.
+        priceType:
+          allOf:
+          - $ref: '#/components/schemas/PriceType'
+          description: Snapshotted service price type.
+        basePrice:
+          type: string
+          pattern: ^(0|[1-9][0-9]*)\.[0-9]{2}$
+          description: Snapshotted service base price.
+          example: '5000.00'
+    SelectedOptionValueSnapshot:
+      type: object
+      description: One selected value snapshot.
+      required:
+      - id
+      - pricingOptionValueId
+      - label
+      - priceAdjustment
+      properties:
+        id:
+          type: integer
+          description: Order snapshot row ID.
+          minimum: 1
+        pricingOptionValueId:
+          type:
+          - integer
+          - 'null'
+          minimum: 1
+          description: Current value link, nullable after deletion.
+        label:
+          type: string
+          description: Localized snapshotted value label.
+        priceAdjustment:
+          type: string
+          pattern: ^(0|[1-9][0-9]*)\.[0-9]{2}$
+          description: Snapshotted price adjustment.
+          example: '5000.00'
+    SelectedOptionSnapshot:
+      type: object
+      description: One selected pricing option snapshot.
+      required:
+      - id
+      - pricingOptionId
+      - name
+      - inputType
+      - isRequired
+      - values
+      properties:
+        id:
+          type: integer
+          description: Order snapshot row ID.
+          minimum: 1
+        pricingOptionId:
+          type:
+          - integer
+          - 'null'
+          minimum: 1
+          description: Current option link, nullable after deletion.
+        name:
+          type: string
+          description: Localized snapshotted option name.
+        inputType:
+          allOf:
+          - $ref: '#/components/schemas/PricingInputType'
+          description: Snapshotted input type.
+        isRequired:
+          type: boolean
+          description: Whether the option was required at order time.
+        values:
+          type: array
+          description: Selected value snapshots.
+          items:
+            $ref: '#/components/schemas/SelectedOptionValueSnapshot'
+    AnswerSnapshot:
+      type: object
+      description: One answered order-field snapshot.
+      required:
+      - id
+      - orderFieldId
+      - question
+      - fieldType
+      - isRequired
+      - answer
+      properties:
+        id:
+          type: integer
+          description: Stored Order Item answer snapshot ID. Send this value as orderItemAnswerId when replacing
+            answers on an existing Order Item.
+          minimum: 1
+        orderFieldId:
+          type:
+          - integer
+          - 'null'
+          minimum: 1
+          description: Current Service Order Field link, nullable after deletion. It is not the identifier used
+            by Item Update.
+        question:
+          type: string
+          description: Localized snapshotted question.
+        fieldType:
+          allOf:
+          - $ref: '#/components/schemas/OrderFieldType'
+          description: Snapshotted field type.
+        isRequired:
+          type: boolean
+          description: Whether the question was required at order time.
+        answer:
+          type: string
+          description: Stored plain-text answer.
+          maxLength: 2000
+    AttachmentMetadata:
+      type: object
+      description: Safe protected attachment metadata. No raw storage path or public URL is exposed.
+      required:
+      - id
+      - originalName
+      - mimeType
+      - extension
+      - sizeBytes
+      - downloadEndpoint
+      - createdAt
+      properties:
+        id:
+          type: integer
+          description: Attachment ID.
+          minimum: 1
+        originalName:
+          type: string
+          description: Original filename metadata.
+          maxLength: 255
+        mimeType:
+          type: string
+          description: Validated MIME type.
+          maxLength: 127
+        extension:
+          type: string
+          description: Validated lowercase extension.
+          maxLength: 10
+        sizeBytes:
+          type: integer
+          description: Validated file size in bytes.
+          minimum: 1
+          maximum: 10485760
+        downloadEndpoint:
+          type: string
+          description: Authenticated nested Admin download path.
+        createdAt:
+          type: string
+          description: UTC attachment creation timestamp.
+          format: date-time
+    OrderItemDetail:
+      type: object
+      description: Full localized order-item detail.
+      required:
+      - id
+      - serviceId
+      - serviceSnapshot
+      - quantity
+      - unitPrice
+      - itemTotal
+      - itemNote
+      - selectedOptions
+      - answers
+      - attachments
+      - createdAt
+      - updatedAt
+      properties:
+        id:
+          type: integer
+          description: Order item ID.
+          minimum: 1
+        serviceId:
+          type:
+          - integer
+          - 'null'
+          minimum: 1
+          description: Current service link, nullable after deletion.
+        serviceSnapshot:
+          $ref: '#/components/schemas/ServiceSnapshot'
+          description: Historical localized service snapshot.
+        quantity:
+          type: integer
+          description: Item quantity.
+          minimum: 1
+        unitPrice:
+          type: string
+          pattern: ^(0|[1-9][0-9]*)\.[0-9]{2}$
+          description: Snapshotted calculated price for one unit.
+          example: '5000.00'
+        itemTotal:
+          type: string
+          pattern: ^(0|[1-9][0-9]*)\.[0-9]{2}$
+          description: unitPrice multiplied by quantity.
+          example: '5000.00'
+        itemNote:
+          type:
+          - string
+          - 'null'
+          maxLength: 2000
+          description: Optional item note.
+        selectedOptions:
+          type: array
+          description: Only selected pricing option snapshots.
+          items:
+            $ref: '#/components/schemas/SelectedOptionSnapshot'
+        answers:
+          type: array
+          description: Only answered question snapshots.
+          items:
+            $ref: '#/components/schemas/AnswerSnapshot'
+        attachments:
+          type: array
+          description: Protected attachment metadata.
+          items:
+            $ref: '#/components/schemas/AttachmentMetadata'
+        createdAt:
+          type: string
+          description: UTC item creation timestamp.
+          format: date-time
+        updatedAt:
+          type: string
+          description: UTC item update timestamp.
+          format: date-time
+    CancellationSummary:
+      type:
+      - object
+      - 'null'
+      description: Cancellation metadata or null.
+      properties:
+        reason:
+          type: string
+          description: Cancellation reason.
+          maxLength: 1000
+        cancelledAt:
+          type: string
+          description: UTC cancellation timestamp.
+          format: date-time
+        cancelledByAdmin:
+          type: object
+          description: Admin who cancelled the order.
+          properties:
+            id:
+              type: integer
+              description: Admin ID.
+              minimum: 1
+            name:
+              type: string
+              description: Admin display name.
+          required:
+          - id
+          - name
+      required:
+      - reason
+      - cancelledAt
+      - cancelledByAdmin
+    AdminSummary:
+      type:
+      - object
+      - 'null'
+      description: Creating Admin summary or null for Public Create.
+      properties:
+        id:
+          type: integer
+          description: Admin ID.
+          minimum: 1
+        name:
+          type: string
+          description: Admin display name.
+      required:
+      - id
+      - name
+    OrderDetail:
+      type: object
+      description: Full localized Admin order detail.
+      required:
+      - id
+      - orderNumber
+      - status
+      - availableStatusTransitions
+      - orderPlace
+      - customerId
+      - customerSnapshot
+      - customerAddressId
+      - addressSnapshot
+      - customerNote
+      - adminNote
+      - subtotal
+      - discount
+      - total
+      - payment
+      - cancellation
+      - items
+      - createdByAdmin
+      - createdAt
+      - updatedAt
+      properties:
+        id:
+          type: integer
+          description: Internal order ID.
+          minimum: 1
+        orderNumber:
+          type: string
+          description: Business number in ORD-YYYYMMDD-#### format.
+          pattern: ^ORD-[0-9]{8}-[0-9]{4}$
+        status:
+          allOf:
+          - $ref: '#/components/schemas/OrderStatus'
+          description: Current order status.
+        availableStatusTransitions:
+          type: array
+          description: Computed next allowed status integers.
+          items:
+            $ref: '#/components/schemas/OrderStatus'
+          uniqueItems: true
+        orderPlace:
+          allOf:
+          - $ref: '#/components/schemas/OrderPlace'
+          description: Business order source.
+        customerId:
+          type:
+          - integer
+          - 'null'
+          minimum: 1
+          description: Current linked customer ID, nullable.
+        customerSnapshot:
+          $ref: '#/components/schemas/CustomerSnapshot'
+          description: Historical customer snapshot.
+        customerAddressId:
+          type:
+          - integer
+          - 'null'
+          minimum: 1
+          description: Current linked saved-address ID, nullable.
+        addressSnapshot:
+          $ref: '#/components/schemas/AddressSnapshot'
+          description: Historical optional address snapshot.
+        customerNote:
+          type:
+          - string
+          - 'null'
+          maxLength: 2000
+          description: Customer/general order note.
+        adminNote:
+          type:
+          - string
+          - 'null'
+          maxLength: 2000
+          description: Internal Admin note.
+        subtotal:
+          type: string
+          pattern: ^(0|[1-9][0-9]*)\.[0-9]{2}$
+          description: Sum of all item totals before discount.
+          example: '5000.00'
+        discount:
+          $ref: '#/components/schemas/DiscountSummary'
+          description: Discount details or null.
+        total:
+          type: string
+          pattern: ^(0|[1-9][0-9]*)\.[0-9]{2}$
+          description: Subtotal minus discount amount.
+          example: '5000.00'
+        payment:
+          $ref: '#/components/schemas/PaymentSummary'
+          description: Current payment summary.
+        cancellation:
+          $ref: '#/components/schemas/CancellationSummary'
+          description: Cancellation metadata or null.
+        items:
+          type: array
+          description: Full order-item details.
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/OrderItemDetail'
+        createdByAdmin:
+          $ref: '#/components/schemas/AdminSummary'
+          description: Creating Admin or null for Public Create.
+        createdAt:
+          type: string
+          description: UTC order creation timestamp.
+          format: date-time
+        updatedAt:
+          type: string
+          description: UTC latest order update timestamp.
+          format: date-time
+    OrderIndexRow:
+      type: object
+      description: One summarized row in the Admin order index.
+      required:
+      - id
+      - orderNumber
+      - customerName
+      - customerPhone
+      - status
+      - paymentStatus
+      - orderPlace
+      - itemsCount
+      - subtotal
+      - discountAmount
+      - total
+      - paidAmount
+      - remainingAmount
+      - createdAt
+      properties:
+        id:
+          type: integer
+          description: Internal order ID.
+          minimum: 1
+        orderNumber:
+          type: string
+          description: Business order number.
+        customerName:
+          type: string
+          description: Snapshotted customer name.
+        customerPhone:
+          type: string
+          description: Snapshotted customer phone.
+        status:
+          allOf:
+          - $ref: '#/components/schemas/OrderStatus'
+          description: Current order status.
+        paymentStatus:
+          allOf:
+          - $ref: '#/components/schemas/PaymentStatus'
+          description: Derived payment status.
+        orderPlace:
+          allOf:
+          - $ref: '#/components/schemas/OrderPlace'
+          description: Order source.
+        itemsCount:
+          type: integer
+          description: Number of order items.
+          minimum: 1
+        subtotal:
+          type: string
+          pattern: ^(0|[1-9][0-9]*)\.[0-9]{2}$
+          description: Subtotal before discount.
+          example: '5000.00'
+        discountAmount:
+          type: string
+          pattern: ^(0|[1-9][0-9]*)\.[0-9]{2}$
+          description: Calculated monetary discount.
+          example: '5000.00'
+        total:
+          type: string
+          pattern: ^(0|[1-9][0-9]*)\.[0-9]{2}$
+          description: Final total.
+          example: '5000.00'
+        paidAmount:
+          type: string
+          pattern: ^(0|[1-9][0-9]*)\.[0-9]{2}$
+          description: Cumulative paid amount.
+          example: '5000.00'
+        remainingAmount:
+          type: string
+          pattern: ^-?(0|[1-9][0-9]*)\.[0-9]{2}$
+          description: Total minus paid amount; may be negative.
+          example: '-1000.00'
+        createdAt:
+          type: string
+          description: UTC creation timestamp.
+          format: date-time
+    PaginationMeta:
+      type: object
+      description: Pagination metadata.
+      required:
+      - currentPage
+      - perPage
+      - total
+      - lastPage
+      properties:
+        currentPage:
+          type: integer
+          description: Current page number.
+          minimum: 1
+        perPage:
+          type: integer
+          description: Rows per page.
+          minimum: 1
+          maximum: 100
+        total:
+          type: integer
+          description: Total matching records.
+          minimum: 0
+        lastPage:
+          type: integer
+          description: Last page number.
+          minimum: 1
+    PublicOrderSummary:
+      type: object
+      description: Public-safe order creation summary.
+      required:
+      - orderNumber
+      - status
+      - paymentStatus
+      - subtotal
+      - discountAmount
+      - total
+      - paidAmount
+      - remainingAmount
+      properties:
+        orderNumber:
+          type: string
+          description: Created business order number.
+        status:
+          allOf:
+          - $ref: '#/components/schemas/OrderStatus'
+          description: Always 0=PENDING on Public Create.
+        paymentStatus:
+          allOf:
+          - $ref: '#/components/schemas/PaymentStatus'
+          description: Always 0=UNPAID on initial Public Create.
+        subtotal:
+          type: string
+          pattern: ^(0|[1-9][0-9]*)\.[0-9]{2}$
+          description: Backend-calculated subtotal.
+          example: '5000.00'
+        discountAmount:
+          type: string
+          pattern: ^(0|[1-9][0-9]*)\.[0-9]{2}$
+          description: Always zero for Public Create.
+          example: '5000.00'
+        total:
+          type: string
+          pattern: ^(0|[1-9][0-9]*)\.[0-9]{2}$
+          description: Backend-calculated total.
+          example: '5000.00'
+        paidAmount:
+          type: string
+          pattern: ^(0|[1-9][0-9]*)\.[0-9]{2}$
+          description: Always zero on initial Public Create.
+          example: '5000.00'
+        remainingAmount:
+          type: string
+          pattern: ^-?(0|[1-9][0-9]*)\.[0-9]{2}$
+          description: Total minus paid amount.
+          example: '-1000.00'
+    SuccessEnvelopePublicOrder:
+      type: object
+      description: Shared success envelope for Public Create.
+      required:
+      - success
+      - message
+      - data
+      properties:
+        success:
+          type: boolean
+          const: true
+          description: Always true for success.
+        message:
+          type: string
+          description: Localized success message.
+        data:
+          $ref: '#/components/schemas/PublicOrderSummary'
+          description: Public-safe order summary.
+    SuccessEnvelopeOrderDetail:
+      type: object
+      description: Shared success envelope containing order detail.
+      required:
+      - success
+      - message
+      - data
+      properties:
+        success:
+          type: boolean
+          const: true
+          description: Always true for success.
+        message:
+          type: string
+          description: Localized success message.
+        data:
+          $ref: '#/components/schemas/OrderDetail'
+          description: Localized order detail.
+    SuccessEnvelopeOrderList:
+      type: object
+      description: Shared success envelope for the paginated Admin order list.
+      required:
+      - success
+      - message
+      - data
+      - meta
+      properties:
+        success:
+          type: boolean
+          const: true
+          description: Always true for success.
+        message:
+          type: string
+          description: Localized success message.
+        data:
+          type: array
+          description: Order index rows.
+          items:
+            $ref: '#/components/schemas/OrderIndexRow'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+          description: Pagination metadata.
+    SuccessEnvelopeOrderItem:
+      type: object
+      description: Shared success envelope containing one order item.
+      required:
+      - success
+      - message
+      - data
+      properties:
+        success:
+          type: boolean
+          const: true
+          description: Always true for success.
+        message:
+          type: string
+          description: Localized success message.
+        data:
+          $ref: '#/components/schemas/OrderItemDetail'
+          description: Localized order-item detail.
+    SuccessEnvelopeOrderItemList:
+      type: object
+      description: Shared success envelope containing order items.
+      required:
+      - success
+      - message
+      - data
+      properties:
+        success:
+          type: boolean
+          const: true
+          description: Always true for success.
+        message:
+          type: string
+          description: Localized success message.
+        data:
+          type: array
+          description: Order-item details.
+          items:
+            $ref: '#/components/schemas/OrderItemDetail'
+    SuccessEnvelopePayment:
+      type: object
+      description: Shared success envelope containing payment summary.
+      required:
+      - success
+      - message
+      - data
+      properties:
+        success:
+          type: boolean
+          const: true
+          description: Always true for success.
+        message:
+          type: string
+          description: Localized success message.
+        data:
+          type: object
+          description: Order total and payment summary.
+          required:
+          - total
+          - paymentStatus
+          - paidAmount
+          - remainingAmount
+          properties:
+            total:
+              type: string
+              pattern: ^(0|[1-9][0-9]*)\.[0-9]{2}$
+              description: Current final order total.
+              example: '5000.00'
+            paymentStatus:
+              allOf:
+              - $ref: '#/components/schemas/PaymentStatus'
+              description: Derived payment status.
+            paidAmount:
+              type: string
+              pattern: ^(0|[1-9][0-9]*)\.[0-9]{2}$
+              description: Cumulative paid amount.
+              example: '5000.00'
+            remainingAmount:
+              type: string
+              pattern: ^-?(0|[1-9][0-9]*)\.[0-9]{2}$
+              description: Total minus paid amount; may be negative.
+              example: '-1000.00'
+    SuccessEnvelopeAttachments:
+      type: object
+      description: Shared success envelope containing protected attachment metadata.
+      required:
+      - success
+      - message
+      - data
+      properties:
+        success:
+          type: boolean
+          const: true
+          description: Always true for success.
+        message:
+          type: string
+          description: Localized success message.
+        data:
+          type: array
+          description: Current safe attachment metadata.
+          items:
+            $ref: '#/components/schemas/AttachmentMetadata'
+    DeleteSuccessEnvelope:
+      type: object
+      description: Shared successful-delete envelope.
+      required:
+      - success
+      - message
+      - data
+      properties:
+        success:
+          type: boolean
+          const: true
+          description: Always true for success.
+        message:
+          type: string
+          description: Localized delete success message.
+        data:
+          type: 'null'
+          description: Always null after successful deletion.
+    ErrorEnvelope:
+      type: object
+      description: Shared API error envelope.
+      required:
+      - success
+      - message
+      - code
+      properties:
+        success:
+          type: boolean
+          const: false
+          description: Always false for errors.
+        message:
+          type: string
+          description: Localized human-readable error message.
+        code:
+          type: string
+          description: Stable machine-readable error code.
+          example: INVALID_ORDER_STATUS_TRANSITION
+        errors:
+          type:
+          - object
+          - 'null'
+          description: Optional field-level validation errors.
+          additionalProperties:
+            type: array
+            items:
+              type: string
+    OrderItemAnswerUpdateRequest:
+      type: object
+      description: Replacement answer for an existing stored Order Item answer snapshot. The snapshot ID remains
+        usable when its current Service Order Field link becomes null.
+      required:
+      - orderItemAnswerId
+      - answer
+      properties:
+        orderItemAnswerId:
+          type: integer
+          minimum: 1
+          description: Stored order_item_answers.id returned as answers[].id in Order Item Detail. It must belong
+            to the path Order Item.
+          example: 801
+        answer:
+          type: string
+          minLength: 1
+          maxLength: 2000
+          description: Replacement plain-text answer. Required snapshots reject empty and whitespace-only values.
+          example: 250 × 120 cm
+      additionalProperties: false
+  responses:
+    PublicOrderCreated:
+      description: Order created for the first time.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/SuccessEnvelopePublicOrder'
+      headers:
+        Content-Language:
+          description: Resolved response language.
+          schema:
+            type: string
+            enum:
+            - ar
+            - en
+        Vary:
+          description: Indicates that the representation varies by Accept-Language.
+          schema:
+            type: string
+            example: Accept-Language
+    PublicOrderReplay:
+      description: Idempotent replay returned the existing order.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/SuccessEnvelopePublicOrder'
+      headers:
+        Content-Language:
+          description: Resolved response language.
+          schema:
+            type: string
+            enum:
+            - ar
+            - en
+        Vary:
+          description: Indicates that the representation varies by Accept-Language.
+          schema:
+            type: string
+            example: Accept-Language
+    OrderDetailOk:
+      description: Order detail returned.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/SuccessEnvelopeOrderDetail'
+      headers:
+        Content-Language:
+          description: Resolved response language.
+          schema:
+            type: string
+            enum:
+            - ar
+            - en
+        Vary:
+          description: Indicates that the representation varies by Accept-Language.
+          schema:
+            type: string
+            example: Accept-Language
+    OrderListOk:
+      description: Paginated order list returned.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/SuccessEnvelopeOrderList'
+      headers:
+        Content-Language:
+          description: Resolved response language.
+          schema:
+            type: string
+            enum:
+            - ar
+            - en
+        Vary:
+          description: Indicates that the representation varies by Accept-Language.
+          schema:
+            type: string
+            example: Accept-Language
+    OrderItemOk:
+      description: Order item returned.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/SuccessEnvelopeOrderItem'
+      headers:
+        Content-Language:
+          description: Resolved response language.
+          schema:
+            type: string
+            enum:
+            - ar
+            - en
+        Vary:
+          description: Indicates that the representation varies by Accept-Language.
+          schema:
+            type: string
+            example: Accept-Language
+    OrderItemListOk:
+      description: Order items returned.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/SuccessEnvelopeOrderItemList'
+      headers:
+        Content-Language:
+          description: Resolved response language.
+          schema:
+            type: string
+            enum:
+            - ar
+            - en
+        Vary:
+          description: Indicates that the representation varies by Accept-Language.
+          schema:
+            type: string
+            example: Accept-Language
+    PaymentOk:
+      description: Payment summary returned.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/SuccessEnvelopePayment'
+      headers:
+        Content-Language:
+          description: Resolved response language.
+          schema:
+            type: string
+            enum:
+            - ar
+            - en
+        Vary:
+          description: Indicates that the representation varies by Accept-Language.
+          schema:
+            type: string
+            example: Accept-Language
+    AttachmentsOk:
+      description: Attachment metadata returned.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/SuccessEnvelopeAttachments'
+      headers:
+        Content-Language:
+          description: Resolved response language.
+          schema:
+            type: string
+            enum:
+            - ar
+            - en
+        Vary:
+          description: Indicates that the representation varies by Accept-Language.
+          schema:
+            type: string
+            example: Accept-Language
+    DeleteOk:
+      description: Resource deleted.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/DeleteSuccessEnvelope'
+      headers:
+        Content-Language:
+          description: Resolved response language.
+          schema:
+            type: string
+            enum:
+            - ar
+            - en
+        Vary:
+          description: Indicates that the representation varies by Accept-Language.
+          schema:
+            type: string
+            example: Accept-Language
+    Unauthenticated:
+      description: Bearer token is missing or invalid.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorEnvelope'
+      headers:
+        Content-Language:
+          description: Resolved response language.
+          schema:
+            type: string
+            enum:
+            - ar
+            - en
+        Vary:
+          description: Indicates that the representation varies by Accept-Language.
+          schema:
+            type: string
+            example: Accept-Language
+    Forbidden:
+      description: Authenticated Admin lacks the required permission.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorEnvelope'
+      headers:
+        Content-Language:
+          description: Resolved response language.
+          schema:
+            type: string
+            enum:
+            - ar
+            - en
+        Vary:
+          description: Indicates that the representation varies by Accept-Language.
+          schema:
+            type: string
+            example: Accept-Language
+    NotFound:
+      description: Resource was not found or nested ownership is not disclosed.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorEnvelope'
+      headers:
+        Content-Language:
+          description: Resolved response language.
+          schema:
+            type: string
+            enum:
+            - ar
+            - en
+        Vary:
+          description: Indicates that the representation varies by Accept-Language.
+          schema:
+            type: string
+            example: Accept-Language
+    Conflict:
+      description: Business-state conflict.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorEnvelope'
+      headers:
+        Content-Language:
+          description: Resolved response language.
+          schema:
+            type: string
+            enum:
+            - ar
+            - en
+        Vary:
+          description: Indicates that the representation varies by Accept-Language.
+          schema:
+            type: string
+            example: Accept-Language
+    ValidationFailed:
+      description: Request validation failed.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorEnvelope'
+      headers:
+        Content-Language:
+          description: Resolved response language.
+          schema:
+            type: string
+            enum:
+            - ar
+            - en
+        Vary:
+          description: Indicates that the representation varies by Accept-Language.
+          schema:
+            type: string
+            example: Accept-Language
+    RateLimited:
+      description: Public order rate limit exceeded.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorEnvelope'
+      headers:
+        Content-Language:
+          description: Resolved response language.
+          schema:
+            type: string
+            enum:
+            - ar
+            - en
+        Vary:
+          description: Indicates that the representation varies by Accept-Language.
+          schema:
+            type: string
+            example: Accept-Language
+    InternalError:
+      description: Unexpected internal failure.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorEnvelope'
+      headers:
+        Content-Language:
+          description: Resolved response language.
+          schema:
+            type: string
+            enum:
+            - ar
+            - en
+        Vary:
+          description: Indicates that the representation varies by Accept-Language.
+          schema:
+            type: string
+            example: Accept-Language
