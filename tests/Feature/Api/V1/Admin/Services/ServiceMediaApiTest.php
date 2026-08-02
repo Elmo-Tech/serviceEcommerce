@@ -83,3 +83,32 @@ it('uploads, updates, sets main, and deletes service media safely', function () 
 
     expect($finalList->json('data.0.id'))->toBe($firstMediaId);
 });
+
+it('accepts string boolean values for media isMain in upload payloads', function () {
+    $accessToken = serviceMediaAdminToken();
+    $service = Service::factory()->create(['is_active' => false]);
+
+    $response = $this->post("/api/v1/admin/services/{$service->getKey()}/media", [
+        'media' => [
+            [
+                'file' => UploadedFile::fake()->image('first.jpg'),
+                'type' => 0,
+                'isMain' => 'true',
+                'altAr' => 'الصورة الأولى',
+                'altEn' => 'First image',
+            ],
+            [
+                'file' => UploadedFile::fake()->image('second.jpg'),
+                'type' => 0,
+                'isMain' => 'false',
+                'altAr' => 'الصورة الثانية',
+                'altEn' => 'Second image',
+            ],
+        ],
+    ], serviceMediaAdminHeaders($accessToken));
+
+    $response->assertCreated()
+        ->assertJsonCount(2, 'data')
+        ->assertJsonPath('data.0.isMain', true)
+        ->assertJsonPath('data.1.isMain', false);
+});

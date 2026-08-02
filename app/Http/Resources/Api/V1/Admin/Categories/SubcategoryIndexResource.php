@@ -23,6 +23,7 @@ class SubcategoryIndexResource extends JsonResource
             'name' => $localeService->value($this->resource, 'name'),
             'description' => $localeService->value($this->resource, 'description'),
             'slug' => $localeService->value($this->resource, 'slug'),
+            'image' => $this->imageUrl(),
             'sortOrder' => (int) $this->sort_order,
             'isActive' => (bool) $this->is_active,
             'createdAt' => $this->created_at?->toJSON(),

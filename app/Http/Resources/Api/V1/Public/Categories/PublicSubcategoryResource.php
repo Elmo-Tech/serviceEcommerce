@@ -22,6 +22,7 @@ class PublicSubcategoryResource extends JsonResource
             'name' => $localeService->value($this->resource, 'name'),
             'description' => $localeService->value($this->resource, 'description'),
             'slug' => $localeService->value($this->resource, 'slug'),
+            'image' => $this->imageUrl(),
         ];
     }
 }

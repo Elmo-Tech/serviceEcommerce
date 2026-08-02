@@ -87,26 +87,29 @@ The following decisions are final for this feature:
     without changing their stored `is_active` values.
 19. Disabling a Subcategory hides its Services from public APIs without changing
     their stored `is_active` values.
-20. Categories and Subcategories are text-only in the MVP.
-21. No image, icon, video, attachment, or file-upload behavior belongs to this
-    feature.
-22. A Subcategory belongs to exactly one root Category.
-23. Moving a Subcategory to another Category is outside the MVP.
-24. Restoring a Category does not automatically restore its deleted
+20. Each Category and Subcategory may have one optional image.
+21. The image is not required on create or update.
+22. Submitting a new image during update replaces the previous image.
+23. No multiple images, icon, video, attachment, or other file-upload behavior
+    belongs to this feature.
+24. A Subcategory belongs to exactly one root Category.
+25. Moving a Subcategory to another Category is outside the MVP.
+26. Restoring a Category does not automatically restore its deleted
     Subcategories.
-25. Restoring a Subcategory does not automatically restore deleted Services.
-26. Public APIs expose only active, non-deleted records whose ancestors are also
+27. Restoring a Subcategory does not automatically restore deleted Services.
+28. Public APIs expose only active, non-deleted records whose ancestors are also
     active and non-deleted.
-27. Hidden, inactive, or deleted public records return `404`, not a status that
+29. Hidden, inactive, or deleted public records return `404`, not a status that
     reveals their existence.
-28. Admin detail and mutation APIs return both Arabic and English names,
-    descriptions, and slugs. Admin Category and Subcategory index APIs return
-    only the resolved-locale `name`, `description`, and `slug`, plus required
-    operational fields.
-29. Public APIs resolve the localized name, description, and slug from
+30. Admin detail and mutation APIs return both Arabic and English names,
+    descriptions, slugs, and the optional image URL. Admin Category and
+    Subcategory index APIs return only the resolved-locale `name`,
+    `description`, `slug`, and optional image URL, plus required operational
+    fields.
+31. Public APIs resolve the localized name, description, and slug from
     `Accept-Language`.
-30. Arabic is the default locale and English is the fallback.
-31. Stable machine keys, routes, permissions, and error codes remain English.
+32. Arabic is the default locale and English is the fallback.
+33. Stable machine keys, routes, permissions, and error codes remain English.
 
 ---
 
@@ -140,8 +143,8 @@ The following decisions are final for this feature:
 - Service specifications.
 - Service pricing.
 - Service media.
-- Category or Subcategory images/icons.
-- File uploads.
+- Multiple Category or Subcategory images.
+- Icons, videos, and attachments.
 - Third-level classification.
 - Arbitrary-depth trees.
 - Drag-and-drop frontend implementation.
@@ -259,6 +262,8 @@ categories
 | `slug_en` | `VARCHAR(180)` | No | — | Stable English slug |
 | `sort_order` | `INT UNSIGNED` | No | `0` | Manual ordering |
 | `is_active` | `BOOLEAN` | No | `true` | Independent stored state |
+| `image_disk` | `VARCHAR(50)` | Yes | `NULL` | Optional image storage disk |
+| `image_path` | `VARCHAR(500)` | Yes | `NULL` | Optional image storage path |
 | `created_at` | `TIMESTAMP` | Yes | framework | Laravel timestamp |
 | `updated_at` | `TIMESTAMP` | Yes | framework | Laravel timestamp |
 | `deleted_at` | `TIMESTAMP` | Yes | `NULL` | Soft delete |
@@ -1885,18 +1890,20 @@ the request fails and no partial localized description is persisted.
   description, and slug.
 - **FR-025**: Public visibility MUST require active, non-deleted ancestors.
 - **FR-026**: Hidden public records MUST return `404`.
-- **FR-027**: Categories and Subcategories MUST remain text-only in the
-  MVP, including their descriptions.
-- **FR-028**: Admin list APIs MUST support approved search, filters, sorting,
+- **FR-027**: Each Category and Subcategory MAY have one optional image.
+- **FR-028**: The image MUST NOT be required on create or update.
+- **FR-029**: The feature MUST NOT introduce multiple images, icons, video,
+  or attachment behavior for Categories or Subcategories.
+- **FR-030**: Admin list APIs MUST support approved search, filters, sorting,
   and pagination.
-- **FR-029**: Public lists MUST be ordered and unpaginated in the MVP.
-- **FR-030**: Reordering MUST be atomic and scope validated.
-- **FR-031**: Request bodies MUST NOT control hierarchy ownership.
-- **FR-032**: Admin routes MUST apply authentication, administrator type,
+- **FR-031**: Public lists MUST be ordered and unpaginated in the MVP.
+- **FR-032**: Reordering MUST be atomic and scope validated.
+- **FR-033**: Request bodies MUST NOT control hierarchy ownership.
+- **FR-034**: Admin routes MUST apply authentication, administrator type,
   active-state, and permission controls independently.
-- **FR-033**: Public routes MUST be read-only.
-- **FR-034**: The Postman collection MUST cover all canonical operations.
-- **FR-035**: Tests MUST use MySQL for hierarchy and concurrency behavior.
+- **FR-035**: Public routes MUST be read-only.
+- **FR-036**: The Postman collection MUST cover all canonical operations.
+- **FR-037**: Tests MUST use MySQL for hierarchy and concurrency behavior.
 
 ### Authorization Requirements
 

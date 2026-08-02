@@ -5,12 +5,16 @@ declare(strict_types=1);
 use App\Models\Category;
 use Database\Seeders\SuperAdminSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 
 uses(RefreshDatabase::class);
 
 beforeEach(function (): void {
     seedAdminAuthEnvironment();
     $this->seed(SuperAdminSeeder::class);
+    Storage::fake('public');
+    config()->set('filesystems.default', 'public');
 });
 
 function subcategoryAdminHeaders(string $accessToken, string $locale = 'en'): array
@@ -164,4 +168,24 @@ it('manages nested subcategories with scoped routing, localized indexes, restore
     )
         ->assertNotFound()
         ->assertJsonPath('code', 'SUBCATEGORY_NOT_FOUND');
+});
+
+it('uploads an optional image for a subcategory', function () {
+    $accessToken = subcategoryAdminToken();
+    $rootCategory = Category::factory()->root()->create();
+
+    $response = $this->post('/api/v1/admin/categories/'.$rootCategory->getKey().'/subcategories', [
+        'nameAr' => 'فرعي بصورة',
+        'nameEn' => 'Subcategory With Image',
+        'image' => UploadedFile::fake()->image('subcategory.jpg'),
+    ], subcategoryAdminHeaders($accessToken, 'en'));
+
+    $response->assertCreated()
+        ->assertJsonPath('data.image', fn (string $value): bool => str_contains($value, '/storage/categories/images/'));
+
+    $subcategory = Category::query()->subcategories()->sole();
+
+    expect($subcategory->image_disk)->toBe('public')
+        ->and(is_string($subcategory->image_path))->toBeTrue()
+        ->and(Storage::disk('public')->exists((string) $subcategory->image_path))->toBeTrue();
 });

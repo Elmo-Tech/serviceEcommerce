@@ -4,8 +4,14 @@ declare(strict_types=1);
 
 use App\Models\Category;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Storage;
 
 uses(RefreshDatabase::class);
+
+beforeEach(function (): void {
+    Storage::fake('public');
+    config()->set('filesystems.default', 'public');
+});
 
 it('returns localized public categories and subcategories with locale links and visibility inheritance', function () {
     $rootCategory = Category::factory()->root()->create([
@@ -17,6 +23,8 @@ it('returns localized public categories and subcategories with locale links and 
         'slug_en' => 'home-services',
         'sort_order' => 1,
         'is_active' => true,
+        'image_disk' => 'public',
+        'image_path' => 'categories/images/root.png',
     ]);
 
     $visibleSubcategory = Category::factory()->subcategory($rootCategory)->create([
@@ -27,6 +35,8 @@ it('returns localized public categories and subcategories with locale links and 
         'slug_ar' => 'تنظيف',
         'slug_en' => 'cleaning',
         'is_active' => true,
+        'image_disk' => 'public',
+        'image_path' => 'categories/images/subcategory.png',
     ]);
 
     Category::factory()->subcategory($rootCategory)->inactive()->create([
@@ -45,7 +55,9 @@ it('returns localized public categories and subcategories with locale links and 
         ->assertJsonPath('meta.direction', 'ltr')
         ->assertJsonPath('data.0.name', 'Home Services')
         ->assertJsonPath('data.0.slug', 'home-services')
+        ->assertJsonPath('data.0.image', Storage::disk('public')->url('categories/images/root.png'))
         ->assertJsonPath('data.0.subcategories.0.name', 'Cleaning')
+        ->assertJsonPath('data.0.subcategories.0.image', Storage::disk('public')->url('categories/images/subcategory.png'))
         ->assertJsonMissingPath('data.0.id')
         ->assertJsonMissingPath('data.0.isActive');
 

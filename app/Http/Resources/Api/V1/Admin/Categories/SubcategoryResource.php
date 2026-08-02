@@ -23,6 +23,7 @@ class SubcategoryResource extends JsonResource
             'descriptionEn' => $this->description_en,
             'slugAr' => $this->slug_ar,
             'slugEn' => $this->slug_en,
+            'image' => $this->imageUrl(),
             'sortOrder' => (int) $this->sort_order,
             'isActive' => (bool) $this->is_active,
             'category' => $this->parent instanceof Category

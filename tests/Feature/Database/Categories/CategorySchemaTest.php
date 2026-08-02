@@ -23,6 +23,8 @@ it('creates the categories table with the approved columns and indexes', functio
         'slug_en',
         'sort_order',
         'is_active',
+        'image_disk',
+        'image_path',
         'created_at',
         'updated_at',
         'deleted_at',

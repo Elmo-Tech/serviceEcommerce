@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Storage;
 
 class Category extends Model
 {
@@ -29,6 +30,8 @@ class Category extends Model
         'slug_en',
         'sort_order',
         'is_active',
+        'image_disk',
+        'image_path',
     ];
 
     protected function casts(): array
@@ -39,6 +42,15 @@ class Category extends Model
             'is_active' => 'boolean',
             'deleted_at' => 'datetime',
         ];
+    }
+
+    public function imageUrl(): ?string
+    {
+        if (! is_string($this->image_disk) || $this->image_disk === '' || ! is_string($this->image_path) || $this->image_path === '') {
+            return null;
+        }
+
+        return Storage::disk($this->image_disk)->url($this->image_path);
     }
 
     public function parent(): BelongsTo

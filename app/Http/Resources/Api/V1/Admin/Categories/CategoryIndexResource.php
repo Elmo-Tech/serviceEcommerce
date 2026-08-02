@@ -23,6 +23,7 @@ class CategoryIndexResource extends JsonResource
             'name' => $localeService->value($this->resource, 'name'),
             'description' => $localeService->value($this->resource, 'description'),
             'slug' => $localeService->value($this->resource, 'slug'),
+            'image' => $this->imageUrl(),
             'sortOrder' => (int) $this->sort_order,
             'isActive' => (bool) $this->is_active,
             'subcategoriesCount' => (int) ($this->subcategories_count ?? 0),

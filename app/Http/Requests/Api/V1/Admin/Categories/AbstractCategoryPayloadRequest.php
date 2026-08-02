@@ -13,6 +13,14 @@ abstract class AbstractCategoryPayloadRequest extends FormRequest
     {
         $normalized = $this->all();
 
+        if (array_key_exists('isActive', $normalized) && $normalized['isActive'] === 'true') {
+            $normalized['isActive'] = true;
+        }
+
+        if (array_key_exists('isActive', $normalized) && $normalized['isActive'] === 'false') {
+            $normalized['isActive'] = false;
+        }
+
         foreach (['nameAr', 'nameEn', 'slugAr', 'slugEn'] as $field) {
             if (! array_key_exists($field, $normalized) || ! is_string($normalized[$field])) {
                 continue;

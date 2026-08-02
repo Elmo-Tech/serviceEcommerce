@@ -230,7 +230,8 @@ ordering, localized slugs, and hidden-record `404` behavior.
   Subcategories whose ancestor chain is also active and non-deleted.
 - **FR-022**: Hidden public records MUST return `404`.
 - **FR-023**: Admin detail, create, update, and restore APIs MUST return
-  both Arabic and English names, descriptions, and slugs.
+  both Arabic and English names, descriptions, slugs, and the optional image
+  URL.
 - **FR-023A**: Admin Category and Subcategory index items MUST return only the
   resolved-locale `name`, `description`, and `slug`, plus approved operational
   fields. Index items MUST NOT return `nameAr`, `nameEn`, `descriptionAr`,
@@ -251,8 +252,10 @@ ordering, localized slugs, and hidden-record `404` behavior.
   descending sorts MUST use Query Builder's `-` prefix.
 - **FR-026**: Public list APIs MUST remain read-only and unpaginated in the
   MVP.
-- **FR-027**: This feature MUST remain text-only and MUST NOT introduce media
-  or file-upload behavior.
+- **FR-027**: Each Category and Subcategory MAY have one optional image.
+- **FR-028**: The image MUST NOT be required on create or update.
+- **FR-029**: The feature MUST NOT introduce multiple images, icons, video, or
+  attachment behavior for Categories or Subcategories.
 
 ### Actors and Authorization *(mandatory for protected behaviour)*
 

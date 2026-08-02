@@ -1,0 +1,718 @@
+openapi: 3.1.0
+info:
+  title: Service Commerce Settings Management API
+  version: 1.1.0
+  description: Exact OpenAPI 3.1 contract for Feature 006 Settings Management.
+servers:
+- url: /api/v1
+paths:
+  /admin/settings:
+    get:
+      operationId: adminGetSettings
+      summary: Get admin settings
+      tags:
+      - Admin Settings
+      x-required-permission: settings.view
+      security:
+      - sanctumBearer: []
+      responses:
+        '200':
+          description: Complete Admin Settings resource returned successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminSettingsSuccessResponse'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    patch:
+      operationId: adminUpdateSettings
+      summary: Partially update admin settings
+      tags:
+      - Admin Settings
+      x-required-permission: settings.update
+      security:
+      - sanctumBearer: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AdminSettingsUpdateRequest'
+      responses:
+        '200':
+          description: Complete updated Admin Settings resource returned successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminSettingsSuccessResponse'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /public/settings:
+    get:
+      operationId: publicGetSettings
+      summary: Get public localized settings
+      tags:
+      - Public Settings
+      security: []
+      parameters:
+      - in: header
+        name: Accept-Language
+        required: false
+        description: 'Locale header accepted by the existing middleware. Values such as ar, en, ar-EG,
+          and en-US resolve to the supported response locale ar or en according to project fallback rules.
+
+          '
+        schema:
+          type: string
+          examples:
+          - ar
+          - en
+          - ar-EG
+          - en-US
+      responses:
+        '200':
+          description: Localized public settings or the approved safe default projection.
+          headers:
+            Content-Language:
+              required: true
+              schema:
+                type: string
+                enum:
+                - ar
+                - en
+            Vary:
+              required: true
+              schema:
+                type: string
+                const: Accept-Language
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublicSettingsSuccessResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+components:
+  securitySchemes:
+    sanctumBearer:
+      type: http
+      scheme: bearer
+      bearerFormat: Token
+  responses:
+    Unauthenticated:
+      description: Authentication is required.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Forbidden:
+      description: Authenticated actor lacks the required permission.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    ValidationError:
+      description: Submitted data is invalid.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ValidationErrorResponse'
+    InternalServerError:
+      description: Unexpected safe server error.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+  schemas:
+    SocialPlatform:
+      type: string
+      enum:
+      - facebook
+      - instagram
+      - linkedin
+      - youtube
+      - tiktok
+      - x
+      - telegram
+      - pinterest
+      - snapchat
+    PhoneInput:
+      type: object
+      additionalProperties: false
+      required:
+      - number
+      - hasWhats
+      properties:
+        number:
+          type: string
+          minLength: 1
+          description: Accepts approved Egyptian local or international variants, including formatting
+            with spaces, dashes, parentheses, +20, or 0020. The backend normalizes before validation and
+            persistence.
+          examples:
+          - 01012345678
+          - '+201012345678'
+          - 00201012345678
+          - 010 1234 5678
+          - 010-1234-5678
+          - (010) 12345678
+        hasWhats:
+          type: integer
+          enum:
+          - 0
+          - 1
+    PhoneOutput:
+      type: object
+      additionalProperties: false
+      required:
+      - number
+      - hasWhats
+      properties:
+        number:
+          type: string
+          pattern: ^01[0125][0-9]{8}$
+          description: Canonical normalized Egyptian mobile number.
+          examples:
+          - 01012345678
+        hasWhats:
+          type: integer
+          enum:
+          - 0
+          - 1
+    SocialLinkItem:
+      type: object
+      additionalProperties: false
+      required:
+      - platform
+      - url
+      properties:
+        platform:
+          $ref: '#/components/schemas/SocialPlatform'
+        url:
+          type: string
+          format: uri
+          minLength: 1
+    DefaultSeoLocalized:
+      type: object
+      additionalProperties: false
+      required:
+      - title
+      - description
+      - keywords
+      properties:
+        title:
+          type:
+          - string
+          - 'null'
+        description:
+          type:
+          - string
+          - 'null'
+        keywords:
+          type: array
+          items:
+            type: string
+            minLength: 1
+    AdminSettingsData:
+      type: object
+      additionalProperties: false
+      required:
+      - siteNameAr
+      - siteNameEn
+      - siteDescriptionAr
+      - siteDescriptionEn
+      - sloganAr
+      - sloganEn
+      - logo
+      - footerLogo
+      - favicon
+      - publicEmail
+      - phones
+      - addressAr
+      - addressEn
+      - googleMapsUrl
+      - latitude
+      - longitude
+      - socialLinks
+      - availableSocialPlatforms
+      - defaultSeoTitleAr
+      - defaultSeoTitleEn
+      - defaultSeoDescriptionAr
+      - defaultSeoDescriptionEn
+      - defaultSeoKeywordsAr
+      - defaultSeoKeywordsEn
+      properties:
+        siteNameAr:
+          type: string
+          minLength: 1
+        siteNameEn:
+          type: string
+          minLength: 1
+        siteDescriptionAr:
+          type:
+          - string
+          - 'null'
+          maxLength: 500
+        siteDescriptionEn:
+          type:
+          - string
+          - 'null'
+          maxLength: 500
+        sloganAr:
+          type:
+          - string
+          - 'null'
+        sloganEn:
+          type:
+          - string
+          - 'null'
+        logo:
+          type:
+          - string
+          - 'null'
+          format: uri
+        footerLogo:
+          type:
+          - string
+          - 'null'
+          format: uri
+        favicon:
+          type:
+          - string
+          - 'null'
+          format: uri
+        publicEmail:
+          type: string
+          format: email
+        phones:
+          type: array
+          maxItems: 3
+          items:
+            $ref: '#/components/schemas/PhoneOutput'
+        addressAr:
+          type:
+          - string
+          - 'null'
+        addressEn:
+          type:
+          - string
+          - 'null'
+        googleMapsUrl:
+          type:
+          - string
+          - 'null'
+          format: uri
+        latitude:
+          type:
+          - string
+          - 'null'
+          pattern: ^-?(?:90(?:\.0{1,7})?|(?:[0-8]?\d)(?:\.\d{1,7})?)$
+        longitude:
+          type:
+          - string
+          - 'null'
+          pattern: ^-?(?:180(?:\.0{1,7})?|(?:1[0-7]\d|[0-9]?\d)(?:\.\d{1,7})?)$
+        socialLinks:
+          type: array
+          maxItems: 9
+          x-unique-by: platform
+          items:
+            $ref: '#/components/schemas/SocialLinkItem'
+        availableSocialPlatforms:
+          type: array
+          minItems: 9
+          maxItems: 9
+          uniqueItems: true
+          items:
+            $ref: '#/components/schemas/SocialPlatform'
+        defaultSeoTitleAr:
+          type:
+          - string
+          - 'null'
+        defaultSeoTitleEn:
+          type:
+          - string
+          - 'null'
+        defaultSeoDescriptionAr:
+          type:
+          - string
+          - 'null'
+        defaultSeoDescriptionEn:
+          type:
+          - string
+          - 'null'
+        defaultSeoKeywordsAr:
+          type: array
+          items:
+            type: string
+            minLength: 1
+        defaultSeoKeywordsEn:
+          type: array
+          items:
+            type: string
+            minLength: 1
+    PublicSettingsData:
+      type: object
+      additionalProperties: false
+      required:
+      - siteName
+      - siteDescription
+      - slogan
+      - logo
+      - footerLogo
+      - favicon
+      - email
+      - phones
+      - address
+      - googleMapsUrl
+      - latitude
+      - longitude
+      - socialLinks
+      - defaultSeo
+      properties:
+        siteName:
+          type: string
+          minLength: 1
+        siteDescription:
+          type:
+          - string
+          - 'null'
+          maxLength: 500
+        slogan:
+          type:
+          - string
+          - 'null'
+        logo:
+          type:
+          - string
+          - 'null'
+          format: uri
+        footerLogo:
+          type:
+          - string
+          - 'null'
+          format: uri
+        favicon:
+          type:
+          - string
+          - 'null'
+          format: uri
+        email:
+          type: string
+          format: email
+        phones:
+          type: array
+          maxItems: 3
+          items:
+            $ref: '#/components/schemas/PhoneOutput'
+        address:
+          type:
+          - string
+          - 'null'
+        googleMapsUrl:
+          type:
+          - string
+          - 'null'
+          format: uri
+        latitude:
+          type:
+          - string
+          - 'null'
+          pattern: ^-?(?:90(?:\.0{1,7})?|(?:[0-8]?\d)(?:\.\d{1,7})?)$
+        longitude:
+          type:
+          - string
+          - 'null'
+          pattern: ^-?(?:180(?:\.0{1,7})?|(?:1[0-7]\d|[0-9]?\d)(?:\.\d{1,7})?)$
+        socialLinks:
+          type: array
+          maxItems: 9
+          x-unique-by: platform
+          items:
+            $ref: '#/components/schemas/SocialLinkItem'
+        defaultSeo:
+          $ref: '#/components/schemas/DefaultSeoLocalized'
+    AdminSettingsSuccessResponse:
+      type: object
+      additionalProperties: false
+      required:
+      - success
+      - message
+      - data
+      properties:
+        success:
+          type: boolean
+          const: true
+        message:
+          type: string
+        data:
+          $ref: '#/components/schemas/AdminSettingsData'
+    PublicSettingsSuccessResponse:
+      type: object
+      additionalProperties: false
+      required:
+      - success
+      - message
+      - data
+      properties:
+        success:
+          type: boolean
+          const: true
+        message:
+          type: string
+        data:
+          $ref: '#/components/schemas/PublicSettingsData'
+    ErrorResponse:
+      type: object
+      additionalProperties: false
+      required:
+      - success
+      - message
+      - code
+      - errors
+      properties:
+        success:
+          type: boolean
+          const: false
+        message:
+          type: string
+        code:
+          type: string
+        errors:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            type: array
+            items:
+              type: string
+    ValidationErrorResponse:
+      type: object
+      additionalProperties: false
+      required:
+      - success
+      - message
+      - code
+      - errors
+      properties:
+        success:
+          type: boolean
+          const: false
+        message:
+          type: string
+        code:
+          type: string
+          const: VALIDATION_ERROR
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+    AdminSettingsUpdateRequest:
+      type: object
+      additionalProperties: false
+      dependentRequired:
+        latitude:
+        - longitude
+        longitude:
+        - latitude
+      allOf:
+      - not:
+          allOf:
+          - required:
+            - phones
+            - clearPhones
+          - properties:
+              clearPhones:
+                const: 1
+      - not:
+          allOf:
+          - required:
+            - socialLinks
+            - clearSocialLinks
+          - properties:
+              clearSocialLinks:
+                const: 1
+      - not:
+          allOf:
+          - required:
+            - logo
+            - removeLogo
+          - properties:
+              removeLogo:
+                const: 1
+      - not:
+          allOf:
+          - required:
+            - footerLogo
+            - removeFooterLogo
+          - properties:
+              removeFooterLogo:
+                const: 1
+      - not:
+          allOf:
+          - required:
+            - favicon
+            - removeFavicon
+          - properties:
+              removeFavicon:
+                const: 1
+      properties:
+        siteNameAr:
+          type: string
+          minLength: 1
+        siteNameEn:
+          type: string
+          minLength: 1
+        siteDescriptionAr:
+          type: string
+          maxLength: 500
+          description: Empty string explicitly clears the field to null.
+        siteDescriptionEn:
+          type: string
+          maxLength: 500
+          description: Empty string explicitly clears the field to null.
+        sloganAr:
+          type: string
+          description: Empty string explicitly clears the field to null.
+        sloganEn:
+          type: string
+          description: Empty string explicitly clears the field to null.
+        publicEmail:
+          type: string
+          format: email
+          minLength: 1
+        addressAr:
+          type: string
+          description: Empty string explicitly clears the field to null.
+        addressEn:
+          type: string
+          description: Empty string explicitly clears the field to null.
+        googleMapsUrl:
+          anyOf:
+          - type: string
+            format: uri
+            minLength: 1
+          - const: ''
+          description: Empty string explicitly clears the field to null.
+        latitude:
+          anyOf:
+          - type: string
+            pattern: ^-?(?:90(?:\.0{1,7})?|(?:[0-8]?\d)(?:\.\d{1,7})?)$
+          - const: ''
+          description: Must be sent with longitude; two empty strings clear the pair.
+        longitude:
+          anyOf:
+          - type: string
+            pattern: ^-?(?:180(?:\.0{1,7})?|(?:1[0-7]\d|[0-9]?\d)(?:\.\d{1,7})?)$
+          - const: ''
+          description: Must be sent with latitude; two empty strings clear the pair.
+        defaultSeoTitleAr:
+          type: string
+          description: Empty string explicitly clears the field to null.
+        defaultSeoTitleEn:
+          type: string
+          description: Empty string explicitly clears the field to null.
+        defaultSeoDescriptionAr:
+          type: string
+          description: Empty string explicitly clears the field to null.
+        defaultSeoDescriptionEn:
+          type: string
+          description: Empty string explicitly clears the field to null.
+        defaultSeoKeywordsAr:
+          type: array
+          x-unique-case-insensitive-after-trim: true
+          description: Duplicate trimmed values are rejected with VALIDATION_ERROR.
+          items:
+            type: string
+            minLength: 1
+            pattern: .*\S.*
+        defaultSeoKeywordsEn:
+          type: array
+          x-unique-case-insensitive-after-trim: true
+          description: Duplicate trimmed values are rejected with VALIDATION_ERROR.
+          items:
+            type: string
+            minLength: 1
+            pattern: .*\S.*
+        phones:
+          type: array
+          maxItems: 3
+          description: Full ordered replacement. Each input accepts approved Egyptian local or international
+            variants; the backend normalizes before duplicate checks and persistence. More than three
+            items, duplicate normalized numbers, or more than one WhatsApp-enabled item are rejected.
+          items:
+            $ref: '#/components/schemas/PhoneInput'
+        socialLinks:
+          type: array
+          maxItems: 9
+          x-unique-by: platform
+          description: Full ordered replacement; duplicate platforms are rejected.
+          items:
+            $ref: '#/components/schemas/SocialLinkItem'
+        clearPhones:
+          type: integer
+          enum:
+          - 0
+          - 1
+        clearSocialLinks:
+          type: integer
+          enum:
+          - 0
+          - 1
+        removeLogo:
+          type: integer
+          enum:
+          - 0
+          - 1
+        removeFooterLogo:
+          type: integer
+          enum:
+          - 0
+          - 1
+        removeFavicon:
+          type: integer
+          enum:
+          - 0
+          - 1
+        logo:
+          type: string
+          format: binary
+          description: JPG, JPEG, PNG, WEBP, or SVG that passes content inspection; unsafe SVG content is rejected without rewriting; maximum 5 MB.
+          x-allowed-extensions:
+          - jpg
+          - jpeg
+          - png
+          - webp
+          - svg
+          x-max-file-size-bytes: 5242880
+        footerLogo:
+          type: string
+          format: binary
+          description: JPG, JPEG, PNG, WEBP, or SVG that passes content inspection; unsafe SVG content is rejected without rewriting; maximum 5 MB.
+          x-allowed-extensions:
+          - jpg
+          - jpeg
+          - png
+          - webp
+          - svg
+          x-max-file-size-bytes: 5242880
+        favicon:
+          type: string
+          format: binary
+          description: PNG, ICO, or SVG that passes content inspection; unsafe SVG content is rejected without rewriting; maximum 1 MB.
+          x-allowed-extensions:
+          - png
+          - ico
+          - svg
+          x-max-file-size-bytes: 1048576

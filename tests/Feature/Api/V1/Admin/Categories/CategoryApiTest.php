@@ -7,6 +7,8 @@ use App\Models\User;
 use Database\Seeders\RolesAndPermissionsSeeder;
 use Database\Seeders\SuperAdminSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Hash;
 use Laravel\Sanctum\Sanctum;
 
@@ -15,6 +17,8 @@ uses(RefreshDatabase::class);
 beforeEach(function (): void {
     seedAdminAuthEnvironment();
     $this->seed(SuperAdminSeeder::class);
+    Storage::fake('public');
+    config()->set('filesystems.default', 'public');
 });
 
 function categoryAdminHeaders(string $accessToken, string $locale = 'en'): array
@@ -189,6 +193,40 @@ it('rejects invalid root category payloads and preserves query allow-lists', fun
         ->assertUnprocessable()
         ->assertJsonPath('code', 'VALIDATION_ERROR')
         ->assertJsonStructure(['errors' => ['payload']]);
+});
+
+it('uploads and replaces one optional image for a root category', function () {
+    $accessToken = categoryAdminToken();
+
+    $createResponse = $this->post('/api/v1/admin/categories', [
+        'nameAr' => 'تصنيف بصورة',
+        'nameEn' => 'Category With Image',
+        'isActive' => 'true',
+        'image' => UploadedFile::fake()->image('category.png'),
+    ], categoryAdminHeaders($accessToken, 'en'));
+
+    $createResponse->assertCreated()
+        ->assertJsonPath('data.image', fn (string $value): bool => str_contains($value, '/storage/categories/images/'));
+
+    $category = Category::query()->roots()->sole();
+    $originalImagePath = $category->image_path;
+
+    expect($category->image_disk)->toBe('public')
+        ->and(is_string($originalImagePath))->toBeTrue()
+        ->and(Storage::disk('public')->exists((string) $originalImagePath))->toBeTrue();
+
+    $updateResponse = $this->patch('/api/v1/admin/categories/'.$category->getKey(), [
+        'image' => UploadedFile::fake()->image('replacement.webp'),
+    ], categoryAdminHeaders($accessToken, 'en'));
+
+    $updateResponse->assertOk()
+        ->assertJsonPath('data.image', fn (string $value): bool => str_contains($value, '/storage/categories/images/'));
+
+    $updatedCategory = $category->fresh();
+
+    expect($updatedCategory?->image_path)->not->toBe($originalImagePath)
+        ->and(Storage::disk('public')->exists((string) $updatedCategory?->image_path))->toBeTrue()
+        ->and(Storage::disk('public')->exists((string) $originalImagePath))->toBeFalse();
 });
 
 it('returns the approved authentication and permission boundaries for root category routes', function () {

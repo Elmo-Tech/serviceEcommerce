@@ -14,6 +14,35 @@ class UploadServiceMediaRequest extends FormRequest
         return true;
     }
 
+    protected function prepareForValidation(): void
+    {
+        $media = $this->input('media');
+
+        if (! is_array($media)) {
+            return;
+        }
+
+        $normalizedMedia = array_map(function (mixed $item): mixed {
+            if (! is_array($item) || ! array_key_exists('isMain', $item)) {
+                return $item;
+            }
+
+            if ($item['isMain'] === 'true') {
+                $item['isMain'] = true;
+            }
+
+            if ($item['isMain'] === 'false') {
+                $item['isMain'] = false;
+            }
+
+            return $item;
+        }, $media);
+
+        $this->merge([
+            'media' => $normalizedMedia,
+        ]);
+    }
+
     public function rules(): array
     {
         return [

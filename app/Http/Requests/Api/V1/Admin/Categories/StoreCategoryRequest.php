@@ -25,6 +25,7 @@ class StoreCategoryRequest extends AbstractCategoryPayloadRequest
             'slugEn' => ['sometimes', 'nullable', 'string', 'max:180', Rule::unique('categories', 'slug_en')],
             'sortOrder' => ['sometimes', 'integer', 'min:0'],
             'isActive' => ['sometimes', 'boolean'],
+            'image' => ['sometimes', 'file', 'max:5120', 'mimetypes:image/jpeg,image/png,image/webp'],
         ];
     }
 
@@ -41,6 +42,7 @@ class StoreCategoryRequest extends AbstractCategoryPayloadRequest
                     'slugEn',
                     'sortOrder',
                     'isActive',
+                    'image',
                 ]);
 
                 $this->validateDescriptionPair($validator);
@@ -67,6 +69,10 @@ class StoreCategoryRequest extends AbstractCategoryPayloadRequest
 
         if ($this->filled('slugEn')) {
             $payload['slugEn'] = trim((string) $this->input('slugEn'));
+        }
+
+        if ($this->hasFile('image')) {
+            $payload['image'] = $this->file('image');
         }
 
         return $payload;

@@ -51,7 +51,7 @@ paths:
       requestBody:
         required: true
         content:
-          application/json:
+          multipart/form-data:
             schema:
               $ref: '#/components/schemas/CreateCategoryRequest'
       responses:
@@ -135,7 +135,7 @@ paths:
       requestBody:
         required: true
         content:
-          application/json:
+          multipart/form-data:
             schema:
               $ref: '#/components/schemas/UpdateCategoryRequest'
       responses:
@@ -249,7 +249,7 @@ paths:
       requestBody:
         required: true
         content:
-          application/json:
+          multipart/form-data:
             schema:
               $ref: '#/components/schemas/CreateSubcategoryRequest'
       responses:
@@ -338,7 +338,7 @@ paths:
       requestBody:
         required: true
         content:
-          application/json:
+          multipart/form-data:
             schema:
               $ref: '#/components/schemas/UpdateSubcategoryRequest'
       responses:
@@ -848,6 +848,12 @@ components:
         isActive:
           type: boolean
           default: true
+        image:
+          type:
+          - string
+          - 'null'
+          format: binary
+          description: Optional category image uploaded as multipart form data.
       oneOf:
       - title: Description pair omitted
         not:
@@ -943,6 +949,12 @@ components:
           minimum: 0
         isActive:
           type: boolean
+        image:
+          type:
+          - string
+          - 'null'
+          format: binary
+          description: Optional category image uploaded as multipart form data. When present on update, it replaces the previous image.
       oneOf:
       - title: Description pair omitted
         not:
@@ -1030,6 +1042,7 @@ components:
       - sortOrder
       - isActive
       - subcategoriesCount
+      - image
       - createdAt
       - updatedAt
       - deletedAt
@@ -1053,6 +1066,11 @@ components:
         subcategoriesCount:
           type: integer
           minimum: 0
+        image:
+          type:
+          - string
+          - 'null'
+          format: uri
         createdAt:
           type: string
           format: date-time
@@ -1078,6 +1096,7 @@ components:
       - sortOrder
       - isActive
       - subcategoriesCount
+      - image
       - createdAt
       - updatedAt
       - deletedAt
@@ -1109,6 +1128,11 @@ components:
         subcategoriesCount:
           type: integer
           minimum: 0
+        image:
+          type:
+          - string
+          - 'null'
+          format: uri
         createdAt:
           type: string
           format: date-time
@@ -1134,6 +1158,7 @@ components:
       - sortOrder
       - isActive
       - category
+      - image
       - createdAt
       - updatedAt
       - deletedAt
@@ -1162,6 +1187,11 @@ components:
           minimum: 0
         isActive:
           type: boolean
+        image:
+          type:
+          - string
+          - 'null'
+          format: uri
         category:
           $ref: '#/components/schemas/AdminCategorySummary'
         createdAt:
@@ -1558,6 +1588,7 @@ components:
       - name
       - description
       - slug
+      - image
       - sortOrder
       - isActive
       - createdAt
@@ -1575,6 +1606,11 @@ components:
           - 'null'
         slug:
           type: string
+        image:
+          type:
+          - string
+          - 'null'
+          format: uri
         sortOrder:
           type: integer
           minimum: 0

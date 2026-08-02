@@ -29,6 +29,8 @@ class CategoryFactory extends Factory
             'slug_en' => 'category-'.fake()->unique()->numberBetween(1000, 9999),
             'sort_order' => fake()->numberBetween(0, 200),
             'is_active' => true,
+            'image_disk' => null,
+            'image_path' => null,
         ];
     }
 
