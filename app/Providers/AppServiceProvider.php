@@ -81,17 +81,23 @@ class AppServiceProvider extends ServiceProvider
 
     private function configureAdminCors(): void
     {
-        $origin = config('services.admin_frontend.origin');
+        $origins = array_values(array_filter((array) config('services.admin_frontend.origins', [])));
 
-        config()->set('cors.allowed_origins', is_string($origin) && $origin !== '' ? [$origin] : []);
+        config()->set('cors.allowed_origins', $origins);
     }
 
     private function validateAdminAuthenticationConfiguration(): void
     {
-        $origin = config('services.admin_frontend.origin');
+        $origins = array_values(array_filter((array) config('services.admin_frontend.origins', [])));
 
-        if (! is_string($origin) || ! $this->isValidAdminFrontendOrigin($origin)) {
-            throw new LogicException('ADMIN_FRONTEND_ORIGIN must be one exact origin without credentials, path, query, fragment, or wildcard.');
+        if ($origins === []) {
+            throw new LogicException('ADMIN_FRONTEND_ORIGINS must contain at least one exact origin without credentials, path, query, fragment, or wildcard.');
+        }
+
+        foreach ($origins as $origin) {
+            if (! is_string($origin) || ! $this->isValidAdminFrontendOrigin($origin)) {
+                throw new LogicException('ADMIN_FRONTEND_ORIGINS must contain only exact origins without credentials, path, query, fragment, or wildcard.');
+            }
         }
 
         if (app()->isProduction()) {
@@ -100,15 +106,17 @@ class AppServiceProvider extends ServiceProvider
             ];
 
             if (in_array(false, $requiredConfigurationFlags, true)) {
-                throw new LogicException('Production Admin origin must be explicitly configured.');
-            }
-
-            if (parse_url($origin, PHP_URL_SCHEME) !== 'https') {
-                throw new LogicException('ADMIN_FRONTEND_ORIGIN must use HTTPS in production.');
+                throw new LogicException('Production Admin origins must be explicitly configured.');
             }
 
             if (parse_url((string) config('app.url'), PHP_URL_SCHEME) !== 'https') {
                 throw new LogicException('APP_URL must use HTTPS in production.');
+            }
+
+            foreach ($origins as $origin) {
+                if (parse_url($origin, PHP_URL_SCHEME) !== 'https') {
+                    throw new LogicException('ADMIN_FRONTEND_ORIGINS must use HTTPS in production.');
+                }
             }
         }
     }

@@ -2,13 +2,20 @@
 
 declare(strict_types=1);
 
+use App\Actions\Orders\ChangeOrderStatusAction;
+use App\Actions\Orders\CreatePublicOrderAction;
+use App\Actions\Orders\DeleteOrderItemAction;
+use App\Actions\Orders\UpdateOrderAction;
+use App\Actions\Orders\UpdateOrderItemAction;
+use App\Actions\Orders\UpdateOrderPaymentAction;
 use App\Enums\Orders\OrderPlace;
 use App\Enums\Orders\OrderStatus;
 use App\Enums\Orders\PaymentStatus;
-use App\Actions\Orders\CreatePublicOrderAction;
 use App\Exceptions\ApiBusinessException;
 use App\Models\Order;
+use App\Models\OrderItem;
 use App\Models\OrderNumberSequence;
+use App\Models\User;
 use App\Services\Orders\OrderNumberAllocator;
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Support\Carbon;
@@ -58,6 +65,14 @@ function createMinimalConcurrentOrder(OrderNumberAllocator $allocator, ?Carbon $
     }, 5);
 }
 
+function concurrencyAdminEmail(): string
+{
+    return sprintf(
+        'concurrency-admin-%s@example.test',
+        str_replace('.', '-', uniqid('', true)),
+    );
+}
+
 try {
     $allocator = $app->make(OrderNumberAllocator::class);
 
@@ -101,6 +116,90 @@ try {
                 'orderId' => $result['order']->getKey(),
                 'orderNumber' => $result['order']->order_number,
                 'isReplay' => $result['isReplay'],
+            ], JSON_THROW_ON_ERROR);
+
+            exit(0);
+
+        case 'delete-order-item':
+            $order = Order::query()->findOrFail((int) ($argv[2] ?? 0));
+            $item = OrderItem::query()->findOrFail((int) ($argv[3] ?? 0));
+            $app->make(DeleteOrderItemAction::class)->execute($order, $item);
+
+            echo json_encode([
+                'status' => 'success',
+                'orderId' => $order->getKey(),
+                'itemId' => $item->getKey(),
+            ], JSON_THROW_ON_ERROR);
+
+            exit(0);
+
+        case 'update-order-payment':
+            $order = Order::query()->findOrFail((int) ($argv[2] ?? 0));
+            $paidAmount = (string) ($argv[3] ?? '0.00');
+            $updatedOrder = $app->make(UpdateOrderPaymentAction::class)->execute($order, $paidAmount);
+
+            echo json_encode([
+                'status' => 'success',
+                'orderId' => $updatedOrder->getKey(),
+                'paidAmount' => $updatedOrder->paid_amount,
+                'paymentStatus' => $updatedOrder->payment_status?->value,
+            ], JSON_THROW_ON_ERROR);
+
+            exit(0);
+
+        case 'update-order-item':
+            $order = Order::query()->findOrFail((int) ($argv[2] ?? 0));
+            $item = OrderItem::query()->findOrFail((int) ($argv[3] ?? 0));
+            $payload = json_decode($argv[4] ?? '{}', true, 512, JSON_THROW_ON_ERROR);
+            $updatedItem = $app->make(UpdateOrderItemAction::class)->execute($order, $item, is_array($payload) ? $payload : []);
+
+            echo json_encode([
+                'status' => 'success',
+                'orderId' => $order->getKey(),
+                'itemId' => $updatedItem->getKey(),
+                'quantity' => $updatedItem->quantity,
+                'itemTotal' => $updatedItem->item_total,
+            ], JSON_THROW_ON_ERROR);
+
+            exit(0);
+
+        case 'update-order-discount':
+            $order = Order::query()->findOrFail((int) ($argv[2] ?? 0));
+            $payload = [
+                'discountType' => is_numeric($argv[3] ?? null) ? (int) $argv[3] : null,
+                'discountValue' => $argv[4] ?? null,
+                'discountReason' => $argv[5] ?? null,
+            ];
+            $admin = User::factory()->administrator()->create([
+                'email' => concurrencyAdminEmail(),
+            ]);
+            $updatedOrder = $app->make(UpdateOrderAction::class)->execute($order, $payload, $admin);
+
+            echo json_encode([
+                'status' => 'success',
+                'orderId' => $updatedOrder->getKey(),
+                'subtotal' => $updatedOrder->subtotal,
+                'total' => $updatedOrder->total,
+                'discountAmount' => $updatedOrder->discount_amount,
+            ], JSON_THROW_ON_ERROR);
+
+            exit(0);
+
+        case 'change-order-status':
+            $order = Order::query()->findOrFail((int) ($argv[2] ?? 0));
+            $payload = [
+                'status' => (int) ($argv[3] ?? OrderStatus::CONFIRMED->value),
+                'reason' => $argv[4] ?? null,
+            ];
+            $admin = User::factory()->administrator()->create([
+                'email' => concurrencyAdminEmail(),
+            ]);
+            $updatedOrder = $app->make(ChangeOrderStatusAction::class)->execute($order, $payload, $admin);
+
+            echo json_encode([
+                'status' => 'success',
+                'orderId' => $updatedOrder->getKey(),
+                'orderStatus' => $updatedOrder->status?->value,
             ], JSON_THROW_ON_ERROR);
 
             exit(0);

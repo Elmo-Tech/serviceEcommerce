@@ -6,6 +6,7 @@ namespace App\Http\Requests\Api\V1\Admin\Orders;
 
 use App\Services\Orders\OrderAttachmentStore;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
 
@@ -204,7 +205,7 @@ class CreateAdminOrderRequest extends FormRequest
     }
 
     /**
-     * @return list<\Illuminate\Http\UploadedFile>
+     * @return list<UploadedFile>
      */
     private function allAttachmentFiles(): array
     {
@@ -216,7 +217,7 @@ class CreateAdminOrderRequest extends FormRequest
             }
 
             foreach ($itemFiles['attachments'] as $attachment) {
-                if ($attachment instanceof \Illuminate\Http\UploadedFile) {
+                if ($attachment instanceof UploadedFile) {
                     $files[] = $attachment;
                 }
             }

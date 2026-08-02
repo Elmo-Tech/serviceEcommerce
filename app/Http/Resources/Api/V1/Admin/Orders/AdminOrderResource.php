@@ -22,8 +22,7 @@ class AdminOrderResource extends JsonResource
             (string) $this->paid_amount,
         );
         $availableTransitions = app(OrderStatusTransitionService::class)
-            ->availableTransitions($this->status)
-        ;
+            ->availableTransitions($this->status);
 
         return [
             'id' => $this->id,

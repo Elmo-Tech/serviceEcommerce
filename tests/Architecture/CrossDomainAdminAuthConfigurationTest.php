@@ -10,16 +10,19 @@ afterEach(function (): void {
     app()->detectEnvironment(fn (): string => 'testing');
     config()->set('app.url', 'http://localhost');
     config()->set('services.admin_frontend.origin', 'https://admin.example-frontend.com');
+    config()->set('services.admin_frontend.origins', ['https://admin.example-frontend.com']);
     config()->set('cors.allowed_origins', ['https://admin.example-frontend.com']);
 });
 
 it('uses an explicit origin and a relative browser api base without wildcard credentialed cors', function () {
     config()->set('services.admin_frontend.origin', 'https://admin.example-frontend.com');
-    config()->set('cors.allowed_origins', ['https://admin.example-frontend.com']);
+    config()->set('services.admin_frontend.origins', ['https://admin.example-frontend.com', 'https://admin.example-frontend-staging.com']);
+    config()->set('cors.allowed_origins', ['https://admin.example-frontend.com', 'https://admin.example-frontend-staging.com']);
 
     expect(config('services.admin_frontend.origin'))->toBe('https://admin.example-frontend.com')
+        ->and(config('services.admin_frontend.origins'))->toBe(['https://admin.example-frontend.com', 'https://admin.example-frontend-staging.com'])
         ->and(config('cors.supports_credentials'))->toBeFalse()
-        ->and(config('cors.allowed_origins'))->toBe(['https://admin.example-frontend.com'])
+        ->and(config('cors.allowed_origins'))->toBe(['https://admin.example-frontend.com', 'https://admin.example-frontend-staging.com'])
         ->and(config('cors.allowed_origins'))->not->toContain('*')
         ->and(config('cors.allowed_headers'))->toContain('Authorization')
         ->and(config('cors.allowed_headers'))->not->toContain('X-CSRF-TOKEN');
@@ -38,13 +41,13 @@ it('fails production validation when required admin configuration is implicit', 
 });
 
 it('rejects an unsafe admin frontend origin', function () {
-    config()->set('services.admin_frontend.origin', '*');
+    config()->set('services.admin_frontend.origins', ['*']);
 
     $provider = new AppServiceProvider(app());
     $validator = new ReflectionMethod($provider, 'validateAdminAuthenticationConfiguration');
 
     expect(fn () => $validator->invoke($provider))
-        ->toThrow(LogicException::class, 'ADMIN_FRONTEND_ORIGIN must be one exact origin');
+        ->toThrow(LogicException::class, 'ADMIN_FRONTEND_ORIGINS must contain only exact origins');
 });
 
 it('does not require a same-origin nginx proxy for admin authentication', function () {
@@ -70,7 +73,7 @@ it('keeps the upstream origin out of browser-public environment variables', func
     $environmentExample = file_get_contents(base_path('.env.example'));
 
     expect($environmentExample)->toBeString()
-        ->and($environmentExample)->toContain('ADMIN_FRONTEND_ORIGIN=')
+        ->and($environmentExample)->toContain('ADMIN_FRONTEND_ORIGINS=')
         ->and($environmentExample)->not->toContain('VITE_BACKEND_API_ORIGIN')
         ->and($environmentExample)->not->toContain('NEXT_PUBLIC_BACKEND_API_ORIGIN')
         ->and($environmentExample)->not->toContain('PUBLIC_BACKEND_API_ORIGIN');

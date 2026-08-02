@@ -90,12 +90,14 @@ it('keeps concurrent order-number allocation unique, monotonic, and bounded at 9
         ->and($numericSuffixes)->toBe(range(1, 12))
         ->and(OrderNumberSequence::query()->where('business_date', '2026-08-02')->value('last_sequence'))->toBe(12);
 
+    resetOrderConcurrencyDatabase();
+
     $timestamp = CarbonImmutable::create(2026, 8, 2, 11, 0, 0, 'UTC');
 
-    OrderNumberSequence::query()->create([
-        'business_date' => $timestamp->toDateString(),
-        'last_sequence' => 9998,
-    ]);
+    OrderNumberSequence::query()->updateOrCreate(
+        ['business_date' => $timestamp->toDateString()],
+        ['last_sequence' => 9998],
+    );
 
     $firstProcess = startOrderConcurrencyProcess('allocate-and-create-order', $timestamp->toIso8601String());
     $secondProcess = startOrderConcurrencyProcess('allocate-and-create-order', $timestamp->toIso8601String());

@@ -119,7 +119,7 @@ class AddOrderItemAction
     }
 
     /**
-     * @param list<array{orderFieldId:int,answer:string}> $answers
+     * @param  list<array{orderFieldId:int,answer:string}>  $answers
      * @return list<array<string,mixed>>
      */
     private function validateAndMapAnswers(Service $service, array $answers): array

@@ -7,7 +7,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 uses(RefreshDatabase::class);
 
 it('allows approved preflight and actual admin-auth requests without credentialed cors', function () {
-    $origin = (string) config('services.admin_frontend.origin');
+    $origin = (string) config('services.admin_frontend.origins.0');
 
     $preflight = $this->call('OPTIONS', '/api/v1/admin/auth/login', [], [], [], [
         'HTTP_ORIGIN' => $origin,

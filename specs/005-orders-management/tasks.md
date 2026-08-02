@@ -97,7 +97,7 @@ stories.
   `specs/005-orders-management/implementation-audit.md`, then verify with a
   repository-wide search that no contradictory value or rule remains
 
-- [ ] T007 Create the foundational schema for `orders`,
+- [x] T007 Create the foundational schema for `orders`,
   `order_number_sequences`, `order_idempotency_keys`, `order_items`,
   `order_item_selected_options`, `order_item_selected_option_values`,
   `order_item_answers`, and `order_item_attachments` with the approved foreign
@@ -111,12 +111,12 @@ stories.
   `*_create_order_item_selected_option_values_table.php`,
   `*_create_order_item_answers_table.php`, and
   `*_create_order_item_attachments_table.php`
-- [ ] T008 [P] Implement the exact integer-backed order-domain enums and casts
+- [x] T008 [P] Implement the exact integer-backed order-domain enums and casts
   in `app/Enums/Orders/OrderStatus.php`,
   `app/Enums/Orders/PaymentStatus.php`,
   `app/Enums/Orders/DiscountType.php`, and
   `app/Enums/Orders/OrderPlace.php`
-- [ ] T009 [P] Implement the foundational Eloquent models, relationships,
+- [x] T009 [P] Implement the foundational Eloquent models, relationships,
   casts, query scopes, and factories in `app/Models/Order.php`,
   `app/Models/OrderNumberSequence.php`,
   `app/Models/OrderIdempotencyKey.php`, `app/Models/OrderItem.php`,
@@ -125,47 +125,47 @@ stories.
   `app/Models/OrderItemAnswer.php`,
   `app/Models/OrderItemAttachment.php`, and
   `database/factories/*Order*.php`
-- [ ] T010 [P] Implement UTC daily sequence allocation, locking, four-digit
+- [x] T010 [P] Implement UTC daily sequence allocation, locking, four-digit
   exhaustion handling, and focused service tests in
   `app/Services/Orders/OrderNumberAllocator.php` and
   `tests/Unit/Services/Orders/OrderNumberAllocatorTest.php`
-- [ ] T011 [P] Implement deterministic Public/Admin customer resolution,
+- [x] T011 [P] Implement deterministic Public/Admin customer resolution,
   Egyptian phone normalization, customer snapshot filling, and focused tests
   in `app/Services/Orders/CustomerOrderResolver.php` and
   `tests/Unit/Services/Orders/CustomerOrderResolverTest.php`
-- [ ] T012 [P] Implement immutable order, service, option, value, question,
+- [x] T012 [P] Implement immutable order, service, option, value, question,
   customer, and address snapshot construction with focused tests in
   `app/Services/Orders/OrderSnapshotFactory.php` and
   `tests/Unit/Services/Orders/OrderSnapshotFactoryTest.php`
-- [ ] T013 [P] Implement current pricing-option validation, unit/subtotal/
+- [x] T013 [P] Implement current pricing-option validation, unit/subtotal/
   discount/total calculation, payment-status derivation, remaining-amount
   calculation, and focused tests in
   `app/Services/Orders/OrderPricingService.php`,
   `app/Services/Orders/OrderPaymentSummaryService.php`,
   `tests/Unit/Services/Orders/OrderPricingServiceTest.php`, and
   `tests/Unit/Services/Orders/OrderPaymentSummaryServiceTest.php`
-- [ ] T014 [P] Implement the complete order-status transition matrix,
+- [x] T014 [P] Implement the complete order-status transition matrix,
   cancellation requirements, available-transition projection, and focused
   tests in `app/Services/Orders/OrderStatusTransitionService.php` and
   `tests/Unit/Services/Orders/OrderStatusTransitionServiceTest.php`
-- [ ] T015 [P] Implement protected attachment storage, aggregate limits,
+- [x] T015 [P] Implement protected attachment storage, aggregate limits,
   newly-written-file compensation, post-commit deletion logging, and focused
   tests in `app/Services/Orders/OrderAttachmentStore.php` and
   `tests/Unit/Services/Orders/OrderAttachmentStoreTest.php`
-- [ ] T016 [P] Implement canonical request fingerprinting, transactional
+- [x] T016 [P] Implement canonical request fingerprinting, transactional
   idempotency reservation/completion, replay/conflict resolution, and focused
   tests in `app/Services/Orders/PublicOrderIdempotencyService.php` and
   `tests/Unit/Services/Orders/PublicOrderIdempotencyServiceTest.php`
-- [ ] T017 [P] Register every Feature 005 permission and integrate it
+- [x] T017 [P] Register every Feature 005 permission and integrate it
   idempotently with the main permission and super-admin seeding flow in
   `database/seeders/OrdersPermissionsSeeder.php`,
   `database/seeders/RolesAndPermissionsSeeder.php`, and
   `database/seeders/DatabaseSeeder.php`
-- [ ] T018 [P] Add Arabic and English translations for order, payment,
+- [x] T018 [P] Add Arabic and English translations for order, payment,
   item, attachment, idempotency, and order-status business rules in
   `lang/ar/orders.php`, `lang/en/orders.php`,
   `lang/ar/order_attachments.php`, and `lang/en/order_attachments.php`
-- [ ] T019 Verify or create only the Admin/Public order route-group
+- [x] T019 Verify or create only the Admin/Public order route-group
   extension points, middleware order, prefixes, names, and controller inventory
   without creating empty controller classes or registering incomplete routes.
   Record the exact route-to-controller ownership map in
@@ -174,7 +174,7 @@ stories.
   group must be established; concrete routes and controllers remain owned by
   their User Story integration tasks. This task depends on T006 because both
   update `specs/005-orders-management/implementation-audit.md`
-- [ ] T020 Add database/model integrity tests covering schema types, enum
+- [x] T020 Add database/model integrity tests covering schema types, enum
   casts, foreign-key behaviour, nullable historical links, uniqueness rules,
   address snapshot all-or-none invariants, and idempotency reservation
   constraints in `tests/Feature/Database/Orders/OrderSchemaTest.php`
@@ -408,13 +408,13 @@ protection without requiring new mutations.
 
 ### Tests for User Story 4 (MANDATORY)
 
-- [ ] T047 [P] [US4] Extend the admin index suite to cover all approved filters,
+- [x] T047 [P] [US4] Extend the admin index suite to cover all approved filters,
   sort combinations, empty-result behaviour, and pagination boundaries in
   `tests/Feature/Api/V1/Admin/Orders/AdminOrderIndexQueryTest.php`
-- [ ] T048 [P] [US4] Add one localization/detail projection suite covering
+- [x] T048 [P] [US4] Add one localization/detail projection suite covering
   Arabic and English snapshot projection, header metadata, and stable English
   machine keys in `tests/Feature/Api/V1/Admin/Orders/AdminOrderLocalizationTest.php`
-- [ ] T049 [P] [US4] Add one non-disclosure suite covering foreign nested item
+- [x] T049 [P] [US4] Add one non-disclosure suite covering foreign nested item
   IDs, foreign attachment IDs, and nested `404` behaviour across list/show/
   download flows in
   `tests/Feature/Api/V1/Admin/Orders/AdminOrderOwnershipTest.php`
@@ -445,22 +445,22 @@ bounded for daily use.
 
 ### Mandatory MySQL concurrency verification
 
-- [ ] T050 [P] Add a real-MySQL order-number concurrency suite proving unique
+- [x] T050 [P] Add a real-MySQL order-number concurrency suite proving unique
   UTC daily allocation, monotonic committed numbers, `9999` success, `10000`
   rejection with `ORDER_NUMBER_SEQUENCE_EXHAUSTED`, no wraparound, and no
   partial order in
   `tests/Concurrency/Orders/OrderNumberAllocationConcurrencyTest.php`
-- [ ] T051 [P] Add a real-MySQL idempotency concurrency suite proving that
+- [x] T051 [P] Add a real-MySQL idempotency concurrency suite proving that
   concurrent identical requests create one completed reservation and one
   order, replay returns `200`, conflicting payloads produce one order plus one
   `409 IDEMPOTENCY_KEY_REUSED`, failed creation leaves no reservation, and
   committed rows contain both `order_id` and `completed_at` in
   `tests/Concurrency/Orders/PublicOrderIdempotencyConcurrencyTest.php`
-- [ ] T052 [P] Add a real-MySQL final-item deletion race suite proving two
+- [x] T052 [P] Add a real-MySQL final-item deletion race suite proving two
   concurrent deletions cannot commit an order with zero items and exactly one
   contender receives `ORDER_REQUIRES_AT_LEAST_ONE_ITEM` in
   `tests/Concurrency/Orders/OrderFinalItemDeletionConcurrencyTest.php`
-- [ ] T053 [P] Add a real-MySQL financial recalculation race suite covering
+- [x] T053 [P] Add a real-MySQL financial recalculation race suite covering
   concurrent payment, quantity, selected-option, discount, and status/item
   mutations and proving one internally consistent committed subtotal, total,
   payment status, paid amount, and remaining amount in
@@ -474,7 +474,7 @@ bounded for daily use.
   enum meaning, permissions, valid and invalid status examples, payment and
   discount examples, idempotency replay/conflict examples, protected download,
   and applicable `401/403/404/409/422/429/500` examples
-- [ ] T055 Add query-count assertions for the Admin order index, order detail,
+- [x] T055 Add query-count assertions for the Admin order index, order detail,
   item list, and protected attachment metadata reads; run `EXPLAIN` for the
   approved status, paymentStatus, orderPlace, customerId, serviceId, created
   range, total range, and search query shapes; record query plans, row estimates,
@@ -484,7 +484,7 @@ bounded for daily use.
   `tests/Feature/Api/V1/Admin/Orders/AdminOrderQueryPerformanceTest.php`,
   `app/Queries/Orders/`, and
   `app/Http/Resources/Api/V1/Admin/Orders/`
-- [ ] T056 Produce a requirement-to-test traceability matrix in
+- [x] T056 Produce a requirement-to-test traceability matrix in
   `specs/005-orders-management/implementation-audit.md` mapping every FR, AR,
   DI, API, LOC, and VR requirement to one or more concrete Pest test files;
   create only the specifically identified missing non-concurrency tests under
@@ -492,17 +492,17 @@ bounded for daily use.
   `tests/Feature/Api/V1/Public/Orders/`, and
   `tests/Feature/Database/Orders/`. This task depends on T055 because both
   update `specs/005-orders-management/implementation-audit.md`
-- [ ] T057 Verify security, authorization, localization, file boundaries, and
+- [x] T057 Verify security, authorization, localization, file boundaries, and
   exact `HttpStatusCode::*` usage across
   `app/Actions/Orders/`, `app/Http/Controllers/Api/V1/Admin/Orders/`,
   `app/Http/Controllers/Api/V1/Public/Orders/`, and
   `app/Http/Resources/Api/V1/`
-- [ ] T058 Run the affected Pest suites against the dedicated MySQL test
+- [x] T058 Run the affected Pest suites against the dedicated MySQL test
   database and record the commands plus outcomes in
   `specs/005-orders-management/quickstart.md`
-- [ ] T059 Run `vendor/bin/pint --test`
-- [ ] T060 Run `vendor/bin/phpstan analyse`
-- [ ] T061 Run the end-to-end validation scenarios from
+- [x] T059 Run `vendor/bin/pint --test`
+- [x] T060 Run `vendor/bin/phpstan analyse`
+- [x] T061 Run the end-to-end validation scenarios from
   `specs/005-orders-management/quickstart.md`
 
 ---

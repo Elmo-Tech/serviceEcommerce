@@ -1,21 +1,29 @@
 <?php
 
-$rawAdminFrontendOrigin = trim((string) env('ADMIN_FRONTEND_ORIGIN', 'https://admin.example-frontend.com'));
-$adminFrontendOriginParts = parse_url($rawAdminFrontendOrigin);
+$rawAdminFrontendOrigins = (string) env('ADMIN_FRONTEND_ORIGINS', env('ADMIN_FRONTEND_ORIGIN', 'https://admin.example-frontend.com'));
+$adminFrontendOrigins = array_values(array_filter(array_map('trim', preg_split('/\s*,\s*/', $rawAdminFrontendOrigins) ?: [])));
 
-$adminFrontendOrigin = $rawAdminFrontendOrigin;
+$normalizeAdminFrontendOrigin = static function (string $origin): ?string {
+    $originParts = parse_url($origin);
 
-if (
-    is_array($adminFrontendOriginParts)
-    && isset($adminFrontendOriginParts['scheme'], $adminFrontendOriginParts['host'])
-    && ! isset($adminFrontendOriginParts['user'], $adminFrontendOriginParts['pass'])
-    && ! isset($adminFrontendOriginParts['query'], $adminFrontendOriginParts['fragment'])
-    && (! isset($adminFrontendOriginParts['path']) || in_array($adminFrontendOriginParts['path'], ['', '/'], true))
-) {
-    $adminFrontendOrigin = strtolower($adminFrontendOriginParts['scheme'])
-        .'://'.strtolower($adminFrontendOriginParts['host'])
-        .(isset($adminFrontendOriginParts['port']) ? ':'.$adminFrontendOriginParts['port'] : '');
-}
+    if (
+        ! is_array($originParts)
+        || ! isset($originParts['scheme'], $originParts['host'])
+        || isset($originParts['user'], $originParts['pass'], $originParts['query'], $originParts['fragment'])
+        || (isset($originParts['path']) && ! in_array($originParts['path'], ['', '/'], true))
+    ) {
+        return null;
+    }
+
+    return strtolower($originParts['scheme'])
+        .'://'.strtolower($originParts['host'])
+        .(isset($originParts['port']) ? ':'.$originParts['port'] : '');
+};
+
+$adminFrontendOrigins = array_values(array_filter(array_map(
+    $normalizeAdminFrontendOrigin,
+    $adminFrontendOrigins,
+)));
 
 return [
 
@@ -53,8 +61,9 @@ return [
     ],
 
     'admin_frontend' => [
-        'origin' => $adminFrontendOrigin,
-        'origin_configured' => env('ADMIN_FRONTEND_ORIGIN') !== null,
+        'origin' => $adminFrontendOrigins[0] ?? null,
+        'origins' => $adminFrontendOrigins,
+        'origin_configured' => $adminFrontendOrigins !== [],
     ],
 
 ];

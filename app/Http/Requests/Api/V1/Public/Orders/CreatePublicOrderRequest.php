@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Http\Requests\Api\V1\Public\Orders;
 
 use App\Services\Orders\OrderAttachmentStore;
-use Illuminate\Support\Str;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Validator;
 
 class CreatePublicOrderRequest extends FormRequest
@@ -181,7 +181,7 @@ class CreatePublicOrderRequest extends FormRequest
     }
 
     /**
-     * @return list<\Illuminate\Http\UploadedFile>
+     * @return list<UploadedFile>
      */
     private function allAttachmentFiles(): array
     {
@@ -193,7 +193,7 @@ class CreatePublicOrderRequest extends FormRequest
             }
 
             foreach ($itemFiles['attachments'] as $attachment) {
-                if ($attachment instanceof \Illuminate\Http\UploadedFile) {
+                if ($attachment instanceof UploadedFile) {
                     $files[] = $attachment;
                 }
             }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Actions\Orders;
 
+use App\Enums\HttpStatusCode;
 use App\Enums\Orders\OrderPlace;
 use App\Enums\Orders\OrderStatus;
 use App\Enums\Orders\PaymentStatus;
@@ -181,7 +182,7 @@ class CreatePublicOrderAction
             throw new ApiBusinessException(
                 'services.errors.not_found',
                 'SERVICE_NOT_FOUND',
-                \App\Enums\HttpStatusCode::NOT_FOUND,
+                HttpStatusCode::NOT_FOUND,
             );
         }
 
@@ -189,7 +190,7 @@ class CreatePublicOrderAction
             throw new ApiBusinessException(
                 'orders.errors.service_unavailable',
                 'SERVICE_UNAVAILABLE',
-                \App\Enums\HttpStatusCode::CONFLICT,
+                HttpStatusCode::CONFLICT,
             );
         }
 
@@ -217,7 +218,7 @@ class CreatePublicOrderAction
                 throw new ApiBusinessException(
                     'orders.errors.order_field_not_found',
                     'ORDER_FIELD_NOT_FOUND',
-                    \App\Enums\HttpStatusCode::NOT_FOUND,
+                    HttpStatusCode::NOT_FOUND,
                 );
             }
 
@@ -227,7 +228,7 @@ class CreatePublicOrderAction
                 throw new ApiBusinessException(
                     'orders.errors.invalid_order_field_answer',
                     'INVALID_ORDER_FIELD_ANSWER',
-                    \App\Enums\HttpStatusCode::UNPROCESSABLE_ENTITY,
+                    HttpStatusCode::UNPROCESSABLE_ENTITY,
                 );
             }
 
@@ -240,7 +241,7 @@ class CreatePublicOrderAction
                 throw new ApiBusinessException(
                     'orders.errors.required_order_field_missing',
                     'REQUIRED_ORDER_FIELD_MISSING',
-                    \App\Enums\HttpStatusCode::UNPROCESSABLE_ENTITY,
+                    HttpStatusCode::UNPROCESSABLE_ENTITY,
                 );
             }
         }

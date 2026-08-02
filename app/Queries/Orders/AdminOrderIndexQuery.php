@@ -15,8 +15,7 @@ class AdminOrderIndexQuery
     public function paginate(array $filters): LengthAwarePaginator
     {
         $baseQuery = Order::query()
-            ->withCount('items')
-            ->orderedLatest();
+            ->withCount('items');
 
         $query = QueryBuilder::for($baseQuery)
             ->allowedFilters(

@@ -6,8 +6,8 @@ return [
 
     'allowed_methods' => ['GET', 'POST', 'PUT', 'PATCH', 'OPTIONS'],
 
-    // AppServiceProvider sets this from the normalized single source of truth
-    // at services.admin_frontend.origin.
+    // AppServiceProvider sets this from the normalized allow-list
+    // at services.admin_frontend.origins.
     'allowed_origins' => [],
 
     'allowed_origins_patterns' => [],

@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Enums\Orders\OrderPlace;
 use App\Enums\Orders\OrderStatus;
 use App\Enums\Orders\PaymentStatus;
+use App\Enums\Services\ServicePriceType;
 use App\Models\Order;
 use App\Models\User;
 use Database\Seeders\OrdersPermissionsSeeder;
@@ -56,7 +57,7 @@ it('lists orders with approved filters and shows one localized order detail', fu
         'service_name_en' => 'Service',
         'service_slug_ar' => 'خدمة',
         'service_slug_en' => 'service',
-        'price_type' => \App\Enums\Services\ServicePriceType::FIXED,
+        'price_type' => ServicePriceType::FIXED,
         'base_price' => '250.00',
         'unit_price' => '250.00',
         'quantity' => 1,

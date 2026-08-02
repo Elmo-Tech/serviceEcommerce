@@ -33,6 +33,30 @@ covering:
 - Admin attachment management
 - Orders concurrency
 
+### Recorded verification commands run on August 2, 2026
+
+The following commands were executed successfully against the local MySQL-backed
+test environment during Feature 005 completion work:
+
+```bash
+php artisan test tests/Feature/Api/V1/Admin/Orders/AdminOrderIndexQueryTest.php tests/Feature/Api/V1/Admin/Orders/AdminOrderLocalizationTest.php tests/Feature/Api/V1/Admin/Orders/AdminOrderOwnershipTest.php tests/Feature/Api/V1/Admin/Orders/AdminOrderQueryPerformanceTest.php
+vendor/bin/pint --test
+php -d memory_limit=1G vendor/bin/phpstan analyse app tests --no-progress
+php artisan test tests/Feature/Api/V1/Public/Orders/PublicOrderCreateTest.php tests/Feature/Api/V1/Public/Orders/PublicOrderIdempotencyTest.php tests/Feature/Api/V1/Admin/Orders/AdminOrderApiTest.php tests/Feature/Api/V1/Admin/Orders/AdminOrderWorkflowTest.php tests/Feature/Api/V1/Admin/Orders/AdminOrderItemApiTest.php tests/Feature/Api/V1/Admin/Orders/AdminOrderAttachmentApiTest.php tests/Feature/Api/V1/Admin/Orders/AdminOrderIndexQueryTest.php tests/Feature/Api/V1/Admin/Orders/AdminOrderLocalizationTest.php tests/Feature/Api/V1/Admin/Orders/AdminOrderOwnershipTest.php tests/Feature/Api/V1/Admin/Orders/AdminOrderQueryPerformanceTest.php tests/Concurrency/Orders/OrderNumberAllocationConcurrencyTest.php tests/Concurrency/Orders/PublicOrderIdempotencyConcurrencyTest.php tests/Concurrency/Orders/OrderFinalItemDeletionConcurrencyTest.php tests/Concurrency/Orders/OrderFinancialRecalculationConcurrencyTest.php
+```
+
+Observed outcomes:
+
+- `AdminOrderIndexQueryTest.php` passed
+- `AdminOrderLocalizationTest.php` passed
+- `AdminOrderOwnershipTest.php` passed
+- `AdminOrderQueryPerformanceTest.php` passed
+- combined Orders verification run passed with `9 tests` and `86 assertions`
+- `vendor/bin/pint --test` passed after applying formatting fixes
+- `phpstan analyse app tests --no-progress` passed with `0` errors
+- combined end-to-end Orders validation run passed with `29 tests` and
+  `262 assertions`
+
 ## 3. Validate public guest order creation
 
 ### Scenario A — Successful create

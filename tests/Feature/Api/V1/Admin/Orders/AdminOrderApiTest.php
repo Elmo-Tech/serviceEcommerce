@@ -11,6 +11,7 @@ use App\Models\Customer;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Service;
+use App\Models\User;
 use Database\Seeders\OrdersPermissionsSeeder;
 use Database\Seeders\RolesAndPermissionsSeeder;
 use Database\Seeders\SuperAdminSeeder;
@@ -110,7 +111,7 @@ it('requires the order item attachments permission when admin create includes at
     $this->seed(RolesAndPermissionsSeeder::class);
     $this->seed(OrdersPermissionsSeeder::class);
 
-    $admin = \App\Models\User::factory()->administrator()->create([
+    $admin = User::factory()->administrator()->create([
         'email' => 'orders-no-attachments@example.test',
         'password' => Hash::make('Password123!'),
     ]);
@@ -159,7 +160,7 @@ it('requires the order item attachments permission when admin create includes at
 
 it('updates an editable admin order and can delegate an allowed status change through patch', function () {
     $accessToken = orderAdminToken();
-    $adminId = \App\Models\User::query()->value('id');
+    $adminId = User::query()->value('id');
 
     $originalCustomer = Customer::factory()->create([
         'name' => 'Original Customer',
@@ -235,7 +236,7 @@ it('updates an editable admin order and can delegate an allowed status change th
 
 it('deletes only an eligible admin-created pending unpaid order', function () {
     $accessToken = orderAdminToken();
-    $adminId = \App\Models\User::query()->value('id');
+    $adminId = User::query()->value('id');
 
     $order = Order::factory()->create([
         'created_by_admin_id' => $adminId,

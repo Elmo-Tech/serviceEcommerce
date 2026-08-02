@@ -6,6 +6,7 @@ namespace App\Http\Requests\Api\V1\Admin\Orders;
 
 use App\Services\Orders\OrderAttachmentStore;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Validation\Validator;
 
 class UploadOrderItemAttachmentsRequest extends FormRequest
@@ -44,13 +45,13 @@ class UploadOrderItemAttachmentsRequest extends FormRequest
     }
 
     /**
-     * @return list<\Illuminate\Http\UploadedFile>
+     * @return list<UploadedFile>
      */
     public function uploadedFiles(): array
     {
         return array_values(array_filter(
             (array) $this->file('files', []),
-            static fn ($file) => $file instanceof \Illuminate\Http\UploadedFile,
+            static fn ($file) => $file instanceof UploadedFile,
         ));
     }
 }

@@ -8,6 +8,7 @@ use App\Enums\HttpStatusCode;
 use App\Exceptions\ApiBusinessException;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\OrderItemAttachment;
 use App\Services\Orders\OrderAttachmentStore;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
@@ -19,8 +20,8 @@ class UploadOrderItemAttachmentsAction
     ) {}
 
     /**
-     * @param list<UploadedFile> $files
-     * @return list<\App\Models\OrderItemAttachment>
+     * @param  list<UploadedFile>  $files
+     * @return list<OrderItemAttachment>
      */
     public function execute(Order $order, OrderItem $orderItem, array $files): array
     {
