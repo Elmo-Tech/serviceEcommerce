@@ -211,6 +211,30 @@ it('rejects invalid admin service payloads and preserves query allow-lists', fun
         ->assertJsonStructure(['errors' => ['payload']]);
 });
 
+it('accepts boolean-like string values for service activation flags during create', function () {
+    $accessToken = serviceAdminToken();
+
+    $rootCategory = Category::factory()->root()->create();
+
+    $response = $this->post('/api/v1/admin/services', [
+        'categoryId' => (string) $rootCategory->getKey(),
+        'nameAr' => 'خدمة طباعة',
+        'nameEn' => 'Printing Service',
+        'shortDescriptionAr' => 'وصف مختصر',
+        'shortDescriptionEn' => 'Short description',
+        'descriptionAr' => 'وصف كامل',
+        'descriptionEn' => 'Full description',
+        'priceType' => '0',
+        'basePrice' => '500',
+        'isActive' => 'true',
+        'isAvailable' => 'false',
+    ], serviceAdminHeaders($accessToken, 'en'));
+
+    $response->assertCreated()
+        ->assertJsonPath('data.isActive', true)
+        ->assertJsonPath('data.isAvailable', false);
+});
+
 it('returns the approved authentication and permission boundaries for admin service routes', function () {
     $this->getJson('/api/v1/admin/services', [
         'Accept-Language' => 'en',

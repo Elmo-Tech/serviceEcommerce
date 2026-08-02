@@ -9,6 +9,11 @@ use Illuminate\Validation\Rule;
 
 class StoreServiceRequest extends FormRequest
 {
+    protected function prepareForValidation(): void
+    {
+        $this->merge($this->normalizeBooleanLikeValues($this->all()));
+    }
+
     public function authorize(): bool
     {
         return true;
@@ -83,5 +88,39 @@ class StoreServiceRequest extends FormRequest
             'media.*.altAr' => ['sometimes', 'nullable', 'string', 'max:255', 'required_with:media.*.altEn'],
             'media.*.altEn' => ['sometimes', 'nullable', 'string', 'max:255', 'required_with:media.*.altAr'],
         ];
+    }
+
+    /**
+     * @param  array<string|int, mixed>  $payload
+     * @return array<string|int, mixed>
+     */
+    protected function normalizeBooleanLikeValues(array $payload): array
+    {
+        $booleanKeys = [
+            'isActive',
+            'isAvailable',
+            'isRequired',
+            'isMain',
+        ];
+
+        foreach ($payload as $key => $value) {
+            if (is_array($value)) {
+                $payload[$key] = $this->normalizeBooleanLikeValues($value);
+
+                continue;
+            }
+
+            if (! is_string($value) || ! in_array((string) $key, $booleanKeys, true)) {
+                continue;
+            }
+
+            $normalized = filter_var($value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+
+            if ($normalized !== null) {
+                $payload[$key] = $normalized;
+            }
+        }
+
+        return $payload;
     }
 }
