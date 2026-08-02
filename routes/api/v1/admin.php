@@ -16,6 +16,7 @@ use App\Http\Controllers\Api\V1\Admin\Services\ServiceMediaController;
 use App\Http\Controllers\Api\V1\Admin\Services\ServiceOrderFieldController;
 use App\Http\Controllers\Api\V1\Admin\Services\ServicePricingOptionController;
 use App\Http\Controllers\Api\V1\Admin\Services\ServiceSpecificationController;
+use App\Http\Controllers\Api\V1\Admin\Settings\SettingsController as AdminSettingsController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware([
@@ -244,4 +245,9 @@ Route::middleware([
         ->whereNumber('orderItem')
         ->whereNumber('attachment')
         ->middleware('permission:orders.view');
+
+    Route::get('/settings', [AdminSettingsController::class, 'show'])
+        ->middleware('permission:settings.view');
+    Route::patch('/settings', [AdminSettingsController::class, 'update'])
+        ->middleware('permission:settings.update');
 });

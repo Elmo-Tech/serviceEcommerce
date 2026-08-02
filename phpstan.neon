@@ -1,0 +1,13 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+
+parameters:
+    paths:
+        - app
+        - routes
+
+    # Initial repository-wide gate. Increase gradually as the existing codebase
+    # is fully annotated; broad ignores and generated baselines are prohibited.
+    level: 0
+
+    tmpDir: storage/framework/cache/phpstan

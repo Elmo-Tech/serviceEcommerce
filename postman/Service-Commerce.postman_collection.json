@@ -1029,7 +1029,7 @@
       "item": [
         {
           "name": "Create Public Order",
-          "description": "Creates one guest order in a single multipart request. Header meanings: Idempotency-Key = unique UUID for one business payload only; Accept-Language = localized response language. Body key meanings: customer[name|email|phone] = guest customer snapshot; address[province|city|address|notes] = optional delivery/service address snapshot; items[*][clientReference] = request-only unique key to map files; items[*][serviceId] = current service to order; items[*][quantity] = service quantity; items[*][selectedOptions] = chosen pricing-option values; items[*][answers] = chosen service-order-field answers; items[*][attachments] = item-level files. Order status enum meaning on create: 0 = pending. Payment status enum meaning on create: 0 = unpaid.",
+          "description": "Creates one guest order in a single multipart request. Header meanings: Idempotency-Key = unique UUID for one business payload only; Accept-Language = localized response language. Body key meanings: customer[name|email|phone] = guest customer snapshot; address[province|city|address] = optional order-only address snapshot; customerNote = optional general order note; items[*][serviceId] = current service to order; items[*][quantity] = service quantity; items[*][selectedOptions][*][pricingOptionId|valueIds] = chosen pricing-option values; items[*][answers][*][orderFieldId|answer] = chosen service-order-field answers; items[*][itemNote] = optional item-level note; items[*][attachments] = item-level files. Order status enum meaning on create: 0 = pending. Payment status enum meaning on create: 0 = unpaid.",
           "request": {
             "method": "POST",
             "header": [
@@ -1046,14 +1046,14 @@
                 { "key": "address[province]", "value": "Cairo", "type": "text" },
                 { "key": "address[city]", "value": "Nasr City", "type": "text" },
                 { "key": "address[address]", "value": "Street 10, Building 12", "type": "text" },
-                { "key": "address[notes]", "value": "Call before arrival", "type": "text" },
-                { "key": "items[0][clientReference]", "value": "item-001", "type": "text" },
+                { "key": "customerNote", "value": "Call before arrival", "type": "text" },
                 { "key": "items[0][serviceId]", "value": "1", "type": "text" },
                 { "key": "items[0][quantity]", "value": "2", "type": "text" },
-                { "key": "items[0][selectedOptions][0][optionId]", "value": "1", "type": "text" },
+                { "key": "items[0][selectedOptions][0][pricingOptionId]", "value": "1", "type": "text" },
                 { "key": "items[0][selectedOptions][0][valueIds][0]", "value": "1", "type": "text" },
                 { "key": "items[0][answers][0][orderFieldId]", "value": "1", "type": "text" },
                 { "key": "items[0][answers][0][answer]", "value": "Front-facing wall", "type": "text" },
+                { "key": "items[0][itemNote]", "value": "Please handle carefully", "type": "text" },
                 { "key": "items[0][attachments][0]", "type": "file", "src": "" }
               ]
             },
@@ -1064,7 +1064,7 @@
     },
     {
       "name": "Admin Orders",
-      "description": "Feature 005 protected admin order lifecycle routes. Common filter meanings: filter[search] = orderNumber/customer/service text search; filter[status] enum 0 pending, 1 confirmed, 2 in_progress, 3 completed, 4 cancelled; filter[paymentStatus] enum 0 unpaid, 1 partially_paid, 2 paid, 3 overpaid; filter[orderPlace] enum 0 dashboard, 1 website; filter[customerId] and filter[serviceId] = exact IDs; filter[createdFrom|createdTo] = UTC date boundaries; filter[totalFrom|totalTo] = final-total range; sort allow-list = createdAt, -createdAt, total, -total, orderNumber, -orderNumber. Update/status rules: completed and cancelled are terminal in Feature 005 flow, and cancellation requires cancellationReason.",
+      "description": "Feature 005 protected admin order lifecycle routes. Common filter meanings: filter[search] = orderNumber/customer/service text search; filter[status] enum 0 pending, 1 confirmed, 2 in_progress, 3 completed, 4 cancelled; filter[paymentStatus] enum 0 unpaid, 1 partially_paid, 2 paid; filter[orderPlace] enum 0 website, 1 whatsapp; filter[customerId] and filter[serviceId] = exact IDs; filter[createdFrom|createdTo] = UTC date boundaries; filter[totalFrom|totalTo] = final-total range; sort allow-list = createdAt, -createdAt, total, -total, orderNumber, -orderNumber. Update/status rules: completed and cancelled are terminal in Feature 005 flow, and cancellation requires reason.",
       "item": [
         {
           "name": "List Orders",
@@ -1081,7 +1081,7 @@
         },
         {
           "name": "Create Admin Order",
-          "description": "Creates an order from the dashboard. Top-level keys: customerId = use existing customer; customer = inline new customer snapshot when no customerId is sent; address = inline address snapshot; orderPlace enum 0 dashboard / 1 website; discountType enum 0 none / 1 fixed / 2 percentage; discountValue = discount amount or percent based on discountType; notes = internal order note; items[*] = initial order items. Initial attachments inside items additionally require order-item-attachments.create permission.",
+          "description": "Creates an order from the dashboard. Top-level keys: customerId = use existing customer; customer = inline new customer snapshot when no customerId is sent; customerAddressId = saved customer address ID when reused; address = inline new address snapshot when no customerAddressId is sent; orderPlace enum 0 = website, 1 = whatsapp; customerNote = optional general order note; adminNote = optional internal Admin note; discountType enum 0 = fixed, 1 = percentage; discountValue = discount amount or percent based on discountType; discountReason = required whenever discountType is sent; items[*] = initial order items. Initial attachments inside items additionally require order-item-attachments.create permission.",
           "request": {
             "method": "POST",
             "header": [
@@ -1098,14 +1098,17 @@
                 { "key": "address[province]", "value": "Giza", "type": "text" },
                 { "key": "address[city]", "value": "Dokki", "type": "text" },
                 { "key": "address[address]", "value": "Street 5", "type": "text" },
-                { "key": "address[notes]", "value": "Office address", "type": "text" },
-                { "key": "orderPlace", "value": "0", "type": "text" },
+                { "key": "orderPlace", "value": "1", "type": "text" },
+                { "key": "customerNote", "value": "Customer prefers phone confirmation", "type": "text" },
+                { "key": "adminNote", "value": "Created from dashboard call", "type": "text" },
                 { "key": "discountType", "value": "0", "type": "text" },
-                { "key": "discountValue", "value": "0", "type": "text" },
+                { "key": "discountValue", "value": "50", "type": "text" },
+                { "key": "discountReason", "value": "Manual goodwill discount", "type": "text" },
                 { "key": "items[0][serviceId]", "value": "1", "type": "text" },
                 { "key": "items[0][quantity]", "value": "1", "type": "text" },
                 { "key": "items[0][answers][0][orderFieldId]", "value": "1", "type": "text" },
                 { "key": "items[0][answers][0][answer]", "value": "Need morning slot", "type": "text" },
+                { "key": "items[0][itemNote]", "value": "First admin-created item", "type": "text" },
                 { "key": "items[0][attachments][0]", "type": "file", "src": "" }
               ]
             },
@@ -1127,7 +1130,7 @@
         },
         {
           "name": "Update Order",
-          "description": "Updates order-level mutable fields only. Supported examples here: discountType, discountValue, orderPlace, notes, address replacement. Status can also be supplied in patch flow when the backend allows it, but a dedicated status endpoint exists and is clearer for workflow changes.",
+          "description": "Updates order-level mutable fields only. Allowed keys include customerId, customer, customerAddressId, address, customerNote, adminNote, discountType, discountValue, discountReason, orderPlace, status, and reason. address supports only province, city, and address. Status can be supplied here when the backend allows it, but the dedicated status endpoint is clearer for workflow changes.",
           "request": {
             "method": "PATCH",
             "header": [
@@ -1138,7 +1141,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"discountType\": 2,\n  \"discountValue\": 10,\n  \"orderPlace\": 0,\n  \"notes\": \"Customer approved updated quote\",\n  \"address\": {\n    \"province\": \"Cairo\",\n    \"city\": \"Heliopolis\",\n    \"address\": \"12 Ibrahim Street\",\n    \"notes\": \"Call reception\"\n  }\n}",
+              "raw": "{\n  \"discountType\": 1,\n  \"discountValue\": 10,\n  \"discountReason\": \"Promo adjustment\",\n  \"orderPlace\": 0,\n  \"adminNote\": \"Customer approved updated quote\",\n  \"address\": {\n    \"province\": \"Cairo\",\n    \"city\": \"Heliopolis\",\n    \"address\": \"12 Ibrahim Street\"\n  }\n}",
               "options": { "raw": { "language": "json" } }
             },
             "url": "{{baseUrl}}/admin/orders/1"
@@ -1158,7 +1161,7 @@
         },
         {
           "name": "Change Order Status",
-          "description": "Changes workflow status. status enum meanings: 0 pending, 1 confirmed, 2 in_progress, 3 completed, 4 cancelled. cancellationReason becomes required when status = 4.",
+          "description": "Changes workflow status. status enum meanings: 0 pending, 1 confirmed, 2 in_progress, 3 completed, 4 cancelled. reason becomes required when status = 4.",
           "request": {
             "method": "PATCH",
             "header": [
@@ -1169,7 +1172,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"status\": 4,\n  \"cancellationReason\": \"Customer requested cancellation\"\n}",
+              "raw": "{\n  \"status\": 4,\n  \"reason\": \"Customer requested cancellation\"\n}",
               "options": { "raw": { "language": "json" } }
             },
             "url": "{{baseUrl}}/admin/orders/1/status"
@@ -1177,7 +1180,7 @@
         },
         {
           "name": "Show Order Payment",
-          "description": "Returns derived financial summary. paymentStatus enum meanings: 0 unpaid, 1 partially_paid, 2 paid, 3 overpaid.",
+          "description": "Returns derived financial summary. paymentStatus enum meanings: 0 unpaid, 1 partially_paid, 2 paid.",
           "request": {
             "method": "GET",
             "header": [
@@ -1228,7 +1231,7 @@
         },
         {
           "name": "Create Order Item",
-          "description": "Adds one new item to an editable order. Body keys: serviceId = selected service; quantity = requested quantity; selectedOptions[*].optionId = pricing-option group; selectedOptions[*].valueIds = chosen value IDs; answers[*].orderFieldId = service-order-field on create; answers[*].answer = plain-text answer.",
+          "description": "Adds one new item to an editable order. Body keys: serviceId = selected service; quantity = requested quantity; selectedOptions[*].pricingOptionId = pricing-option group; selectedOptions[*].valueIds = chosen value IDs; answers[*].orderFieldId = service-order-field on create; answers[*].answer = plain-text answer; itemNote = optional item-level note.",
           "request": {
             "method": "POST",
             "header": [
@@ -1239,7 +1242,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"serviceId\": 2,\n  \"quantity\": 1,\n  \"selectedOptions\": [\n    {\n      \"optionId\": 2,\n      \"valueIds\": [3]\n    }\n  ],\n  \"answers\": [\n    {\n      \"orderFieldId\": 4,\n      \"answer\": \"Urgent request\"\n    }\n  ]\n}",
+              "raw": "{\n  \"serviceId\": 2,\n  \"quantity\": 1,\n  \"selectedOptions\": [\n    {\n      \"pricingOptionId\": 2,\n      \"valueIds\": [3]\n    }\n  ],\n  \"answers\": [\n    {\n      \"orderFieldId\": 4,\n      \"answer\": \"Urgent request\"\n    }\n  ],\n  \"itemNote\": \"Prioritize this order item\"\n}",
               "options": { "raw": { "language": "json" } }
             },
             "url": "{{baseUrl}}/admin/orders/1/items"
@@ -1421,6 +1424,93 @@
               { "key": "Accept-Language", "value": "ar" }
             ],
             "url": "{{baseUrl}}/public/services/cleaning-service"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin Settings",
+      "description": "Feature 006 protected singleton settings routes. GET requires settings.view; PATCH requires settings.update. Responses expose absolute branding URLs or null, never internal IDs, timestamps, disk names, or raw storage paths.",
+      "item": [
+        {
+          "name": "Show Settings",
+          "description": "Returns the full bilingual editable settings resource, ordered phones/social links, and availableSocialPlatforms. A missing singleton is safely recovered as settings.id = 1.",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Accept-Language", "value": "en" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/admin/settings"
+          }
+        },
+        {
+          "name": "Update Settings",
+          "description": "Atomic multipart partial update. Omitted values are preserved; empty optional strings clear to null. phones/socialLinks are ordered full replacements. Clear/remove flags equal 1 and conflict with their matching array/file. Coordinates are submitted together. Egyptian phone formatting is normalized to 01xxxxxxxxx.",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Accept-Language", "value": "en" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "siteNameAr", "value": "اسم الموقع", "type": "text", "description": "Required Arabic site name; empty/null is rejected." },
+                { "key": "siteNameEn", "value": "Service Commerce", "type": "text", "description": "Required English site name; empty/null is rejected." },
+                { "key": "siteDescriptionAr", "value": "وصف الموقع", "type": "text", "description": "Optional Arabic description; empty string clears it.", "disabled": true },
+                { "key": "siteDescriptionEn", "value": "Service commerce website", "type": "text", "description": "Optional English description; empty string clears it.", "disabled": true },
+                { "key": "sloganAr", "value": "خدماتك في مكان واحد", "type": "text", "description": "Optional Arabic slogan; empty string clears it.", "disabled": true },
+                { "key": "sloganEn", "value": "Services in one place", "type": "text", "description": "Optional English slogan; empty string clears it.", "disabled": true },
+                { "key": "publicEmail", "value": "info@example.com", "type": "text", "description": "Required contact email; normalized to lowercase." },
+                { "key": "phones[0][number]", "value": "+20 101 234 5678", "type": "text", "description": "Egyptian phone in local/+20/0020 formatted input; normalized output is 01012345678." },
+                { "key": "phones[0][hasWhats]", "value": "1", "type": "text", "description": "1 = WhatsApp enabled, 0 = not enabled; at most one item may be 1." },
+                { "key": "phones[1][number]", "value": "01112345678", "type": "text", "description": "Second ordered phone; maximum total is 3.", "disabled": true },
+                { "key": "phones[1][hasWhats]", "value": "0", "type": "text", "description": "WhatsApp flag for the second phone.", "disabled": true },
+                { "key": "clearPhones", "value": "1", "type": "text", "description": "1 clears all phones; cannot be sent with phones[].", "disabled": true },
+                { "key": "addressAr", "value": "القاهرة، مصر", "type": "text", "description": "Optional Arabic address; empty string clears it.", "disabled": true },
+                { "key": "addressEn", "value": "Cairo, Egypt", "type": "text", "description": "Optional English address; empty string clears it.", "disabled": true },
+                { "key": "googleMapsUrl", "value": "https://maps.google.com/?q=30.0444,31.2357", "type": "text", "description": "Optional HTTP/HTTPS map URL; empty string clears it.", "disabled": true },
+                { "key": "latitude", "value": "30.0444000", "type": "text", "description": "-90..90 with up to 7 decimals; must be sent with longitude.", "disabled": true },
+                { "key": "longitude", "value": "31.2357000", "type": "text", "description": "-180..180 with up to 7 decimals; must be sent with latitude.", "disabled": true },
+                { "key": "socialLinks[0][platform]", "value": "facebook", "type": "text", "description": "facebook, instagram, linkedin, youtube, tiktok, x, telegram, pinterest, or snapchat.", "disabled": true },
+                { "key": "socialLinks[0][url]", "value": "https://facebook.com/service-commerce", "type": "text", "description": "Absolute HTTP/HTTPS URL for the platform.", "disabled": true },
+                { "key": "clearSocialLinks", "value": "1", "type": "text", "description": "1 clears all social links; cannot be sent with socialLinks[].", "disabled": true },
+                { "key": "defaultSeoTitleAr", "value": "خدمات احترافية", "type": "text", "description": "Optional Arabic SEO title; empty string clears it.", "disabled": true },
+                { "key": "defaultSeoTitleEn", "value": "Professional Services", "type": "text", "description": "Optional English SEO title; empty string clears it.", "disabled": true },
+                { "key": "defaultSeoDescriptionAr", "value": "وصف افتراضي", "type": "text", "description": "Optional Arabic SEO description; empty string clears it.", "disabled": true },
+                { "key": "defaultSeoDescriptionEn", "value": "Default SEO description", "type": "text", "description": "Optional English SEO description; empty string clears it.", "disabled": true },
+                { "key": "defaultSeoKeywordsAr[0]", "value": "خدمات", "type": "text", "description": "Ordered non-empty keyword; trimmed case-insensitive duplicates are rejected.", "disabled": true },
+                { "key": "defaultSeoKeywordsEn[0]", "value": "Services", "type": "text", "description": "Ordered non-empty keyword; original casing is preserved.", "disabled": true },
+                { "key": "logo", "type": "file", "src": "", "description": "JPG/JPEG/PNG/WEBP/SVG, maximum 5 MB; safe SVG only.", "disabled": true },
+                { "key": "footerLogo", "type": "file", "src": "", "description": "JPG/JPEG/PNG/WEBP/SVG, maximum 5 MB; safe SVG only.", "disabled": true },
+                { "key": "favicon", "type": "file", "src": "", "description": "PNG/ICO/SVG, maximum 1 MB; safe SVG only.", "disabled": true },
+                { "key": "removeLogo", "value": "1", "type": "text", "description": "1 removes logo; cannot be sent with logo file.", "disabled": true },
+                { "key": "removeFooterLogo", "value": "1", "type": "text", "description": "1 removes footer logo; cannot be sent with footerLogo file.", "disabled": true },
+                { "key": "removeFavicon", "value": "1", "type": "text", "description": "1 removes favicon; cannot be sent with favicon file.", "disabled": true }
+              ]
+            },
+            "url": "{{baseUrl}}/admin/settings"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Public Settings",
+      "description": "Feature 006 unauthenticated localized projection. Accept-Language resolves ar/en; response includes Content-Language and Vary: Accept-Language.",
+      "item": [
+        {
+          "name": "Show Public Settings",
+          "description": "Returns localized neutral keys, ordered phones/social links, absolute branding URLs, and defaultSeo. Missing singleton returns safe defaults without a database write.",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Accept-Language", "value": "ar" }
+            ],
+            "url": "{{baseUrl}}/public/settings"
           }
         }
       ]

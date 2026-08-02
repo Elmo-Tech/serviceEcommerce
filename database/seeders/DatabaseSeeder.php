@@ -21,6 +21,7 @@ class DatabaseSeeder extends Seeder
             RolesAndPermissionsSeeder::class,
             SuperAdminSeeder::class,
             ProjectAdditionalSuperAdminSeeder::class,
+            SettingsSeeder::class,
         ]);
     }
 }

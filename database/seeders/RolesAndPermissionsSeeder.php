@@ -22,6 +22,7 @@ class RolesAndPermissionsSeeder extends Seeder
             CategoriesPermissionsSeeder::class,
             ServicesPermissionsSeeder::class,
             OrdersPermissionsSeeder::class,
+            SettingsPermissionsSeeder::class,
         ]);
 
         $role = Role::findOrCreate('super-admin', $guard);

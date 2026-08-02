@@ -52,3 +52,16 @@ function seedSuperAdminForAuthTests(array $values = []): void
     seedAdminAuthEnvironment($values);
     test()->seed(SuperAdminSeeder::class);
 }
+
+function settingsAdminHeaders(string $accessToken, string $locale = 'en'): array
+{
+    return [
+        'Authorization' => 'Bearer '.$accessToken,
+        'Accept-Language' => $locale,
+    ];
+}
+
+function settingsAdminToken(array $credentials = []): string
+{
+    return (string) loginAdminForTests($credentials)->json('data.accessToken');
+}

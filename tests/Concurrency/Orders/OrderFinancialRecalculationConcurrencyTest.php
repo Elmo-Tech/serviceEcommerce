@@ -7,6 +7,7 @@ use App\Enums\Orders\OrderStatus;
 use App\Enums\Orders\PaymentStatus;
 use App\Enums\Services\ServicePriceType;
 use App\Enums\Services\ServicePricingInputType;
+use App\Enums\Services\ServicePricingOptionType;
 use App\Models\Category;
 use App\Models\Order;
 use App\Models\OrderItem;
@@ -81,7 +82,7 @@ it('keeps concurrent payment, quantity, selected-option, discount, and status mu
     $pricingOption = $service->pricingOptions()->create([
         'name_ar' => 'الحجم',
         'name_en' => 'Size',
-        'option_type' => \App\Enums\Services\ServicePricingOptionType::ADD_ON,
+        'option_type' => ServicePricingOptionType::ADD_ON,
         'input_type' => ServicePricingInputType::SELECT,
         'is_required' => true,
         'sort_order' => 1,

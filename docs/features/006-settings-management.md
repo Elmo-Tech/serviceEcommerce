@@ -552,7 +552,8 @@ Maximum size:
 
 SVG is allowed for all three branding fields.
 
-The backend must inspect and sanitize content, not only extension or MIME type.
+The backend must inspect content, not only extension or MIME type. Invalid or
+unsafe SVG is rejected unchanged; it is never silently sanitized or rewritten.
 
 Reject or remove unsafe content including:
 
@@ -608,7 +609,7 @@ logo = binary file
 Workflow:
 
 1. Validate file.
-2. Sanitize SVG when applicable.
+2. Reject invalid or unsafe SVG without rewriting it.
 3. Store new file using a safe generated name.
 4. Update database path.
 5. Commit transaction.
@@ -1141,7 +1142,7 @@ The feature is complete when:
 9. Social platforms come from a predefined enum Select.
 10. Duplicate phones and platforms are rejected.
 11. Logo, footer logo, and favicon can be uploaded, replaced, and removed.
-12. SVG files are sanitized safely.
+12. Safe SVG files are accepted unchanged and unsafe SVG files are rejected.
 13. Filesystem compensation prevents failed-upload leftovers.
 14. Public responses expose no internal paths or IDs.
 15. Admin returns both languages.

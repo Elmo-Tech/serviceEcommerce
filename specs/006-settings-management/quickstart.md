@@ -258,3 +258,29 @@ Validate:
 - approved formatted Egyptian phone inputs are accepted by the contract and canonical output remains normalized
 - Admin and Public projections match the approved contract
 
+## 8. Postman collection
+
+Import `postman/Service-Commerce.postman_collection.json` and use only the
+approved collection variables: `baseUrl`, `accessToken`, and `refreshToken`.
+
+Feature 006 requests are grouped under `Admin Settings` and `Public Settings`.
+The Admin update request uses `multipart/form-data`; its examples use canonical
+camelCase keys, ordered bracket notation for phone/social arrays, integer
+`0`/`1` flags, and binary file fields. Optional examples are disabled so each
+one can be enabled without unintentionally clearing or replacing unrelated
+settings.
+
+## 9. Verification record — 2026-08-02
+
+- Scenarios A–P were exercised against the dedicated MySQL test database by
+  the mapped API, database, file, architecture, and real-process concurrency
+  suites in `requirements-to-tasks.md`.
+- File scenarios use Laravel's isolated public-disk fake; no production files
+  are read, replaced, or removed during verification.
+- Concurrency scenarios run separate PHP processes against MySQL and confirmed
+  one canonical singleton plus complete serialized child replacements.
+- Route inspection confirmed exactly two protected Admin operations and one
+  unauthenticated Public operation with the approved permission middleware.
+- The Postman collection parsed successfully and retained only `baseUrl`,
+  `accessToken`, and `refreshToken` as collection variables.
+- No environment-specific behavior exception was required.
