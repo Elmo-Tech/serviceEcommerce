@@ -339,7 +339,9 @@ Implementation is ready for completion when:
 
 - This feature must not add Service CRUD.
 - This feature must not add a `subcategories` table.
-- This feature must not add file-upload or media routes.
+- This feature allows only the existing Category and Subcategory create/update
+  routes to accept one optional image. It must not add separate media routes,
+  multiple-image handling, icons, videos, or attachments.
 - This feature must not create public routes outside `/api/v1/public/*`.
 
 ## 10. Current Implementation Notes

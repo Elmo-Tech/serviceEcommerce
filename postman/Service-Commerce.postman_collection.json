@@ -222,8 +222,7 @@
             "method": "POST",
             "header": [
               { "key": "Accept", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
-              { "key": "Content-Type", "value": "application/json" }
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
             ],
             "body": {
               "mode": "raw",
@@ -385,7 +384,7 @@
     },
     {
       "name": "Admin Categories",
-      "description": "Feature 003 protected root Category and nested Subcategory endpoints. Common query keys: filter[search] = text search across Arabic/English names, descriptions, and slugs; filter[isActive] = true shows active only, false shows inactive only; filter[trashed] = without means non-deleted only, with means deleted + non-deleted, only means deleted only; sort = sortOrder, -sortOrder, name, -name, createdAt, -createdAt, updatedAt, -updatedAt; page = page number; perPage = results per page. Common body keys: nameAr/nameEn = required Arabic/English names; descriptionAr/descriptionEn = optional Arabic/English descriptions; sortOrder = display order starting from 0; isActive = true means visible/active, false means inactive/hidden from public catalog.",
+      "description": "Feature 003 protected root Category and nested Subcategory endpoints. Common query keys: filter[search] = text search across Arabic/English names, descriptions, and slugs; filter[isActive] = true shows active only, false shows inactive only; filter[trashed] = without means non-deleted only, with means deleted + non-deleted, only means deleted only; sort = sortOrder, -sortOrder, name, -name, createdAt, -createdAt, updatedAt, -updatedAt; page = page number; perPage = results per page. Common body keys: nameAr/nameEn = required Arabic/English names; descriptionAr/descriptionEn = optional Arabic/English descriptions; sortOrder = display order starting from 0; isActive = true means visible/active, false means inactive/hidden from public catalog; image = optional single image file for the category or subcategory and a new image replaces the previous one on update.",
       "item": [
         {
           "name": "List Categories",
@@ -402,19 +401,25 @@
         },
         {
           "name": "Create Category",
-          "description": "Creates a root category. Body keys: nameAr = required Arabic category name; nameEn = required English category name; descriptionAr = optional Arabic description; descriptionEn = optional English description; sortOrder = optional integer order, lower numbers appear first; isActive = true means active/visible, false means inactive/hidden.",
+          "description": "Creates a root category. Send multipart/form-data. Body keys: nameAr = required Arabic category name; nameEn = required English category name; descriptionAr = optional Arabic description; descriptionEn = optional English description; sortOrder = optional integer order, lower numbers appear first; isActive = true means active/visible, false means inactive/hidden; image = optional single category image file.",
           "request": {
             "method": "POST",
             "header": [
               { "key": "Accept", "value": "application/json" },
               { "key": "Authorization", "value": "Bearer {{accessToken}}" },
-              { "key": "Accept-Language", "value": "en" },
-              { "key": "Content-Type", "value": "application/json" }
+              { "key": "Accept-Language", "value": "en" }
             ],
             "body": {
-              "mode": "raw",
-              "raw": "{\n  \"nameAr\": \"خدمات المنزل\",\n  \"nameEn\": \"Home Services\",\n  \"descriptionAr\": \"خدمات احترافية للمنزل.\",\n  \"descriptionEn\": \"Professional home services.\",\n  \"sortOrder\": 0,\n  \"isActive\": true\n}",
-              "options": { "raw": { "language": "json" } }
+              "mode": "formdata",
+              "formdata": [
+                { "key": "nameAr", "value": "خدمات المنزل", "type": "text" },
+                { "key": "nameEn", "value": "Home Services", "type": "text" },
+                { "key": "descriptionAr", "value": "خدمات احترافية للمنزل.", "type": "text" },
+                { "key": "descriptionEn", "value": "Professional home services.", "type": "text" },
+                { "key": "sortOrder", "value": "0", "type": "text" },
+                { "key": "isActive", "value": "true", "type": "text" },
+                { "key": "image", "type": "file", "src": "" }
+              ]
             },
             "url": "{{baseUrl}}/admin/categories"
           }
@@ -452,18 +457,21 @@
         },
         {
           "name": "Update Category",
-          "description": "Updates mutable root-category fields. You may send any subset of: nameAr, nameEn, descriptionAr, descriptionEn, sortOrder, isActive. isActive=true means active, isActive=false means inactive.",
+          "description": "Updates mutable root-category fields. Send multipart/form-data and include only what you want to change. Allowed keys: nameAr, nameEn, descriptionAr, descriptionEn, sortOrder, isActive, image. image is optional and uploading a new one replaces the previous image.",
           "request": {
             "method": "PATCH",
             "header": [
               { "key": "Accept", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
-              { "key": "Content-Type", "value": "application/json" }
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
             ],
             "body": {
-              "mode": "raw",
-              "raw": "{\n  \"nameAr\": \"خدمات المنزل المحدثة\",\n  \"nameEn\": \"Updated Home Services\",\n  \"isActive\": true\n}",
-              "options": { "raw": { "language": "json" } }
+              "mode": "formdata",
+              "formdata": [
+                { "key": "nameAr", "value": "خدمات المنزل المحدثة", "type": "text" },
+                { "key": "nameEn", "value": "Updated Home Services", "type": "text" },
+                { "key": "isActive", "value": "true", "type": "text" },
+                { "key": "image", "type": "file", "src": "" }
+              ]
             },
             "url": "{{baseUrl}}/admin/categories/1"
           }
@@ -506,18 +514,24 @@
         },
         {
           "name": "Create Subcategory",
-          "description": "Creates a subcategory under the parent category in the URL. Body keys: nameAr = required Arabic subcategory name; nameEn = required English subcategory name; descriptionAr/descriptionEn = optional descriptions; sortOrder = optional integer order; isActive = true means active/visible, false means inactive/hidden.",
+          "description": "Creates a subcategory under the parent category in the URL. Send multipart/form-data. Body keys: nameAr = required Arabic subcategory name; nameEn = required English subcategory name; descriptionAr/descriptionEn = optional descriptions; sortOrder = optional integer order; isActive = true means active/visible, false means inactive/hidden; image = optional single subcategory image file.",
           "request": {
             "method": "POST",
             "header": [
               { "key": "Accept", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
-              { "key": "Content-Type", "value": "application/json" }
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
             ],
             "body": {
-              "mode": "raw",
-              "raw": "{\n  \"nameAr\": \"تنظيف\",\n  \"nameEn\": \"Cleaning\",\n  \"descriptionAr\": \"خدمات تنظيف احترافية.\",\n  \"descriptionEn\": \"Professional cleaning services.\",\n  \"sortOrder\": 0,\n  \"isActive\": true\n}",
-              "options": { "raw": { "language": "json" } }
+              "mode": "formdata",
+              "formdata": [
+                { "key": "nameAr", "value": "تنظيف", "type": "text" },
+                { "key": "nameEn", "value": "Cleaning", "type": "text" },
+                { "key": "descriptionAr", "value": "خدمات تنظيف احترافية.", "type": "text" },
+                { "key": "descriptionEn", "value": "Professional cleaning services.", "type": "text" },
+                { "key": "sortOrder", "value": "0", "type": "text" },
+                { "key": "isActive", "value": "true", "type": "text" },
+                { "key": "image", "type": "file", "src": "" }
+              ]
             },
             "url": "{{baseUrl}}/admin/categories/1/subcategories"
           }
@@ -555,18 +569,21 @@
         },
         {
           "name": "Update Subcategory",
-          "description": "Updates mutable subcategory fields. You may send any subset of: nameAr, nameEn, descriptionAr, descriptionEn, sortOrder, isActive. isActive=true means active, isActive=false means inactive.",
+          "description": "Updates mutable subcategory fields. Send multipart/form-data and include only what you want to change. Allowed keys: nameAr, nameEn, descriptionAr, descriptionEn, sortOrder, isActive, image. image is optional and uploading a new one replaces the previous image.",
           "request": {
             "method": "PATCH",
             "header": [
               { "key": "Accept", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
-              { "key": "Content-Type", "value": "application/json" }
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
             ],
             "body": {
-              "mode": "raw",
-              "raw": "{\n  \"nameAr\": \"تنظيف محدث\",\n  \"nameEn\": \"Updated Cleaning\",\n  \"isActive\": true\n}",
-              "options": { "raw": { "language": "json" } }
+              "mode": "formdata",
+              "formdata": [
+                { "key": "nameAr", "value": "تنظيف محدث", "type": "text" },
+                { "key": "nameEn", "value": "Updated Cleaning", "type": "text" },
+                { "key": "isActive", "value": "true", "type": "text" },
+                { "key": "image", "type": "file", "src": "" }
+              ]
             },
             "url": "{{baseUrl}}/admin/categories/1/subcategories/2"
           }

@@ -28,8 +28,8 @@ additional abstractions justified by the approved feature rules:
 - localized public response headers and alternate locale navigation metadata
 - shared `200` success envelopes for successful soft deletion
 
-This feature does not add Services CRUD, third-level hierarchy, file uploads,
-frontend code, caching, queues, Redis, or any change to Feature 001
+This feature does not add Services CRUD, third-level hierarchy, multiple-image
+media management, frontend code, caching, queues, Redis, or any change to Feature 001
 authentication behavior.
 
 ## Pre-Implementation Existing-Code Audit
@@ -99,7 +99,7 @@ Mandatory safety rules:
 
 - MySQL for the self-referencing `categories` table
 - Laravel soft deletes for category/subcategory lifecycle
-- no file or media storage responsibilities in this feature
+- Laravel file storage for one optional image per Category or Subcategory
 
 **Testing**:
 
@@ -134,7 +134,8 @@ Mandatory safety rules:
 - Arabic and English localization with stable English machine identifiers
 - one self-referencing table only; no separate `subcategories` table
 - no third-level hierarchy
-- no force delete, no cascade delete, no media, no uploads, no rich text
+- no force delete, no cascade delete, no multiple-image media management, no
+  icons, no video, no attachments, no rich text
 - no raw SQL errors, no hidden record disclosure, no unsafe slug handling
 
 **Scale/Scope**:

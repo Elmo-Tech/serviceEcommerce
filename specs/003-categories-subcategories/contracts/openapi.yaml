@@ -1233,6 +1233,7 @@ components:
       - name
       - description
       - slug
+      - image
       properties:
         name:
           type: string
@@ -1242,6 +1243,11 @@ components:
           - 'null'
         slug:
           type: string
+        image:
+          type:
+          - string
+          - 'null'
+          format: uri
     PublicSubcategory:
       type: object
       additionalProperties: false
@@ -1250,6 +1256,7 @@ components:
       - description
       - slug
       - category
+      - image
       properties:
         name:
           type: string
@@ -1259,6 +1266,11 @@ components:
           - 'null'
         slug:
           type: string
+        image:
+          type:
+          - string
+          - 'null'
+          format: uri
         category:
           type: object
           additionalProperties: false
@@ -1543,6 +1555,7 @@ components:
       - name
       - description
       - slug
+      - image
       - subcategories
       properties:
         name:
@@ -1553,6 +1566,11 @@ components:
           - 'null'
         slug:
           type: string
+        image:
+          type:
+          - string
+          - 'null'
+          format: uri
         subcategories:
           type: array
           description: Visible Subcategories localized into the resolved response locale.
@@ -1565,6 +1583,7 @@ components:
       - name
       - description
       - slug
+      - image
       - subcategories
       properties:
         name:
@@ -1575,6 +1594,11 @@ components:
           - 'null'
         slug:
           type: string
+        image:
+          type:
+          - string
+          - 'null'
+          format: uri
         subcategories:
           type: array
           description: Visible Subcategories localized into the resolved response locale.
