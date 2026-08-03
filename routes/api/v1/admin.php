@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\V1\Admin\Categories\SubcategoryController;
 use App\Http\Controllers\Api\V1\Admin\Customers\CustomerAddressController;
 use App\Http\Controllers\Api\V1\Admin\Customers\CustomerController;
 use App\Http\Controllers\Api\V1\Admin\Dashboard\DashboardController;
+use App\Http\Controllers\Api\V1\Admin\HeroSlides\HeroSlideController;
 use App\Http\Controllers\Api\V1\Admin\Orders\OrderController;
 use App\Http\Controllers\Api\V1\Admin\Orders\OrderItemAttachmentController;
 use App\Http\Controllers\Api\V1\Admin\Orders\OrderItemController;
@@ -18,6 +19,7 @@ use App\Http\Controllers\Api\V1\Admin\Services\ServiceOrderFieldController;
 use App\Http\Controllers\Api\V1\Admin\Services\ServicePricingOptionController;
 use App\Http\Controllers\Api\V1\Admin\Services\ServiceSpecificationController;
 use App\Http\Controllers\Api\V1\Admin\Settings\SettingsController as AdminSettingsController;
+use App\Http\Middleware\ParseHeroSlideMultipartPatch;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware([
@@ -28,6 +30,20 @@ Route::middleware([
 ])->group(function (): void {
     Route::get('/dashboard', [DashboardController::class, 'show'])
         ->middleware('permission:dashboard.view');
+
+    Route::get('/hero-slides', [HeroSlideController::class, 'index'])
+        ->middleware('permission:hero-slides.view');
+    Route::post('/hero-slides', [HeroSlideController::class, 'store'])
+        ->middleware('permission:hero-slides.create');
+    Route::get('/hero-slides/{heroSlide}', [HeroSlideController::class, 'show'])
+        ->whereNumber('heroSlide')
+        ->middleware('permission:hero-slides.view');
+    Route::patch('/hero-slides/{heroSlide}', [HeroSlideController::class, 'update'])
+        ->whereNumber('heroSlide')
+        ->middleware(['permission:hero-slides.update', ParseHeroSlideMultipartPatch::class]);
+    Route::delete('/hero-slides/{heroSlide}', [HeroSlideController::class, 'destroy'])
+        ->whereNumber('heroSlide')
+        ->middleware('permission:hero-slides.delete');
 
     Route::get('/customers', [CustomerController::class, 'index'])
         ->middleware('permission:customers.view');

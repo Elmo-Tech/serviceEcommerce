@@ -1,0 +1,558 @@
+openapi: 3.1.0
+info:
+  title: Service Commerce Hero Slider Management API
+  version: 1.0.0
+  description: Exact OpenAPI 3.1 contract for Feature 008 Hero Slider Management.
+servers:
+- url: /api/v1
+paths:
+  /admin/hero-slides:
+    get:
+      operationId: adminListHeroSlides
+      summary: List all Hero slides for administration
+      tags:
+      - Admin Hero Slides
+      x-required-permission: hero-slides.view
+      security:
+      - sanctumBearer: []
+      parameters:
+      - $ref: '#/components/parameters/Page'
+      - $ref: '#/components/parameters/PerPage'
+      - $ref: '#/components/parameters/IsActiveFilter'
+      responses:
+        '200':
+          description: Paginated Hero slides ordered by position ascending.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminHeroSlideCollectionResponse'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      description: Repeated `page`, `perPage`, or `filter[isActive]` members, array-shaped values, unknown
+        keys, and non-canonical activity values are rejected.
+    post:
+      operationId: adminCreateHeroSlide
+      summary: Create and position one Hero slide
+      tags:
+      - Admin Hero Slides
+      x-required-permission: hero-slides.create
+      security:
+      - sanctumBearer: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CreateHeroSlideRequest'
+      responses:
+        '201':
+          description: Hero slide created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminHeroSlideResponse'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /admin/hero-slides/{heroSlide}:
+    parameters:
+    - $ref: '#/components/parameters/HeroSlideId'
+    get:
+      operationId: adminShowHeroSlide
+      summary: Show one Hero slide for administration
+      tags:
+      - Admin Hero Slides
+      x-required-permission: hero-slides.view
+      security:
+      - sanctumBearer: []
+      responses:
+        '200':
+          description: Hero slide returned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminHeroSlideResponse'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/HeroSlideNotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    patch:
+      operationId: adminUpdateHeroSlide
+      summary: Partially update, move, or replace the image of one Hero slide
+      tags:
+      - Admin Hero Slides
+      x-required-permission: hero-slides.update
+      security:
+      - sanctumBearer: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UpdateHeroSlideRequest'
+      responses:
+        '200':
+          description: Hero slide updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminHeroSlideResponse'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/HeroSlideNotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      description: Empty PATCH is rejected. Multipart `isActive` accepts only `"0"` or `"1"`; `position`
+        must be canonical positive decimal text. Image replacement accepts only static JPEG/PNG/WebP up
+        to exactly 5 MiB.
+    delete:
+      operationId: adminDeleteHeroSlide
+      summary: Permanently delete one Hero slide and compact positions
+      tags:
+      - Admin Hero Slides
+      x-required-permission: hero-slides.delete
+      security:
+      - sanctumBearer: []
+      responses:
+        '200':
+          description: Hero slide deleted permanently.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NullDataSuccessResponse'
+        '401':
+          $ref: '#/components/responses/Unauthenticated'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/HeroSlideNotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /public/hero-slides:
+    get:
+      operationId: publicListHeroSlides
+      summary: List active localized Hero slides in display order
+      tags:
+      - Public Hero Slides
+      security: []
+      parameters:
+      - $ref: '#/components/parameters/AcceptLanguage'
+      responses:
+        '200':
+          description: Active localized slides, or an empty data array.
+          headers:
+            Content-Language:
+              $ref: '#/components/headers/ContentLanguage'
+            Vary:
+              $ref: '#/components/headers/VaryAcceptLanguage'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublicHeroSlideCollectionResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+          headers:
+            Content-Language:
+              $ref: '#/components/headers/ContentLanguage'
+            Vary:
+              $ref: '#/components/headers/VaryAcceptLanguage'
+components:
+  securitySchemes:
+    sanctumBearer:
+      type: http
+      scheme: bearer
+      bearerFormat: Sanctum
+  parameters:
+    HeroSlideId:
+      in: path
+      name: heroSlide
+      required: true
+      description: Positive numeric Hero slide identifier.
+      schema:
+        type: integer
+        minimum: 1
+    Page:
+      in: query
+      name: page
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+    PerPage:
+      in: query
+      name: perPage
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 15
+    IsActiveFilter:
+      in: query
+      name: filter[isActive]
+      required: false
+      description: Exact lexical activity filter. "0" means inactive and "1" means active. Array-shaped,
+        repeated, signed, decimal, zero-padded, empty, whitespace-only, and boolean-word values are rejected.
+      schema:
+        type: string
+        enum:
+        - '0'
+        - '1'
+    AcceptLanguage:
+      in: header
+      name: Accept-Language
+      required: false
+      description: Arabic and English variants resolve through existing locale middleware.
+      schema:
+        type: string
+        examples:
+        - ar
+        - en
+        - ar-EG
+        - en-US
+  headers:
+    ContentLanguage:
+      description: Resolved public content language.
+      schema:
+        type: string
+        enum:
+        - ar
+        - en
+    VaryAcceptLanguage:
+      description: Locale-dependent response variance.
+      schema:
+        type: string
+        const: Accept-Language
+  schemas:
+    CreateHeroSlideRequest:
+      type: object
+      additionalProperties: false
+      required:
+      - titleAr
+      - titleEn
+      - descriptionAr
+      - descriptionEn
+      - image
+      - isActive
+      properties:
+        titleAr:
+          type: string
+          minLength: 1
+          maxLength: 150
+        titleEn:
+          type: string
+          minLength: 1
+          maxLength: 150
+        descriptionAr:
+          type: string
+          minLength: 1
+          maxLength: 1000
+        descriptionEn:
+          type: string
+          minLength: 1
+          maxLength: 1000
+        image:
+          type: string
+          format: binary
+          description: One static JPEG, PNG, or WebP image. Maximum exactly 5 MiB (5,242,880 bytes). SVG,
+            animated WebP, APNG, and larger files are rejected.
+        isActive:
+          type: string
+          enum:
+          - '0'
+          - '1'
+          description: Exact multipart lexical value. "0" is valid and must not be treated as empty.
+        position:
+          type: string
+          pattern: ^[1-9][0-9]*$
+          description: Canonical positive decimal string; locked-state range validation applies.
+    UpdateHeroSlideRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        titleAr:
+          type: string
+          minLength: 1
+          maxLength: 150
+        titleEn:
+          type: string
+          minLength: 1
+          maxLength: 150
+        descriptionAr:
+          type: string
+          minLength: 1
+          maxLength: 1000
+        descriptionEn:
+          type: string
+          minLength: 1
+          maxLength: 1000
+        image:
+          type: string
+          format: binary
+          description: One static JPEG, PNG, or WebP image. Maximum exactly 5 MiB (5,242,880 bytes). SVG,
+            animated WebP, APNG, and larger files are rejected.
+        isActive:
+          type: string
+          enum:
+          - '0'
+          - '1'
+          description: Exact multipart lexical value. "0" is valid and must not be treated as empty.
+        position:
+          type: string
+          pattern: ^[1-9][0-9]*$
+          description: Canonical positive decimal string; locked-state range validation applies.
+      minProperties: 1
+      description: At least one approved mutable property is required. Empty and unknown-only PATCH requests
+        return 422.
+    AdminHeroSlide:
+      type: object
+      additionalProperties: false
+      required:
+      - id
+      - titleAr
+      - titleEn
+      - descriptionAr
+      - descriptionEn
+      - image
+      - isActive
+      - position
+      properties:
+        id:
+          type: integer
+          minimum: 1
+        titleAr:
+          type: string
+          minLength: 1
+          maxLength: 150
+        titleEn:
+          type: string
+          minLength: 1
+          maxLength: 150
+        descriptionAr:
+          type: string
+          minLength: 1
+          maxLength: 1000
+        descriptionEn:
+          type: string
+          minLength: 1
+          maxLength: 1000
+        image:
+          type: string
+          format: uri
+        isActive:
+          type: integer
+          enum:
+          - 0
+          - 1
+        position:
+          type: integer
+          minimum: 1
+          maximum: 10
+    PublicHeroSlide:
+      type: object
+      additionalProperties: false
+      required:
+      - title
+      - description
+      - image
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 150
+        description:
+          type: string
+          minLength: 1
+          maxLength: 1000
+        image:
+          type: string
+          format: uri
+    PaginationMeta:
+      type: object
+      additionalProperties: false
+      required:
+      - currentPage
+      - lastPage
+      - perPage
+      - total
+      properties:
+        currentPage:
+          type: integer
+          minimum: 1
+        lastPage:
+          type: integer
+          minimum: 1
+        perPage:
+          type: integer
+          minimum: 1
+          maximum: 100
+        total:
+          type: integer
+          minimum: 0
+          maximum: 10
+    AdminHeroSlideResponse:
+      type: object
+      additionalProperties: false
+      required:
+      - success
+      - message
+      - data
+      properties:
+        success:
+          type: boolean
+          const: true
+        message:
+          type: string
+        data:
+          $ref: '#/components/schemas/AdminHeroSlide'
+    AdminHeroSlideCollectionResponse:
+      type: object
+      additionalProperties: false
+      required:
+      - success
+      - message
+      - data
+      - meta
+      properties:
+        success:
+          type: boolean
+          const: true
+        message:
+          type: string
+        data:
+          type: array
+          maxItems: 10
+          items:
+            $ref: '#/components/schemas/AdminHeroSlide'
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+    PublicHeroSlideCollectionResponse:
+      type: object
+      additionalProperties: false
+      required:
+      - success
+      - message
+      - data
+      properties:
+        success:
+          type: boolean
+          const: true
+        message:
+          type: string
+        data:
+          type: array
+          maxItems: 10
+          items:
+            $ref: '#/components/schemas/PublicHeroSlide'
+    NullDataSuccessResponse:
+      type: object
+      additionalProperties: false
+      required:
+      - success
+      - message
+      - data
+      properties:
+        success:
+          type: boolean
+          const: true
+        message:
+          type: string
+        data:
+          type: 'null'
+    ErrorResponse:
+      type: object
+      additionalProperties: false
+      required:
+      - success
+      - message
+      - code
+      properties:
+        success:
+          type: boolean
+          const: false
+        message:
+          type: string
+        code:
+          type: string
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+    ValidationErrorResponse:
+      allOf:
+      - $ref: '#/components/schemas/ErrorResponse'
+      - type: object
+        properties:
+          code:
+            const: VALIDATION_ERROR
+    HeroSlideNotFoundResponse:
+      allOf:
+      - $ref: '#/components/schemas/ErrorResponse'
+      - type: object
+        properties:
+          code:
+            const: HERO_SLIDE_NOT_FOUND
+  responses:
+    Unauthenticated:
+      description: Administrator authentication is required.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Forbidden:
+      description: The authenticated administrator lacks the exact permission.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    HeroSlideNotFound:
+      description: The requested Hero slide does not exist.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/HeroSlideNotFoundResponse'
+    ValidationError:
+      description: Request validation failed.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ValidationErrorResponse'
+    InternalServerError:
+      description: Safe project-standard server error without internal details.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+x-feature-008-constraints:
+  emptyPatchRejected: true
+  exactMultipartLexicalValues: true
+  staticImagesOnly: true
+  maximumImageBytes: 5242880
+  animatedWebpRejected: true
+  apngRejected: true
+  rawRepeatedQueryMembersRejected: true
+  boundedDeadlockRetryRequired: true
+  advisoryLockBeforeTransaction: true

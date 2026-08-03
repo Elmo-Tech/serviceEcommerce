@@ -1556,6 +1556,113 @@
       ]
     },
     {
+      "name": "Admin Hero Slides",
+      "description": "Feature 008 protected Hero slider management. Positions are one-based and always gapless; maximum 10 slides including inactive ones. isActive=1 means visible publicly and isActive=0 means hidden. Images must be one static JPG/JPEG/PNG/WebP file, maximum 5 MiB. No reorder endpoint exists: create/update position performs ordering.",
+      "item": [
+        {
+          "name": "List Hero Slides",
+          "description": "Requires hero-slides.view. page is a canonical positive integer; perPage defaults to 15 and maxes at 100; filter[isActive] accepts only 0 or 1. Results are always position ascending.",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Accept-Language", "value": "en" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/admin/hero-slides?page=1&perPage=15&filter[isActive]=1"
+          }
+        },
+        {
+          "name": "Create Hero Slide",
+          "description": "Requires hero-slides.create. All bilingual text, image, and isActive are required. position is optional (append when omitted), starts at 1, and cannot exceed count+1. A full set of 10 returns 422 VALIDATION_ERROR.",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Accept-Language", "value": "en" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "body": { "mode": "formdata", "formdata": [
+              { "key": "titleAr", "value": "حلول متكاملة", "type": "text", "description": "Required Arabic title, max 150 characters." },
+              { "key": "titleEn", "value": "Complete solutions", "type": "text", "description": "Required English title, max 150 characters." },
+              { "key": "descriptionAr", "value": "وصف الشريحة", "type": "text", "description": "Required Arabic description, max 1000 characters." },
+              { "key": "descriptionEn", "value": "Slide description", "type": "text", "description": "Required English description, max 1000 characters." },
+              { "key": "image", "type": "file", "src": "", "description": "Required static JPG/JPEG/PNG/WebP, maximum exactly 5 MiB." },
+              { "key": "isActive", "value": "1", "type": "text", "description": "1 = publicly visible; 0 = hidden." },
+              { "key": "position", "value": "1", "type": "text", "description": "Optional canonical one-based insertion position.", "disabled": true }
+            ] },
+            "url": "{{baseUrl}}/admin/hero-slides"
+          }
+        },
+        {
+          "name": "Show Hero Slide",
+          "description": "Requires hero-slides.view. Replace 1 with the numeric Hero slide ID. Returns both languages and exact Admin fields.",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Accept-Language", "value": "en" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/admin/hero-slides/1"
+          }
+        },
+        {
+          "name": "Update Hero Slide",
+          "description": "Requires hero-slides.update. Direct multipart PATCH; send at least one approved key. Omitted fields are preserved. image replaces the old image; there is no remove-image key. position moves and compacts automatically.",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Accept-Language", "value": "en" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "body": { "mode": "formdata", "formdata": [
+              { "key": "titleAr", "value": "عنوان محدث", "type": "text", "description": "Optional Arabic title; empty/null rejected.", "disabled": true },
+              { "key": "titleEn", "value": "Updated title", "type": "text", "description": "Optional English title; empty/null rejected." },
+              { "key": "descriptionAr", "value": "وصف محدث", "type": "text", "description": "Optional Arabic description.", "disabled": true },
+              { "key": "descriptionEn", "value": "Updated description", "type": "text", "description": "Optional English description.", "disabled": true },
+              { "key": "image", "type": "file", "src": "", "description": "Optional replacement static image, maximum exactly 5 MiB.", "disabled": true },
+              { "key": "isActive", "value": "0", "type": "text", "description": "Optional: 1 = visible; 0 = hidden.", "disabled": true },
+              { "key": "position", "value": "1", "type": "text", "description": "Optional existing one-based target position.", "disabled": true }
+            ] },
+            "url": "{{baseUrl}}/admin/hero-slides/1"
+          }
+        },
+        {
+          "name": "Delete Hero Slide",
+          "description": "Requires hero-slides.delete. Permanently deletes the row, compacts later positions, and returns data=null. Missing ID returns HERO_SLIDE_NOT_FOUND.",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Accept-Language", "value": "en" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/admin/hero-slides/1"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Public Hero Slides",
+      "description": "Feature 008 unauthenticated active Hero slides. Accept-Language resolves Arabic or English. The unpaginated response is position ascending and exposes only title, description, and absolute image URL.",
+      "item": [
+        {
+          "name": "List Public Hero Slides",
+          "description": "No token required. Inactive slides and Admin fields are never returned.",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Accept-Language", "value": "ar" }
+            ],
+            "url": "{{baseUrl}}/public/hero-slides"
+          }
+        }
+      ]
+    },
+    {
       "name": "Public Settings",
       "description": "Feature 006 unauthenticated localized projection. Accept-Language resolves ar/en; response includes Content-Language and Vary: Accept-Language.",
       "item": [
