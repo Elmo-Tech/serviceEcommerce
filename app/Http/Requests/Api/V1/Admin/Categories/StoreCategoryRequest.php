@@ -17,8 +17,8 @@ class StoreCategoryRequest extends AbstractCategoryPayloadRequest
     public function rules(): array
     {
         return [
-            'nameAr' => ['required', 'string', 'min:2', 'max:150'],
-            'nameEn' => ['required', 'string', 'min:2', 'max:150'],
+            'nameAr' => ['required', 'string', 'min:2', 'max:150', Rule::unique('categories', 'name_ar')],
+            'nameEn' => ['required', 'string', 'min:2', 'max:150', Rule::unique('categories', 'name_en')],
             'descriptionAr' => ['sometimes', 'nullable', 'string', 'max:2000'],
             'descriptionEn' => ['sometimes', 'nullable', 'string', 'max:2000'],
             'slugAr' => ['sometimes', 'nullable', 'string', 'max:180', Rule::unique('categories', 'slug_ar')],

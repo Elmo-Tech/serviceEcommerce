@@ -112,6 +112,9 @@ The following decisions are final for this feature:
     `Accept-Language`.
 33. Arabic is the default locale and English is the fallback.
 34. Stable machine keys, routes, permissions, and error codes remain English.
+35. `nameAr` and `nameEn` are independently unique across Categories and
+    Subcategories. Duplicate names return field-level `422 VALIDATION_ERROR`
+    responses instead of database or internal-server errors.
 
 ---
 
@@ -401,16 +404,17 @@ generate it safely from the matching localized name.
 
 Description content must never be used to generate a slug.
 
-### 7.4 Arabic Slug
+### 7.4 `slugAr`
 
-The Arabic slug:
+The `slugAr` value:
 
-- may contain normalized Arabic Unicode letters;
+- may contain normalized Unicode letters, including Arabic or Latin letters;
 - may contain numbers;
 - uses `-` between words;
 - must not contain `/`, `?`, `#`, control characters, or unsafe URL schemes;
 - must be normalized consistently before uniqueness validation;
-- must not be transliterated into English automatically.
+- must not be translated or transliterated automatically;
+- may be generated from `nameAr` even when that value contains Latin letters.
 
 Example:
 
@@ -418,15 +422,17 @@ Example:
 خدمات-الصيانة
 ```
 
-### 7.5 English Slug
+### 7.5 `slugEn`
 
-The English slug:
+The `slugEn` value:
 
-- is lowercase;
-- uses ASCII letters, numbers, and `-`;
+- may contain normalized Unicode letters, including Arabic or Latin letters;
+- lowercases letters where the script has a lowercase form;
+- uses letters, numbers, and `-`;
 - removes repeated separators;
 - removes leading/trailing separators;
 - is normalized consistently before uniqueness validation.
+- may be generated from `nameEn` even when that value contains Arabic letters.
 
 Example:
 

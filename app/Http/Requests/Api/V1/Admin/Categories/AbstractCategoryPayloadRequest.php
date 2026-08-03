@@ -9,6 +9,14 @@ use Illuminate\Validation\Validator;
 
 abstract class AbstractCategoryPayloadRequest extends FormRequest
 {
+    public function messages(): array
+    {
+        return [
+            'nameAr.unique' => __('categories.validation.name_ar_unique'),
+            'nameEn.unique' => __('categories.validation.name_en_unique'),
+        ];
+    }
+
     protected function prepareForValidation(): void
     {
         $normalized = $this->all();

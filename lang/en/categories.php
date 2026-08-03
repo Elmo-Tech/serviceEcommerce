@@ -17,6 +17,10 @@ return [
     'subcategory_deleted' => 'Subcategory deleted successfully.',
     'subcategory_restored' => 'Subcategory restored successfully.',
     'subcategories_reordered' => 'Subcategories reordered successfully.',
+    'validation' => [
+        'name_ar_unique' => 'The name entered in nameAr already exists.',
+        'name_en_unique' => 'The name entered in nameEn already exists.',
+    ],
     'errors' => [
         'category_not_found' => 'The requested category was not found.',
         'subcategory_not_found' => 'The requested subcategory was not found.',

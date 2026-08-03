@@ -243,6 +243,14 @@ ordering, localized slugs, and hidden-record `404` behavior.
   `meta.localeLinks.ar` and `meta.localeLinks.en` containing alternate localized
   API URLs so the frontend can switch locale without guessing slugs. These
   links MUST NOT expose the other locale's name or description.
+- **FR-024B**: `nameAr`, `nameEn`, `slugAr`, and `slugEn` MUST accept safe
+  Unicode text containing Arabic or Latin letters. Create MUST generate a
+  non-empty normalized matching slug from either name without translation or
+  transliteration.
+- **FR-024C**: `nameAr` and `nameEn` MUST each be unique across Category and
+  Subcategory records. Create and update MUST report duplicates as field-level
+  `422 VALIDATION_ERROR` responses and MUST NOT expose a database exception as
+  `500 INTERNAL_SERVER_ERROR`.
 - **FR-025**: Admin list APIs MUST use `spatie/laravel-query-builder` and
   accept filters only through `filter[search]`, `filter[isActive]`, and
   `filter[trashed]`; sorting MUST use the allow-listed `sort` parameter and

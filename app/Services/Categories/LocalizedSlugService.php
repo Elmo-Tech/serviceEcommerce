@@ -13,7 +13,7 @@ class LocalizedSlugService
         $trimmed = trim($value);
 
         $normalized = preg_replace('/[\s\-_]+/u', '-', $trimmed) ?? $trimmed;
-        $normalized = preg_replace('/[^\p{Arabic}\p{N}\-]+/u', '-', $normalized) ?? $normalized;
+        $normalized = preg_replace('/[^\p{L}\p{N}\-]+/u', '-', $normalized) ?? $normalized;
         $normalized = preg_replace('/-+/u', '-', $normalized) ?? $normalized;
         $normalized = trim($normalized, '-');
 
@@ -22,7 +22,13 @@ class LocalizedSlugService
 
     public function normalizeEnglish(string $value): string
     {
-        return Str::slug(Str::lower(trim($value)));
+        $trimmed = Str::lower(trim($value));
+
+        $normalized = preg_replace('/[\s\-_]+/u', '-', $trimmed) ?? $trimmed;
+        $normalized = preg_replace('/[^\p{L}\p{N}\-]+/u', '-', $normalized) ?? $normalized;
+        $normalized = preg_replace('/-+/u', '-', $normalized) ?? $normalized;
+
+        return trim($normalized, '-');
     }
 
     public function normalizeForLocale(string $locale, string $value): string

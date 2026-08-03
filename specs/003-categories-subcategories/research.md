@@ -80,6 +80,9 @@ localized name during creation only.
 - Slug rules are shared between root Categories and Subcategories.
 - The feature requires different normalization behavior for Arabic and English
   slugs, plus stable no-auto-regeneration behavior on update.
+- Both localized slug normalizers preserve safe Unicode letters, including
+  Arabic and Latin letters, so either localized name generates a usable slug
+  without translation or transliteration.
 - Centralizing this logic reduces drift between create/update workflows and
   improves testability.
 

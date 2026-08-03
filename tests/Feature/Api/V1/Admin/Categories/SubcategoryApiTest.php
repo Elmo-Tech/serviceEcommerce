@@ -237,3 +237,53 @@ it('uploads an optional image for a subcategory', function () {
         ->and(Storage::disk('public')->exists((string) $updatedSubcategory?->image_path))->toBeTrue()
         ->and(Storage::disk('public')->exists((string) $originalImagePath))->toBeFalse();
 });
+
+it('creates a subcategory when either localized name uses Arabic or Latin letters', function () {
+    $accessToken = subcategoryAdminToken();
+    $rootCategory = Category::factory()->root()->create();
+
+    $this->post('/api/v1/admin/categories/'.$rootCategory->getKey().'/subcategories', [
+        'nameAr' => 'jyj',
+        'nameEn' => 'تصوير',
+        'descriptionAr' => 'jyu',
+        'descriptionEn' => 'jyu',
+        'sortOrder' => '2',
+        'isActive' => 'true',
+    ], subcategoryAdminHeaders($accessToken, 'en'))
+        ->assertCreated()
+        ->assertJsonPath('data.nameAr', 'jyj')
+        ->assertJsonPath('data.nameEn', 'تصوير')
+        ->assertJsonPath('data.slugAr', 'jyj')
+        ->assertJsonPath('data.slugEn', 'تصوير');
+
+    $this->assertDatabaseHas('categories', [
+        'parent_id' => $rootCategory->getKey(),
+        'name_ar' => 'jyj',
+        'name_en' => 'تصوير',
+        'slug_ar' => 'jyj',
+        'slug_en' => 'تصوير',
+    ]);
+});
+
+it('returns field validation errors for duplicate localized subcategory names', function () {
+    $accessToken = subcategoryAdminToken();
+    $rootCategory = Category::factory()->root()->create();
+
+    Category::factory()->subcategory($rootCategory)->create([
+        'name_ar' => 'اسم متكرر',
+        'name_en' => 'Repeated name',
+    ]);
+
+    $this->post('/api/v1/admin/categories/'.$rootCategory->getKey().'/subcategories', [
+        'nameAr' => 'اسم متكرر',
+        'nameEn' => 'Repeated name',
+    ], subcategoryAdminHeaders($accessToken, 'en'))
+        ->assertUnprocessable()
+        ->assertJsonPath('success', false)
+        ->assertJsonPath('code', 'VALIDATION_ERROR')
+        ->assertJsonPath('errors.nameAr.0', 'The name entered in nameAr already exists.')
+        ->assertJsonPath('errors.nameEn.0', 'The name entered in nameEn already exists.')
+        ->assertJsonStructure([
+            'errors' => ['nameAr', 'nameEn'],
+        ]);
+});

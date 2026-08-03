@@ -19,8 +19,8 @@ class UpdateSubcategoryRequest extends AbstractCategoryPayloadRequest
         $subcategoryId = (int) $this->route('subcategory');
 
         return [
-            'nameAr' => ['sometimes', 'required', 'string', 'min:2', 'max:150'],
-            'nameEn' => ['sometimes', 'required', 'string', 'min:2', 'max:150'],
+            'nameAr' => ['sometimes', 'required', 'string', 'min:2', 'max:150', Rule::unique('categories', 'name_ar')->ignore($subcategoryId)],
+            'nameEn' => ['sometimes', 'required', 'string', 'min:2', 'max:150', Rule::unique('categories', 'name_en')->ignore($subcategoryId)],
             'descriptionAr' => ['sometimes', 'nullable', 'string', 'max:2000'],
             'descriptionEn' => ['sometimes', 'nullable', 'string', 'max:2000'],
             'slugAr' => ['sometimes', 'required', 'string', 'max:180', Rule::unique('categories', 'slug_ar')->ignore($subcategoryId)],
