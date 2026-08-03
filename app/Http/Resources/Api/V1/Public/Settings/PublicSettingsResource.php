@@ -34,18 +34,10 @@ class PublicSettingsResource extends JsonResource
                 'hasWhats' => (int) $phone->has_whats,
             ])->values()->all(),
             'address' => $isArabic ? $this->address_ar : $this->address_en,
-            'googleMapsUrl' => $this->google_maps_url,
-            'latitude' => $this->latitude,
-            'longitude' => $this->longitude,
             'socialLinks' => $this->socialLinks->map(fn ($link) => [
                 'platform' => $link->platform?->key(),
                 'url' => $link->url,
             ])->values()->all(),
-            'defaultSeo' => [
-                'title' => $isArabic ? $this->default_seo_title_ar : $this->default_seo_title_en,
-                'description' => $isArabic ? $this->default_seo_description_ar : $this->default_seo_description_en,
-                'keywords' => $isArabic ? ($this->default_seo_keywords_ar ?? []) : ($this->default_seo_keywords_en ?? []),
-            ],
         ];
     }
 }

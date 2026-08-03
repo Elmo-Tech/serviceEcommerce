@@ -54,15 +54,6 @@ class UpdateSettingsAction
                     'publicEmail' => 'public_email',
                     'addressAr' => 'address_ar',
                     'addressEn' => 'address_en',
-                    'googleMapsUrl' => 'google_maps_url',
-                    'latitude' => 'latitude',
-                    'longitude' => 'longitude',
-                    'defaultSeoTitleAr' => 'default_seo_title_ar',
-                    'defaultSeoTitleEn' => 'default_seo_title_en',
-                    'defaultSeoDescriptionAr' => 'default_seo_description_ar',
-                    'defaultSeoDescriptionEn' => 'default_seo_description_en',
-                    'defaultSeoKeywordsAr' => 'default_seo_keywords_ar',
-                    'defaultSeoKeywordsEn' => 'default_seo_keywords_en',
                 ];
 
                 foreach ($fieldMap as $input => $column) {

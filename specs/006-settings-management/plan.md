@@ -250,8 +250,7 @@ constructs such as `script`, `javascript:`, inline event handlers,
 - Admin Resource always returns Arabic and English values together plus
   `availableSocialPlatforms`.
 - Public Resource returns one localized projection with neutral stable keys such
-  as `siteName`, `siteDescription`, `slogan`, `address`, `email`, and
-  `defaultSeo`.
+  as `siteName`, `siteDescription`, `slogan`, `address`, and `email`.
 - Neither Resource may expose internal row IDs, timestamps, or raw storage
   paths.
 

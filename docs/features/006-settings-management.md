@@ -129,15 +129,6 @@ favicon_path nullable
 public_email
 address_ar nullable
 address_en nullable
-google_maps_url nullable
-latitude nullable
-longitude nullable
-default_seo_title_ar nullable
-default_seo_title_en nullable
-default_seo_description_ar nullable
-default_seo_description_en nullable
-default_seo_keywords_ar nullable
-default_seo_keywords_en nullable
 created_at
 updated_at
 ```
@@ -157,15 +148,6 @@ favicon_path                    varchar nullable
 public_email                    varchar
 address_ar                      text nullable
 address_en                      text nullable
-google_maps_url                 text nullable
-latitude                        decimal(10,7) nullable
-longitude                       decimal(10,7) nullable
-default_seo_title_ar            varchar nullable
-default_seo_title_en            varchar nullable
-default_seo_description_ar      varchar nullable
-default_seo_description_en      varchar nullable
-default_seo_keywords_ar         json nullable
-default_seo_keywords_en         json nullable
 ```
 
 ### 6.2 `setting_phones`
@@ -428,51 +410,6 @@ socialLinks = []
 To delete one link, the frontend removes it locally and submits the remaining
 array.
 
----
-
-## 11. Location
-
-Fields:
-
-```text
-googleMapsUrl
-latitude
-longitude
-```
-
-Rules:
-
-- All are optional.
-- `googleMapsUrl` must be a valid URL.
-- Coordinates must be submitted together.
-- Latitude range: `-90` to `90`.
-- Longitude range: `-180` to `180`.
-- Coordinates are returned as decimal strings or `null`.
-- Google Maps iframe/embed HTML is not stored.
-- `googleMapsUrl` may exist without coordinates.
-
----
-
-## 12. Default SEO
-
-Fields:
-
-```text
-defaultSeoTitleAr
-defaultSeoTitleEn
-defaultSeoDescriptionAr
-defaultSeoDescriptionEn
-defaultSeoKeywordsAr[]
-defaultSeoKeywordsEn[]
-```
-
-Rules:
-
-- All fields are optional.
-- Keywords are arrays, not comma-separated strings.
-- Each keyword must be a non-empty string.
-- Admin returns both languages.
-- Public returns the requested language only.
 - There is no `defaultOgImage`.
 - There is no `ogImage` in any request or response.
 
@@ -744,9 +681,6 @@ Example `data`:
   ],
   "addressAr": "القاهرة، مصر",
   "addressEn": "Cairo, Egypt",
-  "googleMapsUrl": "https://maps.google.com/example",
-  "latitude": "30.0444000",
-  "longitude": "31.2357000",
   "socialLinks": [
     {
       "platform": "facebook",
@@ -763,18 +697,6 @@ Example `data`:
     "telegram",
     "pinterest",
     "snapchat"
-  ],
-  "defaultSeoTitleAr": "العنوان الافتراضي للموقع",
-  "defaultSeoTitleEn": "Default website SEO title",
-  "defaultSeoDescriptionAr": "وصف SEO الافتراضي باللغة العربية",
-  "defaultSeoDescriptionEn": "Default SEO description in English",
-  "defaultSeoKeywordsAr": [
-    "خدمات",
-    "تصميم"
-  ],
-  "defaultSeoKeywordsEn": [
-    "services",
-    "design"
   ]
 }
 ```
@@ -809,23 +731,12 @@ Example `data`:
     }
   ],
   "address": "القاهرة، مصر",
-  "googleMapsUrl": "https://maps.google.com/example",
-  "latitude": "30.0444000",
-  "longitude": "31.2357000",
   "socialLinks": [
     {
       "platform": "facebook",
       "url": "https://facebook.com/example"
     }
-  ],
-  "defaultSeo": {
-    "title": "العنوان الافتراضي للموقع",
-    "description": "وصف SEO الافتراضي باللغة العربية",
-    "keywords": [
-      "خدمات",
-      "تصميم"
-    ]
-  }
+  ]
 }
 ```
 
@@ -851,23 +762,12 @@ Example `data`:
     }
   ],
   "address": "Cairo, Egypt",
-  "googleMapsUrl": "https://maps.google.com/example",
-  "latitude": "30.0444000",
-  "longitude": "31.2357000",
   "socialLinks": [
     {
       "platform": "facebook",
       "url": "https://facebook.com/example"
     }
-  ],
-  "defaultSeo": {
-    "title": "Default website SEO title",
-    "description": "Default SEO description in English",
-    "keywords": [
-      "services",
-      "design"
-    ]
-  }
+  ]
 }
 ```
 
@@ -888,18 +788,9 @@ phones[1][hasWhats] = 0
 
 addressAr = القاهرة، مصر
 addressEn = Cairo, Egypt
-googleMapsUrl = https://maps.google.com/example
-latitude = 30.0444000
-longitude = 31.2357000
 
 socialLinks[0][platform] = facebook
 socialLinks[0][url] = https://facebook.com/example
-
-defaultSeoKeywordsAr[0] = خدمات
-defaultSeoKeywordsAr[1] = تصميم
-
-defaultSeoKeywordsEn[0] = services
-defaultSeoKeywordsEn[1] = design
 
 logo = {binary file}
 ```
@@ -1122,12 +1013,7 @@ One public email
 Maximum three Egyptian phone numbers
 Maximum one WhatsApp-enabled number
 One localized address
-Google Maps URL
-Latitude and longitude
 Dynamic predefined social platforms
-Localized default SEO title
-Localized default SEO description
-Localized SEO keyword arrays
 Full replacement for phone and social collections
 Explicit clear flags
 Safe SVG handling

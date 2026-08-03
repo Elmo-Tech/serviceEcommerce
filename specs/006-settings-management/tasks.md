@@ -189,10 +189,7 @@ filesystem state.
   maximum 3; social-link maximum 9;
   single-WhatsApp enforcement; invalid and duplicate normalized phones;
   duplicate platforms; approved `PhoneInput` variants using `+20`, `0020`,
-  spaces, dashes, and parentheses; canonical `PhoneOutput`; coordinate pair
-  persistence and clearing; one-coordinate rejection; range validation; valid
-  URL handling; invalid `googleMapsUrl` rejection; SEO keyword trimming, non-empty enforcement, case-insensitive
-  duplicate rejection, and valid casing/order preservation; `401`; `403`; and
+  spaces, dashes, and parentheses; canonical `PhoneOutput`; `401`; `403`; and
   localized validation/business errors
 - [X] T021 [P] [US2] Add the complete branding-file suite in
   `tests/Feature/Api/V1/Admin/Settings/AdminSettingsBrandingTest.php` covering:
@@ -269,8 +266,8 @@ defaults, and no database write when the singleton is missing.
 
 - [X] T030 [P] [US3] Add the Public settings API suite covering `ar`, `en`,
   `ar-EG → ar`, `en-US → en`, `Content-Language`,
-  `Vary: Accept-Language`, stable neutral keys, localized scalar and SEO
-  projection, ordered phones/social links, absolute file URLs, exclusion of
+  `Vary: Accept-Language`, stable neutral keys, localized scalar projection,
+  ordered phones/social links, absolute file URLs, exclusion of
   Admin-only and dual-language fields, safe default output for a missing
   singleton, and proof that Public GET leaves the database unchanged in
   `tests/Feature/Api/V1/Public/Settings/PublicSettingsReadTest.php`
@@ -283,8 +280,8 @@ defaults, and no database write when the singleton is missing.
 ### Implementation for User Story 3
 
 - [X] T032 [P] [US3] Implement the localized Public serializer with stable
-  neutral keys, localized scalar values, ordered phones/social links, public
-  branding URLs, and nested `defaultSeo` projection in
+  neutral keys, localized scalar values, ordered phones/social links, and
+  public branding URLs in
   `app/Http/Resources/Api/V1/Public/Settings/PublicSettingsResource.php`
 - [X] T033 [US3] Implement the Public controller after T008 and T032 using the
   non-persisting safe fallback and existing `HttpStatusCode::OK` convention in

@@ -126,8 +126,6 @@
 
 ## Location Contract
 
-- [x] `googleMapsUrl` validation is fixed.
-- [x] Latitude and longitude must be submitted together.
 - [x] Latitude range is fixed to `-90..90`.
 - [x] Longitude range is fixed to `-180..180`.
 - [x] Maps URL may exist without coordinates.

@@ -204,25 +204,6 @@ favicon
 publicEmail
 ```
 
-### Location Fields
-
-```text
-googleMapsUrl
-latitude
-longitude
-```
-
-### SEO Fields
-
-```text
-defaultSeoTitleAr
-defaultSeoTitleEn
-defaultSeoDescriptionAr
-defaultSeoDescriptionEn
-defaultSeoKeywordsAr[]
-defaultSeoKeywordsEn[]
-```
-
 ### Collections
 
 ```text
@@ -268,15 +249,6 @@ footerLogo
 favicon
 addressAr
 addressEn
-googleMapsUrl
-latitude
-longitude
-defaultSeoTitleAr
-defaultSeoTitleEn
-defaultSeoDescriptionAr
-defaultSeoDescriptionEn
-defaultSeoKeywordsAr
-defaultSeoKeywordsEn
 phones
 socialLinks
 ```
@@ -412,31 +384,6 @@ snapchat
 - **FR-042**: No separate social-link-clear key is accepted.
 - **FR-043**: The Admin resource MUST return `availableSocialPlatforms` as the
   approved stable English machine-key list.
-
-### Location
-
-- **FR-044**: `googleMapsUrl` MUST be a valid URL when submitted.
-- **FR-045**: `latitude` and `longitude` MUST be submitted together or both
-  omitted/cleared.
-- **FR-046**: `latitude` MUST be between `-90` and `90`.
-- **FR-047**: `longitude` MUST be between `-180` and `180`.
-- **FR-048**: `googleMapsUrl` MAY exist without coordinates.
-- **FR-049**: Google Maps iframe or embed HTML MUST not be stored.
-- **FR-050**: Coordinates MUST be returned as decimal strings or `null`.
-
-### Default SEO
-
-- **FR-051**: The system MUST manage localized default SEO title, description,
-  and keyword arrays only.
-- **FR-052**: SEO keywords MUST be arrays, not comma-separated strings.
-- **FR-053**: Every keyword MUST be a non-empty string after trimming.
-- **FR-054**: Duplicate keywords within the same language array MUST be
-  rejected with `422 VALIDATION_ERROR` after trimming and case-insensitive
-  comparison; the original submitted order and casing MUST otherwise be
-  preserved.
-- **FR-055**: Arabic and English SEO content MUST be managed independently.
-- **FR-057**: No Open Graph image field MUST exist anywhere in the feature
-  contract.
 
 ### Branding Files
 
@@ -607,9 +554,6 @@ Successful Admin GET and PATCH `data` MUST have this shape:
   ],
   "addressAr": "القاهرة، مصر",
   "addressEn": "Cairo, Egypt",
-  "googleMapsUrl": "https://maps.google.com/example",
-  "latitude": "30.0444000",
-  "longitude": "31.2357000",
   "socialLinks": [
     {
       "platform": "facebook",
@@ -626,18 +570,6 @@ Successful Admin GET and PATCH `data` MUST have this shape:
     "telegram",
     "pinterest",
     "snapchat"
-  ],
-  "defaultSeoTitleAr": "العنوان الافتراضي للموقع",
-  "defaultSeoTitleEn": "Default website SEO title",
-  "defaultSeoDescriptionAr": "وصف SEO الافتراضي باللغة العربية",
-  "defaultSeoDescriptionEn": "Default SEO description in English",
-  "defaultSeoKeywordsAr": [
-    "خدمات",
-    "تصميم"
-  ],
-  "defaultSeoKeywordsEn": [
-    "services",
-    "design"
   ]
 }
 ```
@@ -668,23 +600,12 @@ For Arabic, successful Public `data` MUST have this shape:
     }
   ],
   "address": "القاهرة، مصر",
-  "googleMapsUrl": "https://maps.google.com/example",
-  "latitude": "30.0444000",
-  "longitude": "31.2357000",
   "socialLinks": [
     {
       "platform": "facebook",
       "url": "https://facebook.com/example"
     }
-  ],
-  "defaultSeo": {
-    "title": "العنوان الافتراضي للموقع",
-    "description": "وصف SEO الافتراضي باللغة العربية",
-    "keywords": [
-      "خدمات",
-      "تصميم"
-    ]
-  }
+  ]
 }
 ```
 

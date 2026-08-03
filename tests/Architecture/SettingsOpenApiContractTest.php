@@ -81,19 +81,14 @@ it('freezes exact request and response settings objects', function () {
         'PhoneInput' => ['number', 'hasWhats'],
         'PhoneOutput' => ['number', 'hasWhats'],
         'SocialLinkItem' => ['platform', 'url'],
-        'DefaultSeoLocalized' => ['title', 'description', 'keywords'],
         'AdminSettingsData' => [
             'siteNameAr', 'siteNameEn', 'siteDescriptionAr', 'siteDescriptionEn',
             'sloganAr', 'sloganEn', 'logo', 'footerLogo', 'favicon', 'publicEmail',
-            'phones', 'addressAr', 'addressEn', 'googleMapsUrl', 'latitude', 'longitude',
-            'socialLinks', 'availableSocialPlatforms', 'defaultSeoTitleAr',
-            'defaultSeoTitleEn', 'defaultSeoDescriptionAr', 'defaultSeoDescriptionEn',
-            'defaultSeoKeywordsAr', 'defaultSeoKeywordsEn',
+            'phones', 'addressAr', 'addressEn', 'socialLinks', 'availableSocialPlatforms',
         ],
         'PublicSettingsData' => [
             'siteName', 'siteDescription', 'slogan', 'logo', 'footerLogo', 'favicon',
-            'email', 'phones', 'address', 'googleMapsUrl', 'latitude', 'longitude',
-            'socialLinks', 'defaultSeo',
+            'email', 'phones', 'address', 'socialLinks',
         ],
         'AdminSettingsSuccessResponse' => ['success', 'message', 'data'],
         'PublicSettingsSuccessResponse' => ['success', 'message', 'data'],
@@ -102,10 +97,7 @@ it('freezes exact request and response settings objects', function () {
         'AdminSettingsUpdateRequest' => [
             'siteNameAr', 'siteNameEn', 'siteDescriptionAr', 'siteDescriptionEn',
             'sloganAr', 'sloganEn', 'publicEmail', 'addressAr', 'addressEn',
-            'googleMapsUrl', 'latitude', 'longitude', 'defaultSeoTitleAr',
-            'defaultSeoTitleEn', 'defaultSeoDescriptionAr', 'defaultSeoDescriptionEn',
-            'defaultSeoKeywordsAr', 'defaultSeoKeywordsEn', 'phones', 'socialLinks',
-            'logo', 'footerLogo', 'favicon',
+            'phones', 'socialLinks', 'logo', 'footerLogo', 'favicon',
         ],
     ];
 
@@ -116,7 +108,7 @@ it('freezes exact request and response settings objects', function () {
         expect(settingsOpenApiTopLevelProperties($block))->toBe($properties);
     }
 
-    foreach (['PhoneInput', 'PhoneOutput', 'SocialLinkItem', 'DefaultSeoLocalized', 'AdminSettingsData', 'PublicSettingsData', 'AdminSettingsSuccessResponse', 'PublicSettingsSuccessResponse', 'ErrorResponse', 'ValidationErrorResponse'] as $schema) {
+    foreach (['PhoneInput', 'PhoneOutput', 'SocialLinkItem', 'AdminSettingsData', 'PublicSettingsData', 'AdminSettingsSuccessResponse', 'PublicSettingsSuccessResponse', 'ErrorResponse', 'ValidationErrorResponse'] as $schema) {
         $block = settingsOpenApiSchemaBlock($document, $schema);
         expect(settingsOpenApiRequiredKeys($block))->toBe($expectedProperties[$schema]);
     }
@@ -134,7 +126,7 @@ it('separates formatted phone input from canonical phone output and uses JSON Sc
         ->and(settingsOpenApiSchemaBlock($document, 'PhoneInput'))->toContain("- '+201012345678'", '- 00201012345678', '- (010) 12345678')
         ->and(settingsOpenApiSchemaBlock($document, 'PhoneOutput'))->toContain('pattern: ^01[0125][0-9]{8}$');
 
-    foreach (['AdminSettingsData', 'PublicSettingsData', 'DefaultSeoLocalized', 'ErrorResponse'] as $schema) {
+    foreach (['AdminSettingsData', 'PublicSettingsData', 'ErrorResponse'] as $schema) {
         expect(settingsOpenApiSchemaBlock($document, $schema))->toMatch("/type:\\R\s+- [^\\r\\n]+\\R\s+- 'null'/");
     }
 });

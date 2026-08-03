@@ -33,20 +33,11 @@ class AdminSettingsResource extends JsonResource
             ])->values()->all(),
             'addressAr' => $this->address_ar,
             'addressEn' => $this->address_en,
-            'googleMapsUrl' => $this->google_maps_url,
-            'latitude' => $this->latitude,
-            'longitude' => $this->longitude,
             'socialLinks' => $this->socialLinks->map(fn ($link) => [
                 'platform' => $link->platform?->key(),
                 'url' => $link->url,
             ])->values()->all(),
             'availableSocialPlatforms' => app(SettingsResolver::class)->availableSocialPlatforms(),
-            'defaultSeoTitleAr' => $this->default_seo_title_ar,
-            'defaultSeoTitleEn' => $this->default_seo_title_en,
-            'defaultSeoDescriptionAr' => $this->default_seo_description_ar,
-            'defaultSeoDescriptionEn' => $this->default_seo_description_en,
-            'defaultSeoKeywordsAr' => $this->default_seo_keywords_ar ?? [],
-            'defaultSeoKeywordsEn' => $this->default_seo_keywords_en ?? [],
         ];
     }
 }

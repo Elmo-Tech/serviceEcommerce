@@ -31,17 +31,6 @@ class UpdateSettingsRequest extends FormRequest
             'publicEmail' => ['sometimes', 'string', 'email:rfc', 'min:1', 'max:255'],
             'addressAr' => ['sometimes', 'nullable', 'string'],
             'addressEn' => ['sometimes', 'nullable', 'string'],
-            'googleMapsUrl' => ['sometimes', 'nullable', 'url:http,https'],
-            'latitude' => ['sometimes', 'nullable', 'regex:/^-?(?:90(?:\.0{1,7})?|(?:[0-8]?\d)(?:\.\d{1,7})?)$/'],
-            'longitude' => ['sometimes', 'nullable', 'regex:/^-?(?:180(?:\.0{1,7})?|(?:1[0-7]\d|[0-9]?\d)(?:\.\d{1,7})?)$/'],
-            'defaultSeoTitleAr' => ['sometimes', 'nullable', 'string'],
-            'defaultSeoTitleEn' => ['sometimes', 'nullable', 'string'],
-            'defaultSeoDescriptionAr' => ['sometimes', 'nullable', 'string'],
-            'defaultSeoDescriptionEn' => ['sometimes', 'nullable', 'string'],
-            'defaultSeoKeywordsAr' => ['sometimes', 'array'],
-            'defaultSeoKeywordsAr.*' => ['string', 'min:1'],
-            'defaultSeoKeywordsEn' => ['sometimes', 'array'],
-            'defaultSeoKeywordsEn.*' => ['string', 'min:1'],
             'phones' => ['sometimes', 'array', 'max:3'],
             'phones.*.number' => ['required_with:phones', 'string', 'regex:/^01[0125][0-9]{8}$/'],
             'phones.*.hasWhats' => ['required_with:phones', 'integer', Rule::in([0, 1])],
@@ -68,24 +57,6 @@ class UpdateSettingsRequest extends FormRequest
                 $this->ensureApprovedFileExtensions($validator);
                 $this->ensureSafeSvgFiles($validator);
 
-                $latitudeExists = array_key_exists('latitude', $this->all());
-                $longitudeExists = array_key_exists('longitude', $this->all());
-
-                if ($latitudeExists xor $longitudeExists) {
-                    $validator->errors()->add('coordinates', __('validation.invalid_payload'));
-                }
-
-                if ($latitudeExists && $longitudeExists) {
-                    $latitude = $this->input('latitude');
-                    $longitude = $this->input('longitude');
-
-                    if (($latitude === null) xor ($longitude === null)) {
-                        $validator->errors()->add('coordinates', __('validation.invalid_payload'));
-                    }
-                }
-
-                $this->ensureUniqueKeywordArray($validator, 'defaultSeoKeywordsAr');
-                $this->ensureUniqueKeywordArray($validator, 'defaultSeoKeywordsEn');
                 $this->ensureUniquePhones($validator);
                 $this->ensureSingleWhatsapp($validator);
                 $this->ensureUniqueSocialPlatforms($validator);
@@ -114,10 +85,6 @@ class UpdateSettingsRequest extends FormRequest
             'sloganEn',
             'addressAr',
             'addressEn',
-            'defaultSeoTitleAr',
-            'defaultSeoTitleEn',
-            'defaultSeoDescriptionAr',
-            'defaultSeoDescriptionEn',
         ] as $field) {
             if (array_key_exists($field, $this->all())) {
                 $payload[$field] = $this->normalizeOptionalString($this->input($field));
@@ -127,27 +94,6 @@ class UpdateSettingsRequest extends FormRequest
         if (array_key_exists('publicEmail', $this->all())) {
             $email = $this->normalizeOptionalString($this->input('publicEmail'));
             $payload['publicEmail'] = $email === null ? null : mb_strtolower($email);
-        }
-
-        if (array_key_exists('googleMapsUrl', $this->all())) {
-            $payload['googleMapsUrl'] = $this->normalizeOptionalString($this->input('googleMapsUrl'));
-        }
-
-        if (array_key_exists('latitude', $this->all())) {
-            $payload['latitude'] = $this->normalizeOptionalString($this->input('latitude'));
-        }
-
-        if (array_key_exists('longitude', $this->all())) {
-            $payload['longitude'] = $this->normalizeOptionalString($this->input('longitude'));
-        }
-
-        foreach (['defaultSeoKeywordsAr', 'defaultSeoKeywordsEn'] as $field) {
-            if (is_array($this->input($field))) {
-                $payload[$field] = array_map(
-                    fn ($value) => $this->normalizeOptionalString($value),
-                    (array) $this->input($field),
-                );
-            }
         }
 
         if (is_array($this->input('phones'))) {
@@ -218,35 +164,6 @@ class UpdateSettingsRequest extends FormRequest
         }
 
         return $payload;
-    }
-
-    private function ensureUniqueKeywordArray(Validator $validator, string $field): void
-    {
-        $keywords = $this->input($field);
-
-        if (! is_array($keywords)) {
-            return;
-        }
-
-        $seen = [];
-
-        foreach ($keywords as $keyword) {
-            $normalized = mb_strtolower((string) $this->normalizeOptionalString($keyword));
-
-            if ($normalized === '') {
-                $validator->errors()->add($field, __('validation.invalid_payload'));
-
-                continue;
-            }
-
-            if (in_array($normalized, $seen, true)) {
-                $validator->errors()->add($field, __('settings.duplicate_keywords'));
-
-                return;
-            }
-
-            $seen[] = $normalized;
-        }
     }
 
     private function ensureUniquePhones(Validator $validator): void

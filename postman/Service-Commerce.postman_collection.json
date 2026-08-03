@@ -1481,18 +1481,9 @@
                 { "key": "phones", "value": "[]", "type": "text", "description": "Enable this row and disable every phones[index] row to clear all phones.", "disabled": true },
                 { "key": "addressAr", "value": "القاهرة، مصر", "type": "text", "description": "Optional Arabic address; empty string clears it.", "disabled": true },
                 { "key": "addressEn", "value": "Cairo, Egypt", "type": "text", "description": "Optional English address; empty string clears it.", "disabled": true },
-                { "key": "googleMapsUrl", "value": "https://maps.google.com/?q=30.0444,31.2357", "type": "text", "description": "Optional HTTP/HTTPS map URL; empty string clears it.", "disabled": true },
-                { "key": "latitude", "value": "30.0444000", "type": "text", "description": "-90..90 with up to 7 decimals; must be sent with longitude.", "disabled": true },
-                { "key": "longitude", "value": "31.2357000", "type": "text", "description": "-180..180 with up to 7 decimals; must be sent with latitude.", "disabled": true },
                 { "key": "socialLinks[0][platform]", "value": "facebook", "type": "text", "description": "facebook, instagram, linkedin, youtube, tiktok, x, telegram, pinterest, or snapchat.", "disabled": true },
                 { "key": "socialLinks[0][url]", "value": "https://facebook.com/service-commerce", "type": "text", "description": "Absolute HTTP/HTTPS URL for the platform.", "disabled": true },
                 { "key": "socialLinks", "value": "[]", "type": "text", "description": "Enable this row and disable every socialLinks[index] row to clear all social links.", "disabled": true },
-                { "key": "defaultSeoTitleAr", "value": "خدمات احترافية", "type": "text", "description": "Optional Arabic SEO title; empty string clears it.", "disabled": true },
-                { "key": "defaultSeoTitleEn", "value": "Professional Services", "type": "text", "description": "Optional English SEO title; empty string clears it.", "disabled": true },
-                { "key": "defaultSeoDescriptionAr", "value": "وصف افتراضي", "type": "text", "description": "Optional Arabic SEO description; empty string clears it.", "disabled": true },
-                { "key": "defaultSeoDescriptionEn", "value": "Default SEO description", "type": "text", "description": "Optional English SEO description; empty string clears it.", "disabled": true },
-                { "key": "defaultSeoKeywordsAr[0]", "value": "خدمات", "type": "text", "description": "Ordered non-empty keyword; trimmed case-insensitive duplicates are rejected.", "disabled": true },
-                { "key": "defaultSeoKeywordsEn[0]", "value": "Services", "type": "text", "description": "Ordered non-empty keyword; original casing is preserved.", "disabled": true },
                 { "key": "logo", "type": "file", "src": "", "description": "File replaces the logo (JPG/JPEG/PNG/WEBP/SVG, max 5 MB). Change this row to Text with an empty value to remove it.", "disabled": true },
                 { "key": "footerLogo", "type": "file", "src": "", "description": "File replaces the footer logo (JPG/JPEG/PNG/WEBP/SVG, max 5 MB). Change this row to Text with an empty value to remove it.", "disabled": true },
                 { "key": "favicon", "type": "file", "src": "", "description": "File replaces the favicon (PNG/ICO/SVG, max 1 MB). Change this row to Text with an empty value to remove it.", "disabled": true }
@@ -1878,7 +1869,7 @@
       "item": [
         {
           "name": "Show Public Settings",
-          "description": "Returns localized neutral keys, ordered phones/social links, absolute branding URLs, and defaultSeo. Missing singleton returns safe defaults without a database write.",
+          "description": "Returns localized neutral keys, ordered phones/social links, and absolute branding URLs. Missing singleton returns safe defaults without a database write.",
           "request": {
             "method": "GET",
             "header": [

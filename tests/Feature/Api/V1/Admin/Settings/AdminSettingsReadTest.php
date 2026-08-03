@@ -23,8 +23,6 @@ it('returns the complete admin settings resource with ordered children and avail
         'id' => 1,
         'site_name_ar' => 'اسم الموقع',
         'site_name_en' => 'Website Name',
-        'latitude' => '30.0444000',
-        'longitude' => '31.2357000',
     ]);
 
     $setting->phones()->createMany([
@@ -45,14 +43,16 @@ it('returns the complete admin settings resource with ordered children and avail
         ->assertJsonPath('data.siteNameAr', 'اسم الموقع')
         ->assertJsonPath('data.siteNameEn', 'Website Name')
         ->assertJsonPath('data.publicEmail', 'info@example.com')
-        ->assertJsonPath('data.latitude', '30.0444000')
-        ->assertJsonPath('data.longitude', '31.2357000')
         ->assertJsonPath('data.phones.0.number', '01012345678')
         ->assertJsonPath('data.phones.0.hasWhats', 1)
         ->assertJsonPath('data.phones.1.number', '01111111111')
         ->assertJsonPath('data.socialLinks.0.platform', 'facebook')
         ->assertJsonPath('data.socialLinks.1.platform', 'instagram')
         ->assertJsonPath('data.availableSocialPlatforms', SocialPlatform::keys())
+        ->assertJsonMissingPath('data.googleMapsUrl')
+        ->assertJsonMissingPath('data.latitude')
+        ->assertJsonMissingPath('data.longitude')
+        ->assertJsonMissingPath('data.defaultSeoTitleAr')
         ->assertJsonMissingPath('data.id')
         ->assertJsonMissingPath('data.createdAt')
         ->assertJsonMissingPath('data.updatedAt');

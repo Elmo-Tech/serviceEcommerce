@@ -239,17 +239,8 @@ components:
       - phones
       - addressAr
       - addressEn
-      - googleMapsUrl
-      - latitude
-      - longitude
       - socialLinks
       - availableSocialPlatforms
-      - defaultSeoTitleAr
-      - defaultSeoTitleEn
-      - defaultSeoDescriptionAr
-      - defaultSeoDescriptionEn
-      - defaultSeoKeywordsAr
-      - defaultSeoKeywordsEn
       properties:
         siteNameAr:
           type: string
@@ -306,21 +297,6 @@ components:
           type:
           - string
           - 'null'
-        googleMapsUrl:
-          type:
-          - string
-          - 'null'
-          format: uri
-        latitude:
-          type:
-          - string
-          - 'null'
-          pattern: ^-?(?:90(?:\.0{1,7})?|(?:[0-8]?\d)(?:\.\d{1,7})?)$
-        longitude:
-          type:
-          - string
-          - 'null'
-          pattern: ^-?(?:180(?:\.0{1,7})?|(?:1[0-7]\d|[0-9]?\d)(?:\.\d{1,7})?)$
         socialLinks:
           type: array
           maxItems: 9
@@ -334,32 +310,6 @@ components:
           uniqueItems: true
           items:
             $ref: '#/components/schemas/SocialPlatform'
-        defaultSeoTitleAr:
-          type:
-          - string
-          - 'null'
-        defaultSeoTitleEn:
-          type:
-          - string
-          - 'null'
-        defaultSeoDescriptionAr:
-          type:
-          - string
-          - 'null'
-        defaultSeoDescriptionEn:
-          type:
-          - string
-          - 'null'
-        defaultSeoKeywordsAr:
-          type: array
-          items:
-            type: string
-            minLength: 1
-        defaultSeoKeywordsEn:
-          type: array
-          items:
-            type: string
-            minLength: 1
     PublicSettingsData:
       type: object
       additionalProperties: false
@@ -373,11 +323,7 @@ components:
       - email
       - phones
       - address
-      - googleMapsUrl
-      - latitude
-      - longitude
       - socialLinks
-      - defaultSeo
       properties:
         siteName:
           type: string
@@ -418,29 +364,12 @@ components:
           type:
           - string
           - 'null'
-        googleMapsUrl:
-          type:
-          - string
-          - 'null'
-          format: uri
-        latitude:
-          type:
-          - string
-          - 'null'
-          pattern: ^-?(?:90(?:\.0{1,7})?|(?:[0-8]?\d)(?:\.\d{1,7})?)$
-        longitude:
-          type:
-          - string
-          - 'null'
-          pattern: ^-?(?:180(?:\.0{1,7})?|(?:1[0-7]\d|[0-9]?\d)(?:\.\d{1,7})?)$
         socialLinks:
           type: array
           maxItems: 9
           x-unique-by: platform
           items:
             $ref: '#/components/schemas/SocialLinkItem'
-        defaultSeo:
-          $ref: '#/components/schemas/DefaultSeoLocalized'
     AdminSettingsSuccessResponse:
       type: object
       additionalProperties: false
@@ -521,11 +450,6 @@ components:
     AdminSettingsUpdateRequest:
       type: object
       additionalProperties: false
-      dependentRequired:
-        latitude:
-        - longitude
-        longitude:
-        - latitude
       properties:
         siteNameAr:
           type: string
@@ -557,53 +481,6 @@ components:
         addressEn:
           type: string
           description: Empty string explicitly clears the field to null.
-        googleMapsUrl:
-          anyOf:
-          - type: string
-            format: uri
-            minLength: 1
-          - const: ''
-          description: Empty string explicitly clears the field to null.
-        latitude:
-          anyOf:
-          - type: string
-            pattern: ^-?(?:90(?:\.0{1,7})?|(?:[0-8]?\d)(?:\.\d{1,7})?)$
-          - const: ''
-          description: Must be sent with longitude; two empty strings clear the pair.
-        longitude:
-          anyOf:
-          - type: string
-            pattern: ^-?(?:180(?:\.0{1,7})?|(?:1[0-7]\d|[0-9]?\d)(?:\.\d{1,7})?)$
-          - const: ''
-          description: Must be sent with latitude; two empty strings clear the pair.
-        defaultSeoTitleAr:
-          type: string
-          description: Empty string explicitly clears the field to null.
-        defaultSeoTitleEn:
-          type: string
-          description: Empty string explicitly clears the field to null.
-        defaultSeoDescriptionAr:
-          type: string
-          description: Empty string explicitly clears the field to null.
-        defaultSeoDescriptionEn:
-          type: string
-          description: Empty string explicitly clears the field to null.
-        defaultSeoKeywordsAr:
-          type: array
-          x-unique-case-insensitive-after-trim: true
-          description: Duplicate trimmed values are rejected with VALIDATION_ERROR.
-          items:
-            type: string
-            minLength: 1
-            pattern: .*\S.*
-        defaultSeoKeywordsEn:
-          type: array
-          x-unique-case-insensitive-after-trim: true
-          description: Duplicate trimmed values are rejected with VALIDATION_ERROR.
-          items:
-            type: string
-            minLength: 1
-            pattern: .*\S.*
         phones:
           type: array
           maxItems: 3

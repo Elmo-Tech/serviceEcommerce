@@ -91,8 +91,6 @@ Validate:
 Submit valid keyword arrays and then duplicate values such as:
 
 ```text
-defaultSeoKeywordsEn[0]=Services
-defaultSeoKeywordsEn[1]= services 
 ```
 
 Validate:
@@ -149,9 +147,6 @@ Validate:
 
 Validate:
 
-- valid `googleMapsUrl` alone is accepted
-- latitude without longitude is rejected
-- longitude without latitude is rejected
 - out-of-range coordinates are rejected
 
 ### Scenario J — Branding files

@@ -21,15 +21,6 @@ Represents the canonical singleton site configuration row.
 | `logo_path` | varchar nullable | no | Internal path on configured public disk |
 | `footer_logo_path` | varchar nullable | no | Internal path on configured public disk |
 | `favicon_path` | varchar nullable | no | Internal path on configured public disk |
-| `google_maps_url` | text nullable | no | Valid URL if present |
-| `latitude` | decimal(10,7) nullable | no | Must be paired with longitude; range `-90..90` |
-| `longitude` | decimal(10,7) nullable | no | Must be paired with latitude; range `-180..180` |
-| `default_seo_title_ar` | varchar nullable | no | Optional localized SEO title |
-| `default_seo_title_en` | varchar nullable | no | Optional localized SEO title |
-| `default_seo_description_ar` | varchar nullable | no | Optional localized SEO description |
-| `default_seo_description_en` | varchar nullable | no | Optional localized SEO description |
-| `default_seo_keywords_ar` | json nullable | no | Ordered array of trimmed non-empty strings |
-| `default_seo_keywords_en` | json nullable | no | Ordered array of trimmed non-empty strings |
 | `created_at` | timestamp | yes | Internal only |
 | `updated_at` | timestamp | yes | Internal only |
 

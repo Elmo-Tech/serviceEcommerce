@@ -25,8 +25,6 @@ it('updates admin settings with normalized phones and ordered social links', fun
         'siteNameAr' => '  الموقع الرسمي  ',
         'siteDescriptionAr' => '',
         'publicEmail' => ' INFO@example.com ',
-        'latitude' => '30.1000000',
-        'longitude' => '31.2000000',
         'phones' => [
             ['number' => '+20 101 234 5678', 'hasWhats' => 1],
             ['number' => '010-9999-8888', 'hasWhats' => 0],
@@ -35,22 +33,17 @@ it('updates admin settings with normalized phones and ordered social links', fun
             ['platform' => 'instagram', 'url' => 'https://instagram.com/service-commerce'],
             ['platform' => 'facebook', 'url' => 'https://facebook.com/service-commerce'],
         ],
-        'defaultSeoKeywordsAr' => [' خدمات ', 'تصميم'],
     ], settingsAdminHeaders(settingsAdminToken()));
 
     $response->assertOk()
         ->assertJsonPath('data.siteNameAr', 'الموقع الرسمي')
         ->assertJsonPath('data.siteDescriptionAr', null)
         ->assertJsonPath('data.publicEmail', 'info@example.com')
-        ->assertJsonPath('data.latitude', '30.1000000')
-        ->assertJsonPath('data.longitude', '31.2000000')
         ->assertJsonPath('data.phones.0.number', '01012345678')
         ->assertJsonPath('data.phones.0.hasWhats', 1)
         ->assertJsonPath('data.phones.1.number', '01099998888')
         ->assertJsonPath('data.socialLinks.0.platform', 'instagram')
-        ->assertJsonPath('data.socialLinks.1.platform', 'facebook')
-        ->assertJsonPath('data.defaultSeoKeywordsAr.0', 'خدمات')
-        ->assertJsonPath('data.defaultSeoKeywordsAr.1', 'تصميم');
+        ->assertJsonPath('data.socialLinks.1.platform', 'facebook');
 
     $setting = Setting::query()->with(['phones', 'socialLinks'])->sole();
 
@@ -245,54 +238,24 @@ it('ignores removed collection clear and branding remove keys', function (string
     'removeFavicon',
 ]);
 
-it('persists and clears coordinate pairs and rejects invalid coordinates', function () {
+it('ignores removed settings keys during update requests', function () {
     Setting::factory()->create(['id' => 1]);
     $headers = settingsAdminHeaders(settingsAdminToken());
 
     $this->patchJson('/api/v1/admin/settings', [
+        'siteNameEn' => 'Updated Settings Name',
         'latitude' => '30.0444000',
         'longitude' => '31.2357000',
         'googleMapsUrl' => 'https://maps.google.com/?q=30.0444,31.2357',
+        'defaultSeoTitleEn' => 'Ignored SEO title',
+        'defaultSeoKeywordsEn' => ['Service Commerce', 'Web Design'],
     ], $headers)->assertOk()
-        ->assertJsonPath('data.latitude', '30.0444000')
-        ->assertJsonPath('data.longitude', '31.2357000');
-
-    $this->patchJson('/api/v1/admin/settings', ['latitude' => '30'], $headers)
-        ->assertUnprocessable()
-        ->assertJsonPath('code', 'VALIDATION_ERROR');
-
-    $this->patchJson('/api/v1/admin/settings', ['latitude' => '91', 'longitude' => '31'], $headers)
-        ->assertUnprocessable()
-        ->assertJsonStructure(['errors' => ['latitude']]);
-
-    $this->patchJson('/api/v1/admin/settings', ['googleMapsUrl' => 'not-a-url'], $headers)
-        ->assertUnprocessable()
-        ->assertJsonStructure(['errors' => ['googleMapsUrl']]);
-
-    $this->patchJson('/api/v1/admin/settings', ['latitude' => '', 'longitude' => ''], $headers)
-        ->assertOk()
-        ->assertJsonPath('data.latitude', null)
-        ->assertJsonPath('data.longitude', null);
-});
-
-it('trims SEO keywords while preserving casing and order and rejects empty or duplicate values', function () {
-    Setting::factory()->create(['id' => 1]);
-    $headers = settingsAdminHeaders(settingsAdminToken());
-
-    $this->patchJson('/api/v1/admin/settings', [
-        'defaultSeoKeywordsEn' => [' Service Commerce ', 'Web Design'],
-    ], $headers)->assertOk()
-        ->assertJsonPath('data.defaultSeoKeywordsEn', ['Service Commerce', 'Web Design']);
-
-    $this->patchJson('/api/v1/admin/settings', [
-        'defaultSeoKeywordsEn' => ['Service', ' service '],
-    ], $headers)->assertUnprocessable()
-        ->assertJsonStructure(['errors' => ['defaultSeoKeywordsEn']]);
-
-    $this->patchJson('/api/v1/admin/settings', [
-        'defaultSeoKeywordsEn' => ['   '],
-    ], $headers)->assertUnprocessable()
-        ->assertJsonPath('code', 'VALIDATION_ERROR');
+        ->assertJsonPath('data.siteNameEn', 'Updated Settings Name')
+        ->assertJsonMissingPath('data.googleMapsUrl')
+        ->assertJsonMissingPath('data.latitude')
+        ->assertJsonMissingPath('data.longitude')
+        ->assertJsonMissingPath('data.defaultSeoTitleEn')
+        ->assertJsonMissingPath('data.defaultSeoKeywordsEn');
 });
 
 it('enforces authentication authorization and localized validation for settings update', function () {

@@ -32,6 +32,10 @@ it('returns localized public settings without admin-only fields', function () {
         ->assertJsonPath('data.address', 'القاهرة، مصر')
         ->assertJsonPath('data.phones.0.number', '01012345678')
         ->assertJsonPath('data.socialLinks.0.platform', 'facebook')
+        ->assertJsonMissingPath('data.googleMapsUrl')
+        ->assertJsonMissingPath('data.latitude')
+        ->assertJsonMissingPath('data.longitude')
+        ->assertJsonMissingPath('data.defaultSeo')
         ->assertJsonMissingPath('data.siteNameAr')
         ->assertJsonMissingPath('data.siteNameEn')
         ->assertJsonMissingPath('data.availableSocialPlatforms');

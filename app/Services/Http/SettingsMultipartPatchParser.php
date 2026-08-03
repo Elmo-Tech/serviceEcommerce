@@ -16,8 +16,6 @@ class SettingsMultipartPatchParser
     private const SCALAR_FIELDS = [
         'siteNameAr', 'siteNameEn', 'siteDescriptionAr', 'siteDescriptionEn',
         'sloganAr', 'sloganEn', 'publicEmail', 'addressAr', 'addressEn',
-        'googleMapsUrl', 'latitude', 'longitude', 'defaultSeoTitleAr',
-        'defaultSeoTitleEn', 'defaultSeoDescriptionAr', 'defaultSeoDescriptionEn',
         'phones', 'socialLinks', 'logo', 'footerLogo', 'favicon',
     ];
 
@@ -128,12 +126,6 @@ class SettingsMultipartPatchParser
     {
         if (in_array($name, self::SCALAR_FIELDS, true)) {
             $fields[$name] = $value;
-
-            return;
-        }
-
-        if (preg_match('/^(defaultSeoKeywordsAr|defaultSeoKeywordsEn)\[(\d+)\]$/D', $name, $matches)) {
-            $fields[$matches[1]][(int) $matches[2]] = $value;
 
             return;
         }
