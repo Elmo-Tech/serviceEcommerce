@@ -1,8 +1,18 @@
 # Runtime Verification: Hero Slider Management
 
 **Verified**: 2026-08-03  
-**Scope**: Setup tasks T003 and T004 only. No dependency, production-code, or
-task-status changes were made.
+**Scope**: Setup verification plus implementation/release evidence.
+
+## T001, T002, and T005 — Repository, dependency, and contract audit
+
+- [x] Existing Admin/Public middleware, response envelopes, Resources, Form
+  Requests, permission Seeders, and locale boundaries were inspected and reused.
+- [x] PHP is `8.3.29`. `composer check-platform-reqs` passes. `composer validate
+  --no-check-publish` reports that the manifest's Laravel 12/PHP 8.2-compatible
+  constraints do not match the installed/locked Laravel 13, Permission 8,
+  Query Builder 7, and Pest 4 packages. No Composer update was run.
+- [x] The Postman collection retains exactly `baseUrl`, `accessToken`, and
+  `refreshToken`; protected Hero requests use `Bearer {{accessToken}}`.
 
 ## T003 — MySQL and test-support capabilities
 
@@ -104,3 +114,58 @@ The first `php artisan db:show --database=mysql --counts` diagnostic exceeded
 its 30-second command budget while counting database objects; the bounded PDO
 probe above then verified the required server, engine, database, and advisory
 lock capabilities directly without schema or data mutation.
+
+## Feature implementation verification
+
+- [x] A raw multipart PATCH was passed through Laravel's HTTP kernel with scalar
+  fields and a PNG file. The parser delivered both and the update committed.
+- [x] An unauthenticated malformed multipart PATCH returned 401 before parser
+  execution, proving the permission/parser middleware order.
+- [x] The focused Feature 008 suite passed: 24 tests and 162 assertions.
+- [x] PHPStan passed with zero errors and `vendor/bin/pint --test` passed.
+- [x] Final full regression passed: 368 tests and 2,447 assertions in 155.70
+  seconds.
+
+## Release blocker
+
+Composer manifest/lock drift remains. Platform requirements pass, but release
+verification is blocked until the repository owner intentionally reconciles the
+Laravel 12/PHP 8.2 manifest with the Laravel 13/PHP 8.3 lock/vendor state.
+
+## T061 — Real PHP 8.3 HTTP-server smoke
+
+- [x] A real PHP `8.3.29` built-in server was started on `127.0.0.1:8765`
+  against the dedicated `service_commerce_test` database.
+- [x] Authenticated direct `PATCH multipart/form-data` with text and PNG image
+  returned 200 and committed the replacement.
+- [x] Repeated `titleEn` multipart parts returned 422.
+- [x] A 5 MiB-plus-one image returned 422. This probe exposed and fixed an
+  initial `php://input` temporary-spooling warning that had produced 500; the
+  middleware now converts unreadable raw content into the stable validation
+  outcome.
+- [x] Temporary parser files were 0 before and 0 after all requests.
+- [x] The server was terminated, the exact two probe files were removed, the
+  dedicated test database was migrated fresh, and the probe storage directory
+  was removed.
+
+## T062 — Quickstart evidence
+
+- [x] Admin append/insertion/filter/show/partial update/image replacement/move/
+  delete/limit/empty-and-unknown validation scenarios are covered by the
+  focused Admin suites.
+- [x] Lexical activity/position, exact 5 MiB, plus-one, MIME/content, animated
+  image, raw-query duplicate, cleanup logging, and raw multipart edge cases are
+  covered by focused API, Unit, Database, and HTTP transport suites.
+- [x] Arabic/English active-only public projection, exact keys/headers,
+  ordering, ten-row bound, and empty state are covered by the public suite.
+- [x] Real MySQL process races cover empty/final-slot creates, competing moves,
+  create/delete, replacement/delete, retry success, and retry exhaustion.
+
+## T069 — Acceptance and scope audit
+
+- [x] The reference, spec, plan, requirements checklist, routes, schema,
+  OpenAPI, Postman, and implementation were compared. The implementation has
+  one `hero_slides` table, five Admin routes, one public route, and exactly four
+  permissions.
+- [x] No reorder route/permission, frontend code, soft delete, settings table,
+  cache, queue, video, scheduling, or analytics implementation was introduced.

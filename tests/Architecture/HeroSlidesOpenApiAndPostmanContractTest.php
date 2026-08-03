@@ -30,4 +30,23 @@ it('keeps the frozen Hero OpenAPI operations and Postman folders synchronized', 
         ->and($folders['Admin Hero Slides']['item'])->toHaveCount(5)
         ->and($folders['Public Hero Slides']['item'])->toHaveCount(1)
         ->and(json_encode($folders['Admin Hero Slides'], JSON_THROW_ON_ERROR))->not->toContain('/reorder');
+
+    $admin = $folders['Admin Hero Slides'];
+    $public = $folders['Public Hero Slides'];
+    expect(array_column($admin['item'], 'name'))->toBe([
+        'List Hero Slides', 'Create Hero Slide', 'Show Hero Slide', 'Update Hero Slide', 'Delete Hero Slide',
+    ])
+        ->and(array_column(array_column($admin['item'], 'request'), 'method'))->toBe(['GET', 'POST', 'GET', 'PATCH', 'DELETE'])
+        ->and(array_column($admin['item'], 'response'))->each->toHaveCount(1)
+        ->and($admin['event'][0]['listen'])->toBe('test')
+        ->and($public['event'][0]['listen'])->toBe('test')
+        ->and($public['item'][0]['response'])->toHaveCount(1)
+        ->and($public['item'][0]['request']['header'])->not->toContain(['key' => 'Authorization', 'value' => 'Bearer {{accessToken}}']);
+
+    $createKeys = array_column($admin['item'][1]['request']['body']['formdata'], 'key');
+    $updateKeys = array_column($admin['item'][3]['request']['body']['formdata'], 'key');
+    expect($createKeys)->toBe(['titleAr', 'titleEn', 'descriptionAr', 'descriptionEn', 'image', 'isActive', 'position'])
+        ->and($updateKeys)->toBe($createKeys)
+        ->and($admin['item'][0]['request']['url'])->toContain('filter[isActive]=1', 'perPage=15')
+        ->and($public['item'][0]['request']['url'])->toBe('{{baseUrl}}/public/hero-slides');
 });

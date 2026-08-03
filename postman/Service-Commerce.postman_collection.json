@@ -1558,6 +1558,18 @@
     {
       "name": "Admin Hero Slides",
       "description": "Feature 008 protected Hero slider management. Positions are one-based and always gapless; maximum 10 slides including inactive ones. isActive=1 means visible publicly and isActive=0 means hidden. Images must be one static JPG/JPEG/PNG/WebP file, maximum 5 MiB. No reorder endpoint exists: create/update position performs ordering.",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Response is JSON', function () { pm.response.to.be.json; });",
+              "pm.test('Response has the shared envelope', function () { var json = pm.response.json(); pm.expect(json).to.have.property('success'); pm.expect(json).to.have.property('message'); });"
+            ]
+          }
+        }
+      ],
       "item": [
         {
           "name": "List Hero Slides",
@@ -1570,7 +1582,8 @@
               { "key": "Authorization", "value": "Bearer {{accessToken}}" }
             ],
             "url": "{{baseUrl}}/admin/hero-slides?page=1&perPage=15&filter[isActive]=1"
-          }
+          },
+          "response": [{ "name": "200 - Paginated Hero slides", "originalRequest": { "method": "GET", "url": "{{baseUrl}}/admin/hero-slides?page=1&perPage=15&filter[isActive]=1" }, "status": "OK", "code": 200, "header": [{ "key": "Content-Type", "value": "application/json" }], "body": "{\"success\":true,\"message\":\"Hero slides retrieved successfully.\",\"data\":[],\"meta\":{\"currentPage\":1,\"lastPage\":1,\"perPage\":15,\"total\":0}}" }]
         },
         {
           "name": "Create Hero Slide",
@@ -1592,7 +1605,8 @@
               { "key": "position", "value": "1", "type": "text", "description": "Optional canonical one-based insertion position.", "disabled": true }
             ] },
             "url": "{{baseUrl}}/admin/hero-slides"
-          }
+          },
+          "response": [{ "name": "201 - Hero slide created", "originalRequest": { "method": "POST", "url": "{{baseUrl}}/admin/hero-slides" }, "status": "Created", "code": 201, "header": [{ "key": "Content-Type", "value": "application/json" }], "body": "{\"success\":true,\"message\":\"Hero slide created successfully.\",\"data\":{\"id\":1,\"titleAr\":\"عنوان\",\"titleEn\":\"Title\",\"descriptionAr\":\"وصف\",\"descriptionEn\":\"Description\",\"image\":\"https://example.test/storage/hero-slides/example.png\",\"isActive\":1,\"position\":1}}" }]
         },
         {
           "name": "Show Hero Slide",
@@ -1605,7 +1619,8 @@
               { "key": "Authorization", "value": "Bearer {{accessToken}}" }
             ],
             "url": "{{baseUrl}}/admin/hero-slides/1"
-          }
+          },
+          "response": [{ "name": "200 - Hero slide", "originalRequest": { "method": "GET", "url": "{{baseUrl}}/admin/hero-slides/1" }, "status": "OK", "code": 200, "header": [{ "key": "Content-Type", "value": "application/json" }], "body": "{\"success\":true,\"message\":\"Hero slide retrieved successfully.\",\"data\":{\"id\":1,\"titleAr\":\"عنوان\",\"titleEn\":\"Title\",\"descriptionAr\":\"وصف\",\"descriptionEn\":\"Description\",\"image\":\"https://example.test/storage/hero-slides/example.png\",\"isActive\":1,\"position\":1}}" }]
         },
         {
           "name": "Update Hero Slide",
@@ -1627,7 +1642,8 @@
               { "key": "position", "value": "1", "type": "text", "description": "Optional existing one-based target position.", "disabled": true }
             ] },
             "url": "{{baseUrl}}/admin/hero-slides/1"
-          }
+          },
+          "response": [{ "name": "200 - Hero slide updated", "originalRequest": { "method": "PATCH", "url": "{{baseUrl}}/admin/hero-slides/1" }, "status": "OK", "code": 200, "header": [{ "key": "Content-Type", "value": "application/json" }], "body": "{\"success\":true,\"message\":\"Hero slide updated successfully.\",\"data\":{\"id\":1,\"titleAr\":\"عنوان\",\"titleEn\":\"Updated title\",\"descriptionAr\":\"وصف\",\"descriptionEn\":\"Description\",\"image\":\"https://example.test/storage/hero-slides/example.png\",\"isActive\":0,\"position\":1}}" }]
         },
         {
           "name": "Delete Hero Slide",
@@ -1640,13 +1656,15 @@
               { "key": "Authorization", "value": "Bearer {{accessToken}}" }
             ],
             "url": "{{baseUrl}}/admin/hero-slides/1"
-          }
+          },
+          "response": [{ "name": "200 - Hero slide deleted", "originalRequest": { "method": "DELETE", "url": "{{baseUrl}}/admin/hero-slides/1" }, "status": "OK", "code": 200, "header": [{ "key": "Content-Type", "value": "application/json" }], "body": "{\"success\":true,\"message\":\"Hero slide deleted successfully.\",\"data\":null}" }]
         }
       ]
     },
     {
       "name": "Public Hero Slides",
       "description": "Feature 008 unauthenticated active Hero slides. Accept-Language resolves Arabic or English. The unpaginated response is position ascending and exposes only title, description, and absolute image URL.",
+      "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": ["pm.test('Public Hero response is JSON', function () { pm.response.to.be.json; });", "pm.test('Locale headers exist', function () { pm.expect(pm.response.headers.has('Content-Language')).to.be.true; pm.expect(pm.response.headers.get('Vary')).to.include('Accept-Language'); });"] } }],
       "item": [
         {
           "name": "List Public Hero Slides",
@@ -1658,7 +1676,8 @@
               { "key": "Accept-Language", "value": "ar" }
             ],
             "url": "{{baseUrl}}/public/hero-slides"
-          }
+          },
+          "response": [{ "name": "200 - Localized public slides", "originalRequest": { "method": "GET", "url": "{{baseUrl}}/public/hero-slides" }, "status": "OK", "code": 200, "header": [{ "key": "Content-Type", "value": "application/json" }, { "key": "Content-Language", "value": "ar" }, { "key": "Vary", "value": "Accept-Language" }], "body": "{\"success\":true,\"message\":\"تم استرجاع شرائح الواجهة بنجاح.\",\"data\":[{\"title\":\"عنوان\",\"description\":\"وصف\",\"image\":\"https://example.test/storage/hero-slides/example.png\"}]}" }]
         }
       ]
     },

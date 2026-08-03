@@ -49,11 +49,11 @@ endpoint has not yet been implemented.
 **Purpose**: Confirm exact extension points and record pre-existing runtime
 risks before implementation changes.
 
-- [ ] T001 Audit existing Admin/Public route groups, middleware order, API envelopes, Resources, Form Requests, Action/Service patterns, permission Seeders, and locale headers in `routes/api/v1/admin.php`, `routes/api/v1/public.php`, `app/Support/Api/`, `app/Http/Requests/`, `app/Http/Resources/`, `app/Actions/`, `app/Services/`, and `database/seeders/`
-- [ ] T002 Execute `php -v`, `composer validate --no-check-publish`, and `composer check-platform-reqs`; record the declared Laravel 12/PHP 8.2 versus current Laravel 13/PHP 8.3 lock/vendor drift without running Composer update in `specs/008-hero-slider-management/checklists/runtime-verification.md`
-- [ ] T003 [P] Verify the dedicated MySQL test database, engine/version, advisory-lock support, process concurrency helpers, storage fakes, and logging spies in `phpunit.xml`, `.env.example`, `tests/Pest.php`, `tests/Support/`, and existing `tests/Concurrency/`
-- [ ] T004 [P] Confirm from installed Symfony source and a minimal real server probe that PHP 8.2/8.3 does not natively parse direct multipart PATCH files; record parser and body-limit evidence in `specs/008-hero-slider-management/checklists/runtime-verification.md`
-- [ ] T005 [P] Inspect existing OpenAPI 3.1 and Postman conventions and confirm that the collection has only the approved `baseUrl`, `accessToken`, and `refreshToken` variables in `specs/006-settings-management/contracts/openapi.yaml` and `postman/Service-Commerce.postman_collection.json`
+- [X] T001 Audit existing Admin/Public route groups, middleware order, API envelopes, Resources, Form Requests, Action/Service patterns, permission Seeders, and locale headers in `routes/api/v1/admin.php`, `routes/api/v1/public.php`, `app/Support/Api/`, `app/Http/Requests/`, `app/Http/Resources/`, `app/Actions/`, `app/Services/`, and `database/seeders/`
+- [X] T002 Execute `php -v`, `composer validate --no-check-publish`, and `composer check-platform-reqs`; record the declared Laravel 12/PHP 8.2 versus current Laravel 13/PHP 8.3 lock/vendor drift without running Composer update in `specs/008-hero-slider-management/checklists/runtime-verification.md`
+- [X] T003 [P] Verify the dedicated MySQL test database, engine/version, advisory-lock support, process concurrency helpers, storage fakes, and logging spies in `phpunit.xml`, `.env.example`, `tests/Pest.php`, `tests/Support/`, and existing `tests/Concurrency/`
+- [X] T004 [P] Confirm from installed Symfony source and a minimal real server probe that PHP 8.2/8.3 does not natively parse direct multipart PATCH files; record parser and body-limit evidence in `specs/008-hero-slider-management/checklists/runtime-verification.md`
+- [X] T005 [P] Inspect existing OpenAPI 3.1 and Postman conventions and confirm that the collection has only the approved `baseUrl`, `accessToken`, and `refreshToken` variables in `specs/006-settings-management/contracts/openapi.yaml` and `postman/Service-Commerce.postman_collection.json`
 
 **Checkpoint**: Runtime drift, MySQL capabilities, multipart PATCH limitation,
 and repository conventions are documented without changing dependencies.
@@ -67,25 +67,25 @@ global ordering mutex, bounded mutation retry policy, and shared contract compon
 
 **⚠️ CRITICAL**: No user-story route is registered until this phase passes.
 
-- [ ] T006 Create the reversible `hero_slides` migration with required bilingual fields, `image_path`, `is_active`, unique `position`, and composite `(is_active, position)` index in `database/migrations/*_create_hero_slides_table.php`
-- [ ] T007 [P] Implement guarded attributes, boolean casting, active/ordered scopes, and no soft-delete behavior in `app/Models/HeroSlide.php`
-- [ ] T008 [P] Add deterministic valid active/inactive slide states and safe one-based positions in `database/factories/HeroSlideFactory.php`
-- [ ] T009 [P] Implement the exact eight-key bilingual Admin projection and configured-disk absolute image URL in `app/Http/Resources/Api/V1/Admin/HeroSlides/AdminHeroSlideResource.php`
-- [ ] T010 [P] Add Arabic and English success, validation, not-found, limit, upload-failure, and cleanup-safe messages in `lang/ar/hero_slides.php` and `lang/en/hero_slides.php`
-- [ ] T011 [P] Add exactly `hero-slides.view`, `hero-slides.create`, `hero-slides.update`, and `hero-slides.delete` through an idempotent feature Seeder and normal super-admin synchronization in `database/seeders/HeroSlidesPermissionsSeeder.php` and `database/seeders/RolesAndPermissionsSeeder.php`
-- [ ] T012 Implement one-file static JPG/JPEG/PNG/WebP validation, exact
+- [X] T006 Create the reversible `hero_slides` migration with required bilingual fields, `image_path`, `is_active`, unique `position`, and composite `(is_active, position)` index in `database/migrations/*_create_hero_slides_table.php`
+- [X] T007 [P] Implement guarded attributes, boolean casting, active/ordered scopes, and no soft-delete behavior in `app/Models/HeroSlide.php`
+- [X] T008 [P] Add deterministic valid active/inactive slide states and safe one-based positions in `database/factories/HeroSlideFactory.php`
+- [X] T009 [P] Implement the exact eight-key bilingual Admin projection and configured-disk absolute image URL in `app/Http/Resources/Api/V1/Admin/HeroSlides/AdminHeroSlideResource.php`
+- [X] T010 [P] Add Arabic and English success, validation, not-found, limit, upload-failure, and cleanup-safe messages in `lang/ar/hero_slides.php` and `lang/en/hero_slides.php`
+- [X] T011 [P] Add exactly `hero-slides.view`, `hero-slides.create`, `hero-slides.update`, and `hero-slides.delete` through an idempotent feature Seeder and normal super-admin synchronization in `database/seeders/HeroSlidesPermissionsSeeder.php` and `database/seeders/RolesAndPermissionsSeeder.php`
+- [X] T012 Implement one-file static JPG/JPEG/PNG/WebP validation, exact
   5 MiB (`5,242,880` bytes) limit, upload-success checks, detected MIME and
   decodable-content verification, animated WebP/APNG/SVG rejection,
   backend-generated MIME-derived filenames, configured public-disk storage,
   absolute URL generation, delete-result inspection, and safe cleanup logging
   in `app/Services/HeroSlides/HeroSlideImageService.php`
 
-- [ ] T013 Implement the fixed MySQL/MariaDB advisory mutex,
+- [X] T013 Implement the fixed MySQL/MariaDB advisory mutex,
   deterministic application/database-scoped lock name, same-connection
   acquisition and `finally` release, ordered `FOR UPDATE` read,
   count/sequence assertions, temporary band 100..110, and final 1..N rewrite
   primitives in `app/Services/HeroSlides/HeroSlideOrderingService.php`
-- [ ] T014 Implement the repository-approved bounded mutation retrier for only
+- [X] T014 Implement the repository-approved bounded mutation retrier for only
   retryable MySQL deadlock/serialization failures. Each retry MUST rerun the
   complete mutation attempt so the Action reacquires the advisory mutex and
   starts a fresh transaction; validation, not-found, limit, storage, and
@@ -93,22 +93,22 @@ global ordering mutex, bounded mutation retry policy, and shared contract compon
   safe server outcome and preserve new-file compensation in
   `app/Services/HeroSlides/HeroSlideMutationRetrier.php`
 
-- [ ] T015 [P] Implement original-query-string guarding for unknown, repeated, array-shaped, empty, and non-canonical `page`, `perPage`, and `filter[isActive]` input in `app/Services/HeroSlides/HeroSlideQueryShapeGuard.php`
-- [ ] T016 [P] Add real MySQL schema coverage for required columns, types, primary key, unique position, composite active-position index, and absence of soft deletes/additional Hero tables in `tests/Feature/Database/HeroSlides/HeroSlideSchemaTest.php`
-- [ ] T017 [P] Add storage-fake and focused image-content coverage for
+- [X] T015 [P] Implement original-query-string guarding for unknown, repeated, array-shaped, empty, and non-canonical `page`, `perPage`, and `filter[isActive]` input in `app/Services/HeroSlides/HeroSlideQueryShapeGuard.php`
+- [X] T016 [P] Add real MySQL schema coverage for required columns, types, primary key, unique position, composite active-position index, and absence of soft deletes/additional Hero tables in `tests/Feature/Database/HeroSlides/HeroSlideSchemaTest.php`
+- [X] T017 [P] Add storage-fake and focused image-content coverage for
   static JPG/JPEG/PNG/WebP acceptance, static WebP acceptance, animated
   WebP/APNG/SVG rejection, detected MIME mismatch, unsafe filenames,
   generated MIME-derived extension, exactly 5 MiB acceptance, 5 MiB plus one
   byte rejection, failed writes/deletes, absolute URLs, and raw-path
   non-disclosure in `tests/Unit/HeroSlides/HeroSlideImageServiceTest.php`
 
-- [ ] T018 Add real MySQL ordered-set service coverage after T013 for
+- [X] T018 Add real MySQL ordered-set service coverage after T013 for
   empty state, temporary unique-index-safe rewrites, corrupt-sequence
   rejection, deterministic advisory-lock naming, advisory-lock timeout,
   same-connection release, and final 1..N state in
   `tests/Feature/Database/HeroSlides/HeroSlideOrderingServiceTest.php`
 
-- [ ] T019 [P] Add the frozen OpenAPI 3.1 structural test for six operations, exact fields, pagination/filter input, multipart schemas, public headers, stable error outcomes, and absence of reorder in `tests/Architecture/HeroSlidesOpenApiContractTest.php`
+- [X] T019 [P] Add the frozen OpenAPI 3.1 structural test for six operations, exact fields, pagination/filter input, multipart schemas, public headers, stable error outcomes, and absence of reorder in `tests/Architecture/HeroSlidesOpenApiContractTest.php`
 
 **Checkpoint**: Shared persistence, projection, permissions, image, ordering,
 retry, query-shape, and frozen-contract foundations are ready.
@@ -127,32 +127,32 @@ populated sets; verify append, insertion shifts, response, image, validation,
 
 ### Tests for User Story 1 — Mandatory
 
-- [ ] T020 [P] [US1] Add create API coverage for required/trimmed
+- [X] T020 [P] [US1] Add create API coverage for required/trimmed
   bilingual plain-text fields, control-character rejection, exact length
   boundaries, exact multipart lexical `isActive="0"`/`"1"` including valid
   zero, optional canonical position, 201 response, exact Admin resource, and
   unknown-field rejection in
   `tests/Feature/Api/V1/Admin/HeroSlides/HeroSlideCreateTest.php`
 
-- [ ] T021 [P] [US1] Add image-create coverage for valid static
+- [X] T021 [P] [US1] Add image-create coverage for valid static
   JPG/JPEG/PNG/WebP, static WebP, missing image, SVG, animated WebP, APNG,
   exactly 5 MiB, 5 MiB plus one byte, MIME/content mismatch, safe generated
   storage, absolute URL, raw-path absence, failed write, and no leaked file on
   validation/database failure in
   `tests/Feature/Api/V1/Admin/HeroSlides/HeroSlideCreateImageTest.php`
 
-- [ ] T022 [P] [US1] Add create-ordering and limit coverage for append, positions 1 and count+1, middle insertion, zero/negative/out-of-range and non-canonical positions, automatic shifts, inactive rows counting toward 10, deletion-freed capacity setup, and 422 `VALIDATION_ERROR` in `tests/Feature/Api/V1/Admin/HeroSlides/HeroSlideCreateOrderingTest.php`
+- [X] T022 [P] [US1] Add create-ordering and limit coverage for append, positions 1 and count+1, middle insertion, zero/negative/out-of-range and non-canonical positions, automatic shifts, inactive rows counting toward 10, deletion-freed capacity setup, and 422 `VALIDATION_ERROR` in `tests/Feature/Api/V1/Admin/HeroSlides/HeroSlideCreateOrderingTest.php`
 
 ### Implementation for User Story 1
 
-- [ ] T023 [US1] Implement trimming, plain-text/control-character
+- [X] T023 [US1] Implement trimming, plain-text/control-character
   validation, exact request keys, required bilingual text/image/activity,
   exact raw multipart `isActive="0"`/`"1"`, canonical position lexical
   validation before normalization, static-image/size validation, and
   presence-safe validated data in
   `app/Http/Requests/Api/V1/Admin/HeroSlides/StoreHeroSlideRequest.php`
 
-- [ ] T024 [US1] Implement store-new-image and execute the complete
+- [X] T024 [US1] Implement store-new-image and execute the complete
   create mutation through `HeroSlideMutationRetrier`: acquire the advisory
   mutex, start a fresh transaction, perform the locked maximum/count check,
   append/insertion rewrite, and row creation on every attempt; return 422
@@ -160,17 +160,17 @@ populated sets; verify append, insertion shifts, response, image, validation,
   failed attempt or any non-retryable pre-commit failure in
   `app/Actions/HeroSlides/CreateHeroSlideAction.php`
 
-- [ ] T025 [US1] Implement the thin Admin `store` endpoint with the shared success envelope and `HttpStatusCode::CREATED` in `app/Http/Controllers/Api/V1/Admin/HeroSlides/HeroSlideController.php`
-- [ ] T026 [US1] Register only `POST /api/v1/admin/hero-slides` with numeric conventions and exact `hero-slides.create` middleware after the established Admin boundary in `routes/api/v1/admin.php`
-- [ ] T027 [US1] Add process-runner create modes for empty-set and final-slot races in `tests/Support/HeroSlideConcurrencyRunner.php`
-- [ ] T028 [US1] Add dedicated MySQL concurrency coverage proving
+- [X] T025 [US1] Implement the thin Admin `store` endpoint with the shared success envelope and `HttpStatusCode::CREATED` in `app/Http/Controllers/Api/V1/Admin/HeroSlides/HeroSlideController.php`
+- [X] T026 [US1] Register only `POST /api/v1/admin/hero-slides` with numeric conventions and exact `hero-slides.create` middleware after the established Admin boundary in `routes/api/v1/admin.php`
+- [X] T027 [US1] Add process-runner create modes for empty-set and final-slot races in `tests/Support/HeroSlideConcurrencyRunner.php`
+- [X] T028 [US1] Add dedicated MySQL concurrency coverage proving
   concurrent empty-set/final-slot creates never exceed 10, never
   duplicate/gap positions, release locks, clean losing-request files,
   successfully retry an injected retryable deadlock/serialization failure,
   and return a safe leak-free outcome after retry exhaustion in
   `tests/Concurrency/HeroSlides/HeroSlideCriticalConcurrencyTest.php`
 
-- [ ] T029 [US1] Run the complete US1 create, image, ordering, schema, permission-create, and create-concurrency tests and record the checkpoint in `specs/008-hero-slider-management/checklists/implementation-progress.md`
+- [X] T029 [US1] Run the complete US1 create, image, ordering, schema, permission-create, and create-concurrency tests and record the checkpoint in `specs/008-hero-slider-management/checklists/implementation-progress.md`
 
 **Checkpoint**: User Story 1 independently creates safe ordered slides and is
 the suggested MVP slice.
@@ -188,8 +188,8 @@ five management behaviors without relying on the create endpoint.
 
 ### Tests for User Story 2 — Mandatory
 
-- [ ] T030 [P] [US2] Add Admin index/show coverage for default/max pagination, fixed ascending order, exact raw-query filter shape including lexical zero, active/inactive results, both languages, exact fields, missing 404, absolute URL, and no raw path in `tests/Feature/Api/V1/Admin/HeroSlides/HeroSlideIndexAndShowTest.php`
-- [ ] T031 [P] [US2] Add PATCH coverage for presence-aware
+- [X] T030 [P] [US2] Add Admin index/show coverage for default/max pagination, fixed ascending order, exact raw-query filter shape including lexical zero, active/inactive results, both languages, exact fields, missing 404, absolute URL, and no raw path in `tests/Feature/Api/V1/Admin/HeroSlides/HeroSlideIndexAndShowTest.php`
+- [X] T031 [P] [US2] Add PATCH coverage for presence-aware
   bilingual/activity updates, omitted preservation, empty PATCH and
   unknown-only PATCH rejection with localized 422, rejected null/empty text,
   exact lexical scalar values including valid `"0"`, position
@@ -197,7 +197,7 @@ five management behaviors without relying on the create endpoint.
   non-canonical/invalid positions, and missing slide in
   `tests/Feature/Api/V1/Admin/HeroSlides/HeroSlideUpdateTest.php`
 
-- [ ] T032 [P] [US2] Add image-replacement coverage for static
+- [X] T032 [P] [US2] Add image-replacement coverage for static
   JPEG/PNG/WebP acceptance, animated WebP/APNG/SVG rejection, exact 5 MiB and
   plus-one-byte boundaries, omission preservation, successful new-path commit
   then old-file deletion, no remove operation, failed database mutation
@@ -205,13 +205,13 @@ five management behaviors without relying on the create endpoint.
   response/state in
   `tests/Feature/Api/V1/Admin/HeroSlides/HeroSlideUpdateImageTest.php`
 
-- [ ] T033 [P] [US2] Add permanent-delete coverage for 200/null data, row removal, following-position compaction, only-slide empty state, missing 404, post-commit file deletion, and logged cleanup failure in `tests/Feature/Api/V1/Admin/HeroSlides/HeroSlideDeleteTest.php`
+- [X] T033 [P] [US2] Add permanent-delete coverage for 200/null data, row removal, following-position compaction, only-slide empty state, missing 404, post-commit file deletion, and logged cleanup failure in `tests/Feature/Api/V1/Admin/HeroSlides/HeroSlideDeleteTest.php`
 
 ### Implementation for User Story 2
 
-- [ ] T034 [P] [US2] Implement exact Admin list query validation, raw shape guard invocation, default page 1/perPage 15, max 100, and exact optional active filter in `app/Http/Requests/Api/V1/Admin/HeroSlides/ListHeroSlidesRequest.php`
-- [ ] T035 [P] [US2] Implement fixed position-ascending pagination with only `AllowedFilter::exact('isActive', 'is_active')` and no search/sort/include in `app/Queries/HeroSlides/AdminHeroSlideIndexQuery.php`
-- [ ] T036 [US2] Implement a bounded strict raw multipart parser for
+- [X] T034 [P] [US2] Implement exact Admin list query validation, raw shape guard invocation, default page 1/perPage 15, max 100, and exact optional active filter in `app/Http/Requests/Api/V1/Admin/HeroSlides/ListHeroSlidesRequest.php`
+- [X] T035 [P] [US2] Implement fixed position-ascending pagination with only `AllowedFilter::exact('isActive', 'is_active')` and no search/sort/include in `app/Queries/HeroSlides/AdminHeroSlideIndexQuery.php`
+- [X] T036 [US2] Implement a bounded strict raw multipart parser for
   PHP 8.2/8.3 that validates boundary/header structure, detects header
   injection and missing closing boundaries, preserves duplicate scalar and
   duplicate image parts, permits only approved scalar parts and one image,
@@ -219,33 +219,33 @@ five management behaviors without relying on the create endpoint.
   fixed overhead, and rejects empty/malformed/oversized bodies in
   `app/Services/Http/StrictMultipartPatchParser.php`
 
-- [ ] T037 [US2] Implement route-scoped multipart PATCH middleware
+- [X] T037 [US2] Implement route-scoped multipart PATCH middleware
   after Admin update permission and before Form Request resolution, merge
   parsed fields and file, avoid parsing unauthorized requests, and clean any
   remaining temporary file in `finally` including downstream exceptions in
   `app/Http/Middleware/ParseHeroSlideMultipartPatch.php`
 
-- [ ] T038 [P] [US2] Add strict parser unit coverage for valid
+- [X] T038 [P] [US2] Add strict parser unit coverage for valid
   text-only/image multipart input, empty body, duplicate scalar and image
   parts, unknown parts, malformed boundary, missing closing boundary, header
   injection, binary boundary-like content, exact 5 MiB, 5 MiB plus one byte,
   fixed raw-body overhead, temporary-file cleanup, and parser exceptions in
   `tests/Unit/Http/StrictMultipartPatchParserTest.php`
-- [ ] T039 [P] [US2] Add HTTP-kernel transport and middleware coverage for
+- [X] T039 [P] [US2] Add HTTP-kernel transport and middleware coverage for
   direct multipart PATCH field/file delivery, middleware order, unauthorized
   rejection before parser execution, parsed field/file merging, empty and
   unknown-only PATCH rejection, downstream exception cleanup, and no remaining
   temporary upload in
   `tests/Feature/Http/HeroSlideMultipartPatchTransportTest.php`
 
-- [ ] T040 [US2] Implement exact optional PATCH fields, require at
+- [X] T040 [US2] Implement exact optional PATCH fields, require at
   least one approved mutable field, return localized 422 for empty and
   unknown-only PATCH, trim and validate plain text, enforce exact lexical
   activity/canonical position rules, preserve persisted completeness, validate
   static image input, and reject unknown/remove-image fields in
   `app/Http/Requests/Api/V1/Admin/HeroSlides/UpdateHeroSlideRequest.php`
 
-- [ ] T041 [US2] Implement locked target re-resolution and execute the
+- [X] T041 [US2] Implement locked target re-resolution and execute the
   complete update through `HeroSlideMutationRetrier`: reacquire mutex/start a
   fresh transaction per retry, apply presence-aware updates,
   unique-index-safe optional movement, and image-path commit; delete the new
@@ -253,24 +253,24 @@ five management behaviors without relying on the create endpoint.
   image only after successful commit with safe cleanup logging in
   `app/Actions/HeroSlides/UpdateHeroSlideAction.php`
 
-- [ ] T042 [US2] Implement locked target re-resolution and execute the
+- [X] T042 [US2] Implement locked target re-resolution and execute the
   complete delete through `HeroSlideMutationRetrier`: reacquire mutex/start a
   fresh transaction per retry, permanently remove the row, perform
   unique-index-safe compaction, and commit; delete the old image only after
   commit and log cleanup failure safely in
   `app/Actions/HeroSlides/DeleteHeroSlideAction.php`
 
-- [ ] T043 [US2] Implement Admin `index`, `show`, `update`, and `destroy` methods, exact pagination meta, shared envelopes, not-found handling, and `HttpStatusCode::OK` in `app/Http/Controllers/Api/V1/Admin/HeroSlides/HeroSlideController.php`
-- [ ] T044 [US2] Register Admin GET collection/show, PATCH, and DELETE routes with numeric `{heroSlide}`, exact view/update/delete permissions, and the PATCH parser in the approved middleware order in `routes/api/v1/admin.php`
-- [ ] T045 [US2] Extend the process runner with upward/downward move and create/delete modes in `tests/Support/HeroSlideConcurrencyRunner.php`
-- [ ] T046 [US2] Extend real MySQL concurrency coverage for competing
+- [X] T043 [US2] Implement Admin `index`, `show`, `update`, and `destroy` methods, exact pagination meta, shared envelopes, not-found handling, and `HttpStatusCode::OK` in `app/Http/Controllers/Api/V1/Admin/HeroSlides/HeroSlideController.php`
+- [X] T044 [US2] Register Admin GET collection/show, PATCH, and DELETE routes with numeric `{heroSlide}`, exact view/update/delete permissions, and the PATCH parser in the approved middleware order in `routes/api/v1/admin.php`
+- [X] T045 [US2] Extend the process runner with upward/downward move and create/delete modes in `tests/Support/HeroSlideConcurrencyRunner.php`
+- [X] T046 [US2] Extend real MySQL concurrency coverage for competing
   moves, create/delete races, final 1..N ordering, count limit, committed
   file-path state, no leaked replacement file, successful retry of an injected
   retryable deadlock/serialization failure, and safe state/file compensation
   after retry exhaustion in
   `tests/Concurrency/HeroSlides/HeroSlideCriticalConcurrencyTest.php`
 
-- [ ] T047 [US2] Run the complete Admin management, parser, database-ordering, file-compensation, and concurrency tests and record the checkpoint in `specs/008-hero-slider-management/checklists/implementation-progress.md`
+- [X] T047 [US2] Run the complete Admin management, parser, database-ordering, file-compensation, and concurrency tests and record the checkpoint in `specs/008-hero-slider-management/checklists/implementation-progress.md`
 
 **Checkpoint**: User Story 2 independently manages factory-seeded slides while
 preserving all database and filesystem invariants.
@@ -287,14 +287,14 @@ request Arabic/English variants plus the empty state.
 
 ### Tests for User Story 3 — Mandatory
 
-- [ ] T048 [P] [US3] Add public API coverage for unauthenticated access, active-only selection, ascending array order, unpaginated maximum-10 result, Arabic/English and locale-variant projection, exact three keys, absolute URL, required headers, empty array, and Admin/raw-path field absence in `tests/Feature/Api/V1/Public/HeroSlides/PublicHeroSlideIndexTest.php`
+- [X] T048 [P] [US3] Add public API coverage for unauthenticated access, active-only selection, ascending array order, unpaginated maximum-10 result, Arabic/English and locale-variant projection, exact three keys, absolute URL, required headers, empty array, and Admin/raw-path field absence in `tests/Feature/Api/V1/Public/HeroSlides/PublicHeroSlideIndexTest.php`
 
 ### Implementation for User Story 3
 
-- [ ] T049 [P] [US3] Implement exact localized `title`, `description`, and absolute `image` projection with no ID/activity/position/dual-language/raw path in `app/Http/Resources/Api/V1/Public/HeroSlides/PublicHeroSlideResource.php`
-- [ ] T050 [US3] Implement the thin bounded active-only, position-ascending, unpaginated public index and shared localized success envelope in `app/Http/Controllers/Api/V1/Public/HeroSlides/HeroSlideController.php`
-- [ ] T051 [US3] Register only `GET /api/v1/public/hero-slides` inside the existing public locale boundary with no Admin authentication/permission in `routes/api/v1/public.php`
-- [ ] T052 [US3] Run the public Hero suite in Arabic and English and record the checkpoint in `specs/008-hero-slider-management/checklists/implementation-progress.md`
+- [X] T049 [P] [US3] Implement exact localized `title`, `description`, and absolute `image` projection with no ID/activity/position/dual-language/raw path in `app/Http/Resources/Api/V1/Public/HeroSlides/PublicHeroSlideResource.php`
+- [X] T050 [US3] Implement the thin bounded active-only, position-ascending, unpaginated public index and shared localized success envelope in `app/Http/Controllers/Api/V1/Public/HeroSlides/HeroSlideController.php`
+- [X] T051 [US3] Register only `GET /api/v1/public/hero-slides` inside the existing public locale boundary with no Admin authentication/permission in `routes/api/v1/public.php`
+- [X] T052 [US3] Run the public Hero suite in Arabic and English and record the checkpoint in `specs/008-hero-slider-management/checklists/implementation-progress.md`
 
 **Checkpoint**: User Story 3 independently serves the safe localized homepage
 projection.
@@ -312,14 +312,14 @@ open.
 
 ### Tests for User Story 4 — Mandatory
 
-- [ ] T053 [P] [US4] Add Seeder coverage for idempotent exact permission creation, configured guard, permission-cache reset, super-admin assignment, unrelated-permission preservation, and absence of wildcard/reorder in `tests/Feature/Database/Permissions/HeroSlidesPermissionsSeederTest.php`
-- [ ] T054 [P] [US4] Add route architecture coverage for all six operations, exact methods/paths, numeric binding, Admin middleware order, exact per-route permissions, public openness, and no reorder route in `tests/Architecture/HeroSlidesFeatureArchitectureTest.php`
-- [ ] T055 [P] [US4] Add API authorization coverage for 401, non-admin/inactive rejection, each missing 403, each exact-permission success, and proof that permission does not bypass validation/order/file rules in `tests/Feature/Api/V1/Admin/HeroSlides/HeroSlideAuthorizationTest.php`
+- [X] T053 [P] [US4] Add Seeder coverage for idempotent exact permission creation, configured guard, permission-cache reset, super-admin assignment, unrelated-permission preservation, and absence of wildcard/reorder in `tests/Feature/Database/Permissions/HeroSlidesPermissionsSeederTest.php`
+- [X] T054 [P] [US4] Add route architecture coverage for all six operations, exact methods/paths, numeric binding, Admin middleware order, exact per-route permissions, public openness, and no reorder route in `tests/Architecture/HeroSlidesFeatureArchitectureTest.php`
+- [X] T055 [P] [US4] Add API authorization coverage for 401, non-admin/inactive rejection, each missing 403, each exact-permission success, and proof that permission does not bypass validation/order/file rules in `tests/Feature/Api/V1/Admin/HeroSlides/HeroSlideAuthorizationTest.php`
 
 ### Implementation for User Story 4
 
-- [ ] T056 [US4] Audit and correct the final route-to-permission mapping and Seeder integration without introducing a super-admin bypass or unrelated grant in `routes/api/v1/admin.php`, `database/seeders/HeroSlidesPermissionsSeeder.php`, and `database/seeders/RolesAndPermissionsSeeder.php`
-- [ ] T057 [US4] Run permission Seeder, route architecture, Admin authorization, and public-access tests and record the checkpoint in `specs/008-hero-slider-management/checklists/implementation-progress.md`
+- [X] T056 [US4] Audit and correct the final route-to-permission mapping and Seeder integration without introducing a super-admin bypass or unrelated grant in `routes/api/v1/admin.php`, `database/seeders/HeroSlidesPermissionsSeeder.php`, and `database/seeders/RolesAndPermissionsSeeder.php`
+- [X] T057 [US4] Run permission Seeder, route architecture, Admin authorization, and public-access tests and record the checkpoint in `specs/008-hero-slider-management/checklists/implementation-progress.md`
 
 **Checkpoint**: All four permissions are isolated and backend-enforced.
 
@@ -330,12 +330,12 @@ open.
 **Purpose**: Synchronize all external contracts, prove real-server transport,
 and run every repository gate.
 
-- [ ] T058 Update `postman/Service-Commerce.postman_collection.json` with an `Admin Hero Slides` folder for five Admin requests and a `Public Hero Slides` folder for public GET, documenting every key, 0/1 meaning, image/position rules, responses, permissions, and failures while preserving only the three approved collection variables
-- [ ] T059 Add Postman/OpenAPI synchronization coverage for exact folders, methods, URLs, multipart bodies, query examples, scripts, response examples, variable set, public projection, and absence of reorder in `tests/Architecture/HeroSlidesOpenApiAndPostmanContractTest.php`
-- [ ] T060 Complete exact implementation-to-OpenAPI contract assertions for routes, permissions, request fields, schemas, response keys, headers, statuses, and stable codes in `tests/Architecture/HeroSlidesOpenApiContractTest.php`
-- [ ] T061 Execute a real PHP 8.2/8.3 HTTP-server Postman/curl smoke flow for direct PATCH multipart text/image replacement, duplicate/oversized rejection, and temporary-file cleanup; record commands and results in `specs/008-hero-slider-management/checklists/runtime-verification.md`
-- [ ] T062 Re-run every manual scenario and expected outcome in `specs/008-hero-slider-management/quickstart.md` and record only environment-specific evidence without weakening the frozen contract
-- [ ] T063 Run all Feature 008 API, Unit, Database, Architecture,
+- [X] T058 Update `postman/Service-Commerce.postman_collection.json` with an `Admin Hero Slides` folder for five Admin requests and a `Public Hero Slides` folder for public GET, documenting every key, 0/1 meaning, image/position rules, responses, permissions, and failures while preserving only the three approved collection variables
+- [X] T059 Add Postman/OpenAPI synchronization coverage for exact folders, methods, URLs, multipart bodies, query examples, scripts, response examples, variable set, public projection, and absence of reorder in `tests/Architecture/HeroSlidesOpenApiAndPostmanContractTest.php`
+- [X] T060 Complete exact implementation-to-OpenAPI contract assertions for routes, permissions, request fields, schemas, response keys, headers, statuses, and stable codes in `tests/Architecture/HeroSlidesOpenApiContractTest.php`
+- [X] T061 Execute a real PHP 8.2/8.3 HTTP-server Postman/curl smoke flow for direct PATCH multipart text/image replacement, duplicate/oversized rejection, and temporary-file cleanup; record commands and results in `specs/008-hero-slider-management/checklists/runtime-verification.md`
+- [X] T062 Re-run every manual scenario and expected outcome in `specs/008-hero-slider-management/quickstart.md` and record only environment-specific evidence without weakening the frozen contract
+- [X] T063 Run all Feature 008 API, Unit, Database, Architecture,
   parser, transport, and permission tests under
   `tests/Feature/Api/V1/Admin/HeroSlides/`,
   `tests/Feature/Api/V1/Public/HeroSlides/`,
@@ -344,12 +344,12 @@ and run every repository gate.
   `tests/Feature/Database/Permissions/`, `tests/Feature/Http/`, and
   `tests/Architecture/*HeroSlides*`
 
-- [ ] T064 Run the dedicated real MySQL suite in `tests/Concurrency/HeroSlides/HeroSlideCriticalConcurrencyTest.php`
-- [ ] T065 Run the full regression suite with `php artisan test`
-- [ ] T066 Run `vendor/bin/pint --test`
-- [ ] T067 Run `vendor/bin/phpstan analyse`
-- [ ] T068 Re-run `composer validate --no-check-publish` and `composer check-platform-reqs`; do not run an unscoped Composer update, and mark release verification blocked in `specs/008-hero-slider-management/checklists/runtime-verification.md` if the manifest/lock drift remains
-- [ ] T069 Complete the Feature 008 acceptance and scope audit against `docs/features/008-hero-slider-management.md`, `specs/008-hero-slider-management/spec.md`, `specs/008-hero-slider-management/plan.md`, and `specs/008-hero-slider-management/checklists/requirements.md`
+- [X] T064 Run the dedicated real MySQL suite in `tests/Concurrency/HeroSlides/HeroSlideCriticalConcurrencyTest.php`
+- [X] T065 Run the full regression suite with `php artisan test`
+- [X] T066 Run `vendor/bin/pint --test`
+- [X] T067 Run `vendor/bin/phpstan analyse`
+- [X] T068 Re-run `composer validate --no-check-publish` and `composer check-platform-reqs`; do not run an unscoped Composer update, and mark release verification blocked in `specs/008-hero-slider-management/checklists/runtime-verification.md` if the manifest/lock drift remains
+- [X] T069 Complete the Feature 008 acceptance and scope audit against `docs/features/008-hero-slider-management.md`, `specs/008-hero-slider-management/spec.md`, `specs/008-hero-slider-management/plan.md`, and `specs/008-hero-slider-management/checklists/requirements.md`
 
 ---
 

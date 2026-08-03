@@ -2,8 +2,10 @@
 
 declare(strict_types=1);
 
+use App\Http\Middleware\ParseHeroSlideMultipartPatch;
 use App\Models\HeroSlide;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 
@@ -68,4 +70,25 @@ it('rejects malformed raw multipart only after authentication and permission', f
         'CONTENT_TYPE' => 'multipart/form-data; boundary='.$boundary,
     ], '--'.$boundary)
         ->assertUnauthorized();
+});
+
+it('removes the parser temporary upload when downstream handling throws', function () {
+    $boundary = 'Feature008CleanupBoundary';
+    $image = UploadedFile::fake()->image('replacement.png');
+    $body = rawHeroPatchBody($boundary, [], [
+        'name' => 'replacement.png', 'type' => 'image/png',
+        'contents' => (string) file_get_contents($image->getRealPath()),
+    ]);
+    $request = Request::create('/api/v1/admin/hero-slides/1', 'PATCH', [], [], [], [
+        'CONTENT_TYPE' => 'multipart/form-data; boundary='.$boundary,
+        'CONTENT_LENGTH' => (string) strlen($body),
+    ], $body);
+    $before = glob(sys_get_temp_dir().DIRECTORY_SEPARATOR.'hero-slide-*') ?: [];
+
+    expect(fn () => app(ParseHeroSlideMultipartPatch::class)->handle(
+        $request,
+        fn () => throw new RuntimeException('downstream failure'),
+    ))->toThrow(RuntimeException::class, 'downstream failure');
+
+    expect(glob(sys_get_temp_dir().DIRECTORY_SEPARATOR.'hero-slide-*') ?: [])->toBe($before);
 });

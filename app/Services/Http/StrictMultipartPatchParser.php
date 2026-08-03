@@ -39,9 +39,16 @@ class StrictMultipartPatchParser
             $this->invalid('payload');
         }
 
-        $segments = explode($delimiter, $body);
+        if (! str_starts_with($body, $delimiter."\r\n")) {
+            $this->invalid('payload');
+        }
 
-        if (array_shift($segments) !== '') {
+        $segments = preg_split(
+            '/\r\n'.preg_quote($delimiter, '/').'(?:\r\n|(?=--))/',
+            substr($body, strlen($delimiter) + 2),
+        );
+
+        if (! is_array($segments)) {
             $this->invalid('payload');
         }
 
@@ -55,19 +62,14 @@ class StrictMultipartPatchParser
                     continue;
                 }
 
-                if (! str_starts_with($segment, "\r\n") || ! str_ends_with($segment, "\r\n")) {
-                    $this->invalid('payload');
-                }
-
-                $part = substr($segment, 2, -2);
-                $separator = strpos($part, "\r\n\r\n");
+                $separator = strpos($segment, "\r\n\r\n");
 
                 if ($separator === false) {
                     $this->invalid('payload');
                 }
 
-                $headerBlock = substr($part, 0, $separator);
-                $value = substr($part, $separator + 4);
+                $headerBlock = substr($segment, 0, $separator);
+                $value = substr($segment, $separator + 4);
                 $headers = $this->headers($headerBlock);
                 $disposition = $headers['content-disposition'] ?? null;
 

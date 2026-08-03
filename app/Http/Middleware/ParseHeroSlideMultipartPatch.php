@@ -7,7 +7,9 @@ namespace App\Http\Middleware;
 use App\Services\Http\StrictMultipartPatchParser;
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\Response;
+use Throwable;
 
 class ParseHeroSlideMultipartPatch
 {
@@ -22,13 +24,20 @@ class ParseHeroSlideMultipartPatch
         $contentLength = (int) $request->server('CONTENT_LENGTH', 0);
 
         if ($contentLength > StrictMultipartPatchParser::MAX_FILE_BYTES + StrictMultipartPatchParser::MAX_OVERHEAD_BYTES) {
-            $this->parser->parse((string) $request->header('Content-Type'), str_repeat('x', StrictMultipartPatchParser::MAX_FILE_BYTES + StrictMultipartPatchParser::MAX_OVERHEAD_BYTES + 1));
+            throw ValidationException::withMessages([
+                'payload' => [__('validation.invalid_payload')],
+            ]);
         }
 
-        $parsed = $this->parser->parse(
-            (string) $request->header('Content-Type'),
-            $request->getContent(),
-        );
+        try {
+            $content = $request->getContent();
+        } catch (Throwable) {
+            throw ValidationException::withMessages([
+                'payload' => [__('validation.invalid_payload')],
+            ]);
+        }
+
+        $parsed = $this->parser->parse((string) $request->header('Content-Type'), $content);
 
         try {
             $request->request->add($parsed['fields']);

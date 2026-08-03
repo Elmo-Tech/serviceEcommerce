@@ -275,6 +275,7 @@ components:
         image:
           type: string
           format: binary
+          x-maxSize: 5242880
           description: One static JPEG, PNG, or WebP image. Maximum exactly 5 MiB (5,242,880 bytes). SVG,
             animated WebP, APNG, and larger files are rejected.
         isActive:
@@ -310,6 +311,7 @@ components:
         image:
           type: string
           format: binary
+          x-maxSize: 5242880
           description: One static JPEG, PNG, or WebP image. Maximum exactly 5 MiB (5,242,880 bytes). SVG,
             animated WebP, APNG, and larger files are rejected.
         isActive:

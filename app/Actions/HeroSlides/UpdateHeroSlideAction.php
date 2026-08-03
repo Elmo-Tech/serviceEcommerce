@@ -36,57 +36,59 @@ class UpdateHeroSlideAction
         $previousPath = null;
 
         try {
-            $updated = $this->mutationRetrier->execute(fn (): HeroSlide => $this->orderingService->mutate(function ($slides) use ($slideId, $payload, $stored, &$previousPath): HeroSlide {
-                $slide = $this->orderingService->findOrFail($slides, $slideId);
-                $previousPath = $slide->image_path;
-                $updates = [];
+            $updated = $this->mutationRetrier->execute(function () use ($slideId, $payload, $stored, &$previousPath): HeroSlide {
+                return $this->orderingService->mutate(function ($slides) use ($slideId, $payload, $stored, &$previousPath): HeroSlide {
+                    $slide = $this->orderingService->findOrFail($slides, $slideId);
+                    $previousPath = $slide->image_path;
+                    $updates = [];
 
-                foreach ([
-                    'titleAr' => 'title_ar',
-                    'titleEn' => 'title_en',
-                    'descriptionAr' => 'description_ar',
-                    'descriptionEn' => 'description_en',
-                ] as $input => $column) {
-                    if (array_key_exists($input, $payload)) {
-                        $updates[$column] = $payload[$input];
+                    foreach ([
+                        'titleAr' => 'title_ar',
+                        'titleEn' => 'title_en',
+                        'descriptionAr' => 'description_ar',
+                        'descriptionEn' => 'description_en',
+                    ] as $input => $column) {
+                        if (array_key_exists($input, $payload)) {
+                            $updates[$column] = $payload[$input];
+                        }
                     }
-                }
 
-                if (array_key_exists('isActive', $payload)) {
-                    $updates['is_active'] = (bool) $payload['isActive'];
-                }
+                    if (array_key_exists('isActive', $payload)) {
+                        $updates['is_active'] = (bool) $payload['isActive'];
+                    }
 
-                if ($stored !== null) {
-                    $updates['image_path'] = $stored['path'];
-                }
+                    if ($stored !== null) {
+                        $updates['image_path'] = $stored['path'];
+                    }
 
-                $requestedPosition = array_key_exists('position', $payload)
-                    ? (int) $payload['position']
-                    : (int) $slide->position;
+                    $requestedPosition = array_key_exists('position', $payload)
+                        ? (int) $payload['position']
+                        : (int) $slide->position;
 
-                if ($requestedPosition < 1 || $requestedPosition > $slides->count()) {
-                    throw new ApiBusinessException(
-                        'validation.invalid_payload',
-                        'VALIDATION_ERROR',
-                        HttpStatusCode::UNPROCESSABLE_ENTITY,
-                        ['position' => [__('validation.invalid_payload')]],
-                    );
-                }
+                    if ($requestedPosition < 1 || $requestedPosition > $slides->count()) {
+                        throw new ApiBusinessException(
+                            'validation.invalid_payload',
+                            'VALIDATION_ERROR',
+                            HttpStatusCode::UNPROCESSABLE_ENTITY,
+                            ['position' => [__('validation.invalid_payload')]],
+                        );
+                    }
 
-                $slide->fill($updates)->save();
+                    $slide->fill($updates)->save();
 
-                if ($requestedPosition !== (int) $slide->position) {
-                    $orderedIds = array_values(array_filter(
-                        array_map('intval', $slides->modelKeys()),
-                        static fn (int $id): bool => $id !== $slideId,
-                    ));
-                    array_splice($orderedIds, $requestedPosition - 1, 0, [$slideId]);
-                    $this->orderingService->park($slides);
-                    $this->orderingService->assign($orderedIds);
-                }
+                    if ($requestedPosition !== (int) $slide->position) {
+                        $orderedIds = array_values(array_filter(
+                            array_map('intval', $slides->modelKeys()),
+                            static fn (int $id): bool => $id !== $slideId,
+                        ));
+                        array_splice($orderedIds, $requestedPosition - 1, 0, [$slideId]);
+                        $this->orderingService->park($slides);
+                        $this->orderingService->assign($orderedIds);
+                    }
 
-                return $slide->refresh();
-            }));
+                    return $slide->refresh();
+                });
+            });
         } catch (Throwable $throwable) {
             if ($stored !== null) {
                 try {
