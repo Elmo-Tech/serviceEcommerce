@@ -290,7 +290,7 @@ checks across all stories.
   exact `7 Admin Category + 7 Admin Subcategory + 4 Public = 18` operations,
   route ordering for both `reorder` endpoints, numeric route constraints,
   middleware order, no force-delete routes, no third-level routes, no public
-  write routes, no media/upload scope, and no Feature 003 Service persistence
+  write routes, no separate media-management routes, and no Feature 003 Service persistence
 - [X] T036 [P] Synchronize the implemented contract with
   `specs/003-categories-subcategories/contracts/openapi.yaml` and
   `postman/Service-Commerce.postman_collection.json`, verifying exactly 18

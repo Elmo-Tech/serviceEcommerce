@@ -90,26 +90,28 @@ The following decisions are final for this feature:
 20. Each Category and Subcategory may have one optional image.
 21. The image is not required on create or update.
 22. Submitting a new image during update replaces the previous image.
-23. No multiple images, icon, video, attachment, or other file-upload behavior
+23. Submitting `image` as a text value, including an empty string, does not
+    change the stored image; only an uploaded file creates or replaces it.
+24. No multiple images, icon, video, attachment, or other file-upload behavior
     belongs to this feature.
-24. A Subcategory belongs to exactly one root Category.
-25. Moving a Subcategory to another Category is outside the MVP.
-26. Restoring a Category does not automatically restore its deleted
+25. A Subcategory belongs to exactly one root Category.
+26. Moving a Subcategory to another Category is outside the MVP.
+27. Restoring a Category does not automatically restore its deleted
     Subcategories.
-27. Restoring a Subcategory does not automatically restore deleted Services.
-28. Public APIs expose only active, non-deleted records whose ancestors are also
+28. Restoring a Subcategory does not automatically restore deleted Services.
+29. Public APIs expose only active, non-deleted records whose ancestors are also
     active and non-deleted.
-29. Hidden, inactive, or deleted public records return `404`, not a status that
+30. Hidden, inactive, or deleted public records return `404`, not a status that
     reveals their existence.
-30. Admin detail and mutation APIs return both Arabic and English names,
+31. Admin detail and mutation APIs return both Arabic and English names,
     descriptions, slugs, and the optional image URL. Admin Category and
     Subcategory index APIs return only the resolved-locale `name`,
     `description`, `slug`, and optional image URL, plus required operational
     fields.
-31. Public APIs resolve the localized name, description, and slug from
+32. Public APIs resolve the localized name, description, and slug from
     `Accept-Language`.
-32. Arabic is the default locale and English is the fallback.
-33. Stable machine keys, routes, permissions, and error codes remain English.
+33. Arabic is the default locale and English is the fallback.
+34. Stable machine keys, routes, permissions, and error codes remain English.
 
 ---
 
@@ -1748,7 +1750,8 @@ Verify:
 
 - no third hierarchy endpoint;
 - no force-delete route;
-- no category file-upload route;
+- no separate category media or file-upload route; the optional image is sent
+  directly with create or update multipart form-data;
 - admin routes use authentication, administrator-type, active-state, and
   permission middleware;
 - public routes have no write methods;
@@ -1892,18 +1895,20 @@ the request fails and no partial localized description is persisted.
 - **FR-026**: Hidden public records MUST return `404`.
 - **FR-027**: Each Category and Subcategory MAY have one optional image.
 - **FR-028**: The image MUST NOT be required on create or update.
-- **FR-029**: The feature MUST NOT introduce multiple images, icons, video,
+- **FR-029**: A text `image` value, including an empty string, MUST be ignored;
+  only an uploaded file MAY create or replace the stored image.
+- **FR-030**: The feature MUST NOT introduce multiple images, icons, video,
   or attachment behavior for Categories or Subcategories.
-- **FR-030**: Admin list APIs MUST support approved search, filters, sorting,
+- **FR-031**: Admin list APIs MUST support approved search, filters, sorting,
   and pagination.
-- **FR-031**: Public lists MUST be ordered and unpaginated in the MVP.
-- **FR-032**: Reordering MUST be atomic and scope validated.
-- **FR-033**: Request bodies MUST NOT control hierarchy ownership.
-- **FR-034**: Admin routes MUST apply authentication, administrator type,
+- **FR-032**: Public lists MUST be ordered and unpaginated in the MVP.
+- **FR-033**: Reordering MUST be atomic and scope validated.
+- **FR-034**: Request bodies MUST NOT control hierarchy ownership.
+- **FR-035**: Admin routes MUST apply authentication, administrator type,
   active-state, and permission controls independently.
-- **FR-035**: Public routes MUST be read-only.
-- **FR-036**: The Postman collection MUST cover all canonical operations.
-- **FR-037**: Tests MUST use MySQL for hierarchy and concurrency behavior.
+- **FR-036**: Public routes MUST be read-only.
+- **FR-037**: The Postman collection MUST cover all canonical operations.
+- **FR-038**: Tests MUST use MySQL for hierarchy and concurrency behavior.
 
 ### Authorization Requirements
 

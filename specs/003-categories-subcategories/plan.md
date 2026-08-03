@@ -189,7 +189,9 @@ Mandatory safety rules:
   transactions, and row locks for reorder and dependency-sensitive writes.
 
 - **Files — PASS**  
-  No file or media behavior is introduced.
+  Create and update accept one optional Category or Subcategory image through
+  multipart form-data. Only an uploaded file is persisted; text values are
+  ignored, and no separate media-management routes are introduced.
 
 - **Localization — PASS**  
   Arabic and English content and messages remain supported while machine

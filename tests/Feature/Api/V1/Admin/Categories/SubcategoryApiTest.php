@@ -188,4 +188,52 @@ it('uploads an optional image for a subcategory', function () {
     expect($subcategory->image_disk)->toBe('public')
         ->and(is_string($subcategory->image_path))->toBeTrue()
         ->and(Storage::disk('public')->exists((string) $subcategory->image_path))->toBeTrue();
+
+    $originalImagePath = $subcategory->image_path;
+
+    $this->getJson(
+        '/api/v1/admin/categories/'.$rootCategory->getKey().'/subcategories',
+        subcategoryAdminHeaders($accessToken, 'en'),
+    )
+        ->assertOk()
+        ->assertJsonPath('data.0.image', $subcategory->imageUrl());
+
+    $this->getJson(
+        '/api/v1/admin/categories/'.$rootCategory->getKey().'/subcategories/'.$subcategory->getKey(),
+        subcategoryAdminHeaders($accessToken, 'en'),
+    )
+        ->assertOk()
+        ->assertJsonPath('data.image', $subcategory->imageUrl());
+
+    $this->patch(
+        '/api/v1/admin/categories/'.$rootCategory->getKey().'/subcategories/'.$subcategory->getKey(),
+        ['image' => 'https://frontend.example.test/existing-subcategory.jpg'],
+        subcategoryAdminHeaders($accessToken, 'en'),
+    )
+        ->assertOk()
+        ->assertJsonPath('data.image', $subcategory->imageUrl());
+
+    $this->patch(
+        '/api/v1/admin/categories/'.$rootCategory->getKey().'/subcategories/'.$subcategory->getKey(),
+        ['image' => ''],
+        subcategoryAdminHeaders($accessToken, 'en'),
+    )
+        ->assertOk()
+        ->assertJsonPath('data.image', $subcategory->imageUrl());
+
+    expect($subcategory->fresh()?->image_path)->toBe($originalImagePath);
+
+    $this->patch(
+        '/api/v1/admin/categories/'.$rootCategory->getKey().'/subcategories/'.$subcategory->getKey(),
+        ['image' => UploadedFile::fake()->image('replacement-subcategory.webp')],
+        subcategoryAdminHeaders($accessToken, 'en'),
+    )
+        ->assertOk()
+        ->assertJsonPath('data.image', fn (string $value): bool => str_contains($value, '/storage/categories/images/'));
+
+    $updatedSubcategory = $subcategory->fresh();
+
+    expect($updatedSubcategory?->image_path)->not->toBe($originalImagePath)
+        ->and(Storage::disk('public')->exists((string) $updatedSubcategory?->image_path))->toBeTrue()
+        ->and(Storage::disk('public')->exists((string) $originalImagePath))->toBeFalse();
 });

@@ -215,6 +215,28 @@ it('uploads and replaces one optional image for a root category', function () {
         ->and(is_string($originalImagePath))->toBeTrue()
         ->and(Storage::disk('public')->exists((string) $originalImagePath))->toBeTrue();
 
+    $this->getJson('/api/v1/admin/categories', categoryAdminHeaders($accessToken, 'en'))
+        ->assertOk()
+        ->assertJsonPath('data.0.image', $category->imageUrl());
+
+    $this->getJson('/api/v1/admin/categories/'.$category->getKey(), categoryAdminHeaders($accessToken, 'en'))
+        ->assertOk()
+        ->assertJsonPath('data.image', $category->imageUrl());
+
+    $this->patch('/api/v1/admin/categories/'.$category->getKey(), [
+        'image' => 'https://frontend.example.test/existing-category.png',
+    ], categoryAdminHeaders($accessToken, 'en'))
+        ->assertOk()
+        ->assertJsonPath('data.image', $category->imageUrl());
+
+    $this->patch('/api/v1/admin/categories/'.$category->getKey(), [
+        'image' => '',
+    ], categoryAdminHeaders($accessToken, 'en'))
+        ->assertOk()
+        ->assertJsonPath('data.image', $category->imageUrl());
+
+    expect($category->fresh()?->image_path)->toBe($originalImagePath);
+
     $updateResponse = $this->patch('/api/v1/admin/categories/'.$category->getKey(), [
         'image' => UploadedFile::fake()->image('replacement.webp'),
     ], categoryAdminHeaders($accessToken, 'en'));

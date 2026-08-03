@@ -27,6 +27,15 @@ class UpdateSubcategoryRequest extends AbstractCategoryPayloadRequest
             'slugEn' => ['sometimes', 'required', 'string', 'max:180', Rule::unique('categories', 'slug_en')->ignore($subcategoryId)],
             'sortOrder' => ['sometimes', 'integer', 'min:0'],
             'isActive' => ['sometimes', 'boolean'],
+            'image' => [
+                'sometimes',
+                'nullable',
+                Rule::when(
+                    $this->hasFile('image'),
+                    ['file', 'max:5120', 'extensions:jpg,jpeg,png,webp', 'mimetypes:image/jpeg,image/png,image/webp'],
+                    ['string'],
+                ),
+            ],
         ];
     }
 
@@ -43,6 +52,7 @@ class UpdateSubcategoryRequest extends AbstractCategoryPayloadRequest
                     'slugEn',
                     'sortOrder',
                     'isActive',
+                    'image',
                 ];
 
                 $this->validateAllowedKeys($validator, $allowedKeys);
@@ -83,6 +93,10 @@ class UpdateSubcategoryRequest extends AbstractCategoryPayloadRequest
 
         if ($this->has('isActive')) {
             $payload['isActive'] = $this->boolean('isActive');
+        }
+
+        if ($this->hasFile('image')) {
+            $payload['image'] = $this->file('image');
         }
 
         return $payload;

@@ -30,7 +30,8 @@
 **Out of scope**:
 
 - Services CRUD and any Service-specific business rules beyond approved deletion dependencies
-- Category or Subcategory images, icons, videos, files, or uploads
+- Multiple Category or Subcategory images, icons, videos, attachments, or
+  separate media-management routes
 - Third-level hierarchy or arbitrary-depth trees
 - Moving a Subcategory to another Category
 - Force deletion
@@ -254,7 +255,9 @@ ordering, localized slugs, and hidden-record `404` behavior.
   MVP.
 - **FR-027**: Each Category and Subcategory MAY have one optional image.
 - **FR-028**: The image MUST NOT be required on create or update.
-- **FR-029**: The feature MUST NOT introduce multiple images, icons, video, or
+- **FR-029**: A text `image` value, including an empty string, MUST be ignored;
+  only an uploaded file MAY create or replace the stored image.
+- **FR-030**: The feature MUST NOT introduce multiple images, icons, video, or
   attachment behavior for Categories or Subcategories.
 
 ### Actors and Authorization *(mandatory for protected behaviour)*

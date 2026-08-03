@@ -24,10 +24,17 @@ class StrictMultipartPatchParser
     ];
 
     /**
+     * @param  list<string>|null  $scalarFields
      * @return array{fields:array<string,string>,file:UploadedFile|null,tempPath:string|null}
      */
-    public function parse(string $contentType, string $body): array
-    {
+    public function parse(
+        string $contentType,
+        string $body,
+        ?array $scalarFields = null,
+        string $temporaryFilePrefix = 'hero-slide-',
+    ): array {
+        $allowedScalarFields = $scalarFields ?? self::SCALAR_FIELDS;
+
         if (strlen($body) > self::MAX_FILE_BYTES + self::MAX_OVERHEAD_BYTES) {
             $this->invalid('image');
         }
@@ -90,7 +97,7 @@ class StrictMultipartPatchParser
                     }
 
                     $mime = $headers['content-type'] ?? 'application/octet-stream';
-                    $tempPath = tempnam(sys_get_temp_dir(), 'hero-slide-');
+                    $tempPath = tempnam(sys_get_temp_dir(), $temporaryFilePrefix);
 
                     if ($tempPath === false || file_put_contents($tempPath, $value, LOCK_EX) !== strlen($value)) {
                         $this->invalid('image');
@@ -101,7 +108,7 @@ class StrictMultipartPatchParser
                     continue;
                 }
 
-                if (! in_array($name, self::SCALAR_FIELDS, true) || array_key_exists($name, $fields)) {
+                if (! in_array($name, $allowedScalarFields, true) || array_key_exists($name, $fields)) {
                     $this->invalid($name === '' ? 'payload' : $name);
                 }
 

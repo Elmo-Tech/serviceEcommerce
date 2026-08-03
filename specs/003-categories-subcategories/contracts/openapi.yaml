@@ -853,7 +853,7 @@ components:
           - string
           - 'null'
           format: binary
-          description: Optional category image uploaded as multipart form data.
+          description: Optional category image uploaded as multipart form data. Text values, including an empty string, are accepted but ignored.
       oneOf:
       - title: Description pair omitted
         not:
@@ -954,7 +954,7 @@ components:
           - string
           - 'null'
           format: binary
-          description: Optional category image uploaded as multipart form data. When present on update, it replaces the previous image.
+          description: Optional category image uploaded as multipart form data. A new file replaces the previous image; text values, including an empty string, preserve it unchanged.
       oneOf:
       - title: Description pair omitted
         not:

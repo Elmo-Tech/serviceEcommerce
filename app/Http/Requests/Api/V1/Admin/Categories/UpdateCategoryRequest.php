@@ -27,7 +27,15 @@ class UpdateCategoryRequest extends AbstractCategoryPayloadRequest
             'slugEn' => ['sometimes', 'required', 'string', 'max:180', Rule::unique('categories', 'slug_en')->ignore($categoryId)],
             'sortOrder' => ['sometimes', 'integer', 'min:0'],
             'isActive' => ['sometimes', 'boolean'],
-            'image' => ['sometimes', 'file', 'max:5120', 'mimetypes:image/jpeg,image/png,image/webp'],
+            'image' => [
+                'sometimes',
+                'nullable',
+                Rule::when(
+                    $this->hasFile('image'),
+                    ['file', 'max:5120', 'extensions:jpg,jpeg,png,webp', 'mimetypes:image/jpeg,image/png,image/webp'],
+                    ['string'],
+                ),
+            ],
         ];
     }
 

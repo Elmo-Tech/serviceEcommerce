@@ -388,7 +388,7 @@
       "item": [
         {
           "name": "List Categories",
-          "description": "Lists root categories only. Query help: filter[search] searches localized names/descriptions/slugs; filter[isActive]=true or false narrows by activation state; filter[trashed]=without|with|only controls deleted records; sort accepts sortOrder, -sortOrder, name, -name, createdAt, -createdAt, updatedAt, -updatedAt; page starts at 1; perPage max is 100.",
+          "description": "Lists root categories only and returns image as an absolute URL or null for every item. Query help: filter[search] searches localized names/descriptions/slugs; filter[isActive]=true or false narrows by activation state; filter[trashed]=without|with|only controls deleted records; sort accepts sortOrder, -sortOrder, name, -name, createdAt, -createdAt, updatedAt, -updatedAt; page starts at 1; perPage max is 100.",
           "request": {
             "method": "GET",
             "header": [
@@ -401,7 +401,7 @@
         },
         {
           "name": "Create Category",
-          "description": "Creates a root category. Send multipart/form-data. Body keys: nameAr = required Arabic category name; nameEn = required English category name; descriptionAr = optional Arabic description; descriptionEn = optional English description; sortOrder = optional integer order, lower numbers appear first; isActive = true means active/visible, false means inactive/hidden; image = optional single category image file.",
+          "description": "Creates a root category using multipart/form-data. Body keys: nameAr = required Arabic category name; nameEn = required English category name; descriptionAr = optional Arabic description; descriptionEn = optional English description; sortOrder = optional integer order, lower numbers appear first; isActive = true means active/visible, false means inactive/hidden; image = optional single category file. A text or empty image value is ignored.",
           "request": {
             "method": "POST",
             "header": [
@@ -444,7 +444,7 @@
         },
         {
           "name": "Show Category",
-          "description": "Returns one root category. Accept-Language controls which localized public-facing name/slug is considered the resolved locale in response metadata where applicable.",
+          "description": "Returns one root category, including image as an absolute URL or null. Accept-Language controls which localized public-facing name/slug is considered the resolved locale in response metadata where applicable.",
           "request": {
             "method": "GET",
             "header": [
@@ -457,7 +457,7 @@
         },
         {
           "name": "Update Category",
-          "description": "Updates mutable root-category fields. Send multipart/form-data and include only what you want to change. Allowed keys: nameAr, nameEn, descriptionAr, descriptionEn, sortOrder, isActive, image. image is optional and uploading a new one replaces the previous image.",
+          "description": "Updates mutable root-category fields using multipart/form-data. Allowed keys: nameAr, nameEn, descriptionAr, descriptionEn, sortOrder, isActive, image. Uploading image as File replaces the previous image. Sending image as Text, including an empty string or an existing URL, preserves the stored image unchanged.",
           "request": {
             "method": "PATCH",
             "header": [
@@ -501,7 +501,7 @@
         },
         {
           "name": "List Subcategories",
-          "description": "Lists subcategories under one root category. Uses the same query keys and meanings as List Categories, but scoped to the parent category in the URL.",
+          "description": "Lists subcategories under one root category and returns image as an absolute URL or null for every item. Uses the same query keys and meanings as List Categories, but scoped to the parent category in the URL.",
           "request": {
             "method": "GET",
             "header": [
@@ -514,7 +514,7 @@
         },
         {
           "name": "Create Subcategory",
-          "description": "Creates a subcategory under the parent category in the URL. Send multipart/form-data. Body keys: nameAr = required Arabic subcategory name; nameEn = required English subcategory name; descriptionAr/descriptionEn = optional descriptions; sortOrder = optional integer order; isActive = true means active/visible, false means inactive/hidden; image = optional single subcategory image file.",
+          "description": "Creates a subcategory under the parent category using multipart/form-data. Body keys: nameAr = required Arabic subcategory name; nameEn = required English subcategory name; descriptionAr/descriptionEn = optional descriptions; sortOrder = optional integer order; isActive = true means active/visible, false means inactive/hidden; image = optional single subcategory file. A text or empty image value is ignored.",
           "request": {
             "method": "POST",
             "header": [
@@ -556,7 +556,7 @@
         },
         {
           "name": "Show Subcategory",
-          "description": "Returns one scoped subcategory under the parent category.",
+          "description": "Returns one scoped subcategory under the parent category, including image as an absolute URL or null.",
           "request": {
             "method": "GET",
             "header": [
@@ -569,7 +569,7 @@
         },
         {
           "name": "Update Subcategory",
-          "description": "Updates mutable subcategory fields. Send multipart/form-data and include only what you want to change. Allowed keys: nameAr, nameEn, descriptionAr, descriptionEn, sortOrder, isActive, image. image is optional and uploading a new one replaces the previous image.",
+          "description": "Updates mutable subcategory fields using multipart/form-data. Allowed keys: nameAr, nameEn, descriptionAr, descriptionEn, sortOrder, isActive, image. Uploading image as File replaces the previous image. Sending image as Text, including an empty string or an existing URL, preserves the stored image unchanged.",
           "request": {
             "method": "PATCH",
             "header": [

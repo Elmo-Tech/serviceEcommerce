@@ -21,6 +21,7 @@ use App\Http\Controllers\Api\V1\Admin\Services\ServiceOrderFieldController;
 use App\Http\Controllers\Api\V1\Admin\Services\ServicePricingOptionController;
 use App\Http\Controllers\Api\V1\Admin\Services\ServiceSpecificationController;
 use App\Http\Controllers\Api\V1\Admin\Settings\SettingsController as AdminSettingsController;
+use App\Http\Middleware\ParseCategoryMultipartPatch;
 use App\Http\Middleware\ParseHeroSlideMultipartPatch;
 use App\Http\Middleware\ParseSettingsMultipartPatch;
 use Illuminate\Support\Facades\Route;
@@ -113,7 +114,7 @@ Route::middleware([
         ->middleware('permission:categories.view');
     Route::patch('/categories/{category}', [CategoryController::class, 'update'])
         ->whereNumber('category')
-        ->middleware('permission:categories.update');
+        ->middleware(['permission:categories.update', ParseCategoryMultipartPatch::class]);
     Route::delete('/categories/{category}', [CategoryController::class, 'destroy'])
         ->whereNumber('category')
         ->middleware('permission:categories.delete');
@@ -230,7 +231,7 @@ Route::middleware([
     Route::patch('/categories/{category}/subcategories/{subcategory}', [SubcategoryController::class, 'update'])
         ->whereNumber('category')
         ->whereNumber('subcategory')
-        ->middleware('permission:subcategories.update');
+        ->middleware(['permission:subcategories.update', ParseCategoryMultipartPatch::class]);
     Route::delete('/categories/{category}/subcategories/{subcategory}', [SubcategoryController::class, 'destroy'])
         ->whereNumber('category')
         ->whereNumber('subcategory')

@@ -47,7 +47,7 @@ class AdminSubcategoryIndexQuery
             );
 
         return $query
-            ->defaultSort('sortOrder')
+            ->defaultSort(AllowedSort::field('sortOrder', 'sort_order'))
             ->paginate((int) ($filters['perPage'] ?? 20), ['*'], 'page', (int) ($filters['page'] ?? 1))
             ->withQueryString();
     }
