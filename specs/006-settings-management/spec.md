@@ -121,21 +121,21 @@ values.
    **When** the update succeeds,
    **Then** the current phone collection is replaced atomically by the
    submitted ordered collection.
-3. **Given** `clearPhones = 1`,
-   **When** no `phones` array is submitted,
+3. **Given** an explicitly submitted empty `phones` array,
+   **When** the update succeeds,
    **Then** all phone rows are deleted.
 4. **Given** a submitted `socialLinks` array,
    **When** the update succeeds,
    **Then** the current social-link collection is replaced atomically by the
    submitted ordered collection.
-5. **Given** `clearSocialLinks = 1`,
-   **When** no `socialLinks` array is submitted,
+5. **Given** an explicitly submitted empty `socialLinks` array,
+   **When** the update succeeds,
    **Then** all social-link rows are deleted.
 6. **Given** a valid branding file,
    **When** it is submitted,
    **Then** the old file is replaced safely and the API returns a public URL.
-7. **Given** a matching remove flag,
-   **When** it is submitted without a replacement file,
+7. **Given** a branding field submitted as an empty value,
+   **When** no replacement file is submitted for that field,
    **Then** the stored path becomes `null` and the old file is cleaned up after
    commit.
 8. **Given** any invalid phone, social, coordinate, or file input,
@@ -230,20 +230,9 @@ phones[]
 socialLinks[]
 ```
 
-### Explicit Clear Flags
-
-```text
-clearPhones
-clearSocialLinks
-```
-
-### Explicit Branding Remove Flags
-
-```text
-removeLogo
-removeFooterLogo
-removeFavicon
-```
+Collections are cleared by submitting `phones = []` or `socialLinks = []`.
+Branding files are removed by submitting the matching `logo`, `footerLogo`, or
+`favicon` field as an empty value. No separate clear/remove keys exist.
 
 No field named `defaultOgImage` or `ogImage` exists in requests, persistence,
 Admin responses, or Public responses.
@@ -370,11 +359,9 @@ Rules:
 - **FR-026**: Phone row IDs MUST not be accepted or returned.
 - **FR-027**: When `phones` is submitted, the full phone collection MUST be
   replaced atomically.
-- **FR-028**: When both `phones` and `clearPhones` are omitted, phones MUST
-  remain unchanged.
-- **FR-029**: `clearPhones = 1` without `phones` MUST delete all phone rows.
-- **FR-030**: Submitting `phones` with `clearPhones = 1` MUST return
-  `422 VALIDATION_ERROR`.
+- **FR-028**: When `phones` is omitted, phones MUST remain unchanged.
+- **FR-029**: Submitting `phones = []` MUST delete all phone rows.
+- **FR-030**: No separate phone-clear key is accepted.
 
 Accepted equivalent examples include:
 
@@ -420,12 +407,9 @@ snapchat
 - **FR-038**: Social-link row IDs MUST not be accepted or returned.
 - **FR-039**: When `socialLinks` is submitted, the full collection MUST be
   replaced atomically.
-- **FR-040**: When both `socialLinks` and `clearSocialLinks` are omitted, social
-  links MUST remain unchanged.
-- **FR-041**: `clearSocialLinks = 1` without `socialLinks` MUST delete all
-  social links.
-- **FR-042**: Submitting `socialLinks` with `clearSocialLinks = 1` MUST return
-  `422 VALIDATION_ERROR`.
+- **FR-040**: When `socialLinks` is omitted, social links MUST remain unchanged.
+- **FR-041**: Submitting `socialLinks = []` MUST delete all social links.
+- **FR-042**: No separate social-link-clear key is accepted.
 - **FR-043**: The Admin resource MUST return `availableSocialPlatforms` as the
   approved stable English machine-key list.
 
@@ -478,13 +462,11 @@ svg
 - **FR-060**: `favicon` MUST have a maximum size of `1 MB`.
 - **FR-061**: The API MUST never accept a client-controlled existing storage
   path.
-- **FR-062**: Omitting a file field and its remove flag MUST preserve the
-  current file.
+- **FR-062**: Omitting a file field MUST preserve the current file.
 - **FR-063**: Submitting a valid new file MUST replace the current file.
-- **FR-064**: `removeLogo = 1`, `removeFooterLogo = 1`, or
-  `removeFavicon = 1` MUST clear the matching stored path.
-- **FR-065**: Submitting a file with its matching remove flag MUST return
-  `422 VALIDATION_ERROR`.
+- **FR-064**: Submitting `logo`, `footerLogo`, or `favicon` as an explicit empty
+  value MUST clear the matching stored path.
+- **FR-065**: No separate branding remove key is accepted.
 - **FR-066**: File responses MUST contain absolute public URLs or `null`, never
   internal paths.
 
@@ -816,10 +798,10 @@ managed with safe upload, replacement, removal, and compensation behavior.
 - **VR-007**: Tests MUST cover the three-phone maximum, zero/one WhatsApp
   success, and two-WhatsApp rejection.
 - **VR-008**: Tests MUST cover phone full replacement, single deletion by
-  resubmitting remaining items, `clearPhones`, and conflict rejection.
+  resubmitting remaining items, and empty-array clearing.
 - **VR-009**: Tests MUST cover all approved social platforms, unsupported
   values, duplicate platforms, invalid URLs, ordering, full replacement,
-  `clearSocialLinks`, and conflict rejection.
+  and empty-array clearing.
 - **VR-010**: Tests MUST cover coordinate-pair rules, bounds, decimal-string
   responses, and URL-only usage.
 - **VR-011**: Tests MUST cover SEO arrays, duplicate keyword rejection after
@@ -858,15 +840,12 @@ managed with safe upload, replacement, removal, and compensation behavior.
 - Duplicate numbers that differ only by formatting or `+20`/`0020`.
 - Two phones marked as WhatsApp.
 - Empty phone collection versus omitted collection.
-- `phones` submitted with `clearPhones = 1`.
 - Duplicate social platforms.
 - Unsupported social machine key.
 - Invalid social URL.
 - Empty social collection versus omitted collection.
-- `socialLinks` submitted with `clearSocialLinks = 1`.
 - One coordinate submitted without the other.
 - Out-of-range coordinate.
-- File and matching remove flag submitted together.
 - Unsafe SVG with script, event handler, external resource, or embedded HTML.
 - New file stored, then database transaction fails.
 - Database commit succeeds, then old-file deletion fails.

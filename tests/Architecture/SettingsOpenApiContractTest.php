@@ -105,8 +105,7 @@ it('freezes exact request and response settings objects', function () {
             'googleMapsUrl', 'latitude', 'longitude', 'defaultSeoTitleAr',
             'defaultSeoTitleEn', 'defaultSeoDescriptionAr', 'defaultSeoDescriptionEn',
             'defaultSeoKeywordsAr', 'defaultSeoKeywordsEn', 'phones', 'socialLinks',
-            'clearPhones', 'clearSocialLinks', 'removeLogo', 'removeFooterLogo',
-            'removeFavicon', 'logo', 'footerLogo', 'favicon',
+            'logo', 'footerLogo', 'favicon',
         ],
     ];
 

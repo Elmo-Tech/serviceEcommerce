@@ -526,47 +526,6 @@ components:
         - longitude
         longitude:
         - latitude
-      allOf:
-      - not:
-          allOf:
-          - required:
-            - phones
-            - clearPhones
-          - properties:
-              clearPhones:
-                const: 1
-      - not:
-          allOf:
-          - required:
-            - socialLinks
-            - clearSocialLinks
-          - properties:
-              clearSocialLinks:
-                const: 1
-      - not:
-          allOf:
-          - required:
-            - logo
-            - removeLogo
-          - properties:
-              removeLogo:
-                const: 1
-      - not:
-          allOf:
-          - required:
-            - footerLogo
-            - removeFooterLogo
-          - properties:
-              removeFooterLogo:
-                const: 1
-      - not:
-          allOf:
-          - required:
-            - favicon
-            - removeFavicon
-          - properties:
-              removeFavicon:
-                const: 1
       properties:
         siteNameAr:
           type: string
@@ -648,7 +607,7 @@ components:
         phones:
           type: array
           maxItems: 3
-          description: Full ordered replacement. Each input accepts approved Egyptian local or international
+          description: Full ordered replacement; an empty array clears all phones. Each input accepts approved Egyptian local or international
             variants; the backend normalizes before duplicate checks and persistence. More than three
             items, duplicate normalized numbers, or more than one WhatsApp-enabled item are rejected.
           items:
@@ -657,38 +616,15 @@ components:
           type: array
           maxItems: 9
           x-unique-by: platform
-          description: Full ordered replacement; duplicate platforms are rejected.
+          description: Full ordered replacement; an empty array clears all links and duplicate platforms are rejected.
           items:
             $ref: '#/components/schemas/SocialLinkItem'
-        clearPhones:
-          type: integer
-          enum:
-          - 0
-          - 1
-        clearSocialLinks:
-          type: integer
-          enum:
-          - 0
-          - 1
-        removeLogo:
-          type: integer
-          enum:
-          - 0
-          - 1
-        removeFooterLogo:
-          type: integer
-          enum:
-          - 0
-          - 1
-        removeFavicon:
-          type: integer
-          enum:
-          - 0
-          - 1
         logo:
-          type: string
-          format: binary
-          description: JPG, JPEG, PNG, WEBP, or SVG that passes content inspection; unsafe SVG content is rejected without rewriting; maximum 5 MB.
+          anyOf:
+          - type: string
+            format: binary
+          - const: ''
+          description: A valid file replaces the logo; an empty value removes it. JPG, JPEG, PNG, WEBP, or SVG; maximum 5 MB.
           x-allowed-extensions:
           - jpg
           - jpeg
@@ -697,9 +633,11 @@ components:
           - svg
           x-max-file-size-bytes: 5242880
         footerLogo:
-          type: string
-          format: binary
-          description: JPG, JPEG, PNG, WEBP, or SVG that passes content inspection; unsafe SVG content is rejected without rewriting; maximum 5 MB.
+          anyOf:
+          - type: string
+            format: binary
+          - const: ''
+          description: A valid file replaces the footer logo; an empty value removes it. JPG, JPEG, PNG, WEBP, or SVG; maximum 5 MB.
           x-allowed-extensions:
           - jpg
           - jpeg
@@ -708,9 +646,11 @@ components:
           - svg
           x-max-file-size-bytes: 5242880
         favicon:
-          type: string
-          format: binary
-          description: PNG, ICO, or SVG that passes content inspection; unsafe SVG content is rejected without rewriting; maximum 1 MB.
+          anyOf:
+          - type: string
+            format: binary
+          - const: ''
+          description: A valid file replaces the favicon; an empty value removes it. PNG, ICO, or SVG; maximum 1 MB.
           x-allowed-extensions:
           - png
           - ico

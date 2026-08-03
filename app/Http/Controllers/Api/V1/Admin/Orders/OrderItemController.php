@@ -13,6 +13,7 @@ use App\Http\Requests\Api\V1\Admin\Orders\CreateOrderItemRequest;
 use App\Http\Requests\Api\V1\Admin\Orders\UpdateOrderItemRequest;
 use App\Http\Resources\Api\V1\Admin\Orders\AdminOrderItemResource;
 use App\Models\Order;
+use App\Models\User;
 use App\Services\Orders\OrderNestedResourceResolver;
 use App\Support\Api\ApiResponse;
 use Illuminate\Http\JsonResponse;
@@ -45,6 +46,20 @@ class OrderItemController extends Controller
 
     public function store(CreateOrderItemRequest $request, Order $order): JsonResponse
     {
+        /** @var User $admin */
+        $admin = $request->user();
+
+        if ($request->hasFile('attachments') && ! $admin->can('order-item-attachments.create')) {
+            return ApiResponse::withAuthenticationHeaders(
+                ApiResponse::error(
+                    __('auth.forbidden'),
+                    'FORBIDDEN',
+                    null,
+                    HttpStatusCode::FORBIDDEN,
+                ),
+            );
+        }
+
         $orderItem = $this->addOrderItemAction->execute($order, $request->validated());
 
         return ApiResponse::withAuthenticationHeaders(

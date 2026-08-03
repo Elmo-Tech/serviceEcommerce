@@ -91,7 +91,7 @@ Represents one public Egyptian mobile number.
 - Accept approved Egyptian variants and store local canonical form.
 - No item IDs enter or leave the API.
 - Submitting `phones` replaces the full ordered collection.
-- `clearPhones = 1` clears all rows only when `phones` is absent.
+- An explicitly submitted empty `phones` array clears all rows.
 
 ---
 
@@ -140,7 +140,7 @@ snapchat
 - Presence means visible; no `isActive` column exists.
 - No item IDs enter or leave the API.
 - Submitting `socialLinks` replaces the full ordered collection.
-- `clearSocialLinks = 1` clears all rows only when `socialLinks` is absent.
+- An explicitly submitted empty `socialLinks` array clears all rows.
 
 ---
 

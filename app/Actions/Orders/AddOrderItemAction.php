@@ -9,76 +9,105 @@ use App\Exceptions\ApiBusinessException;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Service;
+use App\Services\Orders\OrderAttachmentStore;
 use App\Services\Orders\OrderPricingService;
 use App\Services\Orders\OrderSnapshotFactory;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
+use Throwable;
 
 class AddOrderItemAction
 {
     public function __construct(
         private readonly OrderSnapshotFactory $orderSnapshotFactory,
         private readonly OrderPricingService $orderPricingService,
+        private readonly OrderAttachmentStore $orderAttachmentStore,
     ) {}
 
     public function execute(Order $order, array $payload): OrderItem
     {
-        return DB::transaction(function () use ($order, $payload): OrderItem {
-            /** @var Order $lockedOrder */
-            $lockedOrder = Order::query()
-                ->whereKey($order->getKey())
-                ->lockForUpdate()
-                ->firstOrFail();
+        $storedFiles = [];
 
-            if (! $lockedOrder->isEditable()) {
-                throw new ApiBusinessException(
-                    'orders.errors.order_not_editable',
-                    'ORDER_NOT_EDITABLE',
-                    HttpStatusCode::CONFLICT,
-                );
-            }
+        try {
+            return DB::transaction(function () use ($order, $payload, &$storedFiles): OrderItem {
+                /** @var Order $lockedOrder */
+                $lockedOrder = Order::query()
+                    ->whereKey($order->getKey())
+                    ->lockForUpdate()
+                    ->firstOrFail();
 
-            $service = $this->resolveEligibleService((int) $payload['serviceId']);
-            $pricing = $this->orderPricingService->priceService($service, $payload['selectedOptions'] ?? []);
-            $answerSnapshots = $this->validateAndMapAnswers($service, $payload['answers'] ?? []);
+                if (! $lockedOrder->isEditable()) {
+                    throw new ApiBusinessException(
+                        'orders.errors.order_not_editable',
+                        'ORDER_NOT_EDITABLE',
+                        HttpStatusCode::CONFLICT,
+                    );
+                }
 
-            $quantity = (int) $payload['quantity'];
-            $itemTotal = $this->orderPricingService->calculateItemTotal($pricing['unitPrice'], $quantity);
+                $service = $this->resolveEligibleService((int) $payload['serviceId']);
+                $pricing = $this->orderPricingService->priceService($service, $payload['selectedOptions'] ?? []);
+                $answerSnapshots = $this->validateAndMapAnswers($service, $payload['answers'] ?? []);
 
-            $orderItem = $lockedOrder->items()->create([
-                ...$this->orderSnapshotFactory->serviceSnapshot($service),
-                'unit_price' => $pricing['unitPrice'],
-                'quantity' => $quantity,
-                'item_total' => $itemTotal,
-                'item_note' => $payload['itemNote'] ?? null,
-            ]);
+                $quantity = (int) $payload['quantity'];
+                $itemTotal = $this->orderPricingService->calculateItemTotal($pricing['unitPrice'], $quantity);
 
-            foreach ($pricing['selectedOptions'] as $selectedOption) {
-                $persistedOption = $orderItem->selectedOptions()->create([
-                    'pricing_option_id' => $selectedOption['option']->getKey(),
-                    'option_name_ar' => $selectedOption['option']->name_ar,
-                    'option_name_en' => $selectedOption['option']->name_en,
-                    'input_type' => $selectedOption['option']->input_type->value,
-                    'is_required' => (bool) $selectedOption['option']->is_required,
+                $orderItem = $lockedOrder->items()->create([
+                    ...$this->orderSnapshotFactory->serviceSnapshot($service),
+                    'unit_price' => $pricing['unitPrice'],
+                    'quantity' => $quantity,
+                    'item_total' => $itemTotal,
+                    'item_note' => $payload['itemNote'] ?? null,
                 ]);
 
-                foreach ($selectedOption['values'] as $value) {
-                    $persistedOption->values()->create([
-                        'pricing_option_value_id' => $value->getKey(),
-                        'value_label_ar' => $value->label_ar,
-                        'value_label_en' => $value->label_en,
-                        'price_adjustment' => $value->price_adjustment,
+                foreach ($pricing['selectedOptions'] as $selectedOption) {
+                    $persistedOption = $orderItem->selectedOptions()->create([
+                        'pricing_option_id' => $selectedOption['option']->getKey(),
+                        'option_name_ar' => $selectedOption['option']->name_ar,
+                        'option_name_en' => $selectedOption['option']->name_en,
+                        'input_type' => $selectedOption['option']->input_type->value,
+                        'is_required' => (bool) $selectedOption['option']->is_required,
                     ]);
+
+                    foreach ($selectedOption['values'] as $value) {
+                        $persistedOption->values()->create([
+                            'pricing_option_value_id' => $value->getKey(),
+                            'value_label_ar' => $value->label_ar,
+                            'value_label_en' => $value->label_en,
+                            'price_adjustment' => $value->price_adjustment,
+                        ]);
+                    }
                 }
-            }
 
-            foreach ($answerSnapshots as $answerSnapshot) {
-                $orderItem->answers()->create($answerSnapshot);
-            }
+                foreach ($answerSnapshots as $answerSnapshot) {
+                    $orderItem->answers()->create($answerSnapshot);
+                }
 
-            $this->recalculateOrderTotals($lockedOrder);
+                foreach ((array) ($payload['attachments'] ?? []) as $attachment) {
+                    if (! $attachment instanceof UploadedFile) {
+                        continue;
+                    }
 
-            return $orderItem->fresh(['selectedOptions.values', 'answers', 'attachments']) ?? $orderItem;
-        });
+                    $stored = $this->orderAttachmentStore->storeUploadedFile(
+                        $attachment,
+                        $lockedOrder->order_number,
+                        (int) $orderItem->getKey(),
+                    );
+                    $storedFiles[] = [
+                        'disk' => $stored['disk'],
+                        'path' => $stored['path'],
+                    ];
+                    $orderItem->attachments()->create($stored);
+                }
+
+                $this->recalculateOrderTotals($lockedOrder);
+
+                return $orderItem->fresh(['selectedOptions.values', 'answers', 'attachments']) ?? $orderItem;
+            });
+        } catch (Throwable $throwable) {
+            $this->orderAttachmentStore->cleanupCreatedFiles($storedFiles);
+
+            throw $throwable;
+        }
     }
 
     private function resolveEligibleService(int $serviceId): Service

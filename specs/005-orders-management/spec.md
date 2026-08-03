@@ -192,16 +192,20 @@ nested ownership on every route.
 1. **Given** an editable order and an administrator with `order-items.create`,
    **When** they add a valid new service item, **Then** the backend stores a new
    item snapshot and recalculates order totals.
-2. **Given** an existing order item, **When** the administrator updates only
+2. **Given** an editable order and an administrator with `order-items.create`
+   plus `order-item-attachments.create`, **When** they add a valid item with
+   `attachments[]` in one multipart request, **Then** the item and protected
+   attachments are persisted atomically and returned together.
+3. **Given** an existing order item, **When** the administrator updates only
    the quantity, **Then** the backend updates quantity and item total without
    recomputing snapshot unit price.
-3. **Given** an existing order item, **When** the administrator submits full
+4. **Given** an existing order item, **When** the administrator submits full
    replacement `selectedOptions`, **Then** the backend replaces the old pricing
    snapshots, validates current eligibility, and recalculates totals.
-4. **Given** the only remaining order item on an order, **When** the
+5. **Given** the only remaining order item on an order, **When** the
    administrator attempts to delete it, **Then** the backend rejects the
    request with the approved at-least-one-item outcome.
-5. **Given** an order item belongs to an editable order, **When** an
+6. **Given** an order item belongs to an editable order, **When** an
    administrator uploads or deletes attachments, **Then** the backend enforces
    file rules, nested ownership, permissions, and the editable-state boundary;
    **And given** an item belongs to any order status, **When** an authorized
@@ -356,8 +360,9 @@ nested-resource disclosure behavior.
 - **FR-024**: The general Order PATCH MAY include `status`; when it does, it
   MUST require both `orders.update` and `orders.change-status` and MUST invoke
   the same transition workflow as the dedicated Status endpoint.
-- **FR-025**: The system MUST allow nested item create, show, update, and delete,
-  but MUST forbid changing `serviceId` on an existing item.
+- **FR-025**: The system MUST allow nested item create, show, update, and delete.
+  Admin item create MUST accept optional `attachments[]` in the same multipart
+  request, while changing `serviceId` on an existing item remains forbidden.
 - **FR-026**: Item PATCH MUST preserve omitted keys, use the snapshotted
   `unitPrice` for quantity-only updates, treat supplied `selectedOptions` as
   full replacement, and treat supplied `answers` as full replacement.
@@ -382,10 +387,10 @@ nested-resource disclosure behavior.
 - **FR-032**: Each order item MUST allow at most 3 attachments, each no larger
   than 10 MB, with extensions limited to `png`, `jpg`, `jpeg`, `webp`, `pdf`,
   `doc`, and `docx`.
-- **FR-033**: Public/Admin create requests MUST support at most 30 total
-  attachment files and 100 MB combined attachment bytes, while standalone
-  Admin attachment-upload requests MUST support at most 3 files and 30 MB
-  combined.
+- **FR-033**: Public/Admin order-create requests MUST support at most 30 total
+  attachment files and 100 MB combined attachment bytes. Admin add-item and
+  standalone Admin attachment-upload requests MUST support at most 3 files and
+  30 MB combined.
 - **FR-034**: Order-item attachments MUST use protected storage, MUST never
   expose raw paths or public URLs, and MUST be downloaded only through an
   authenticated nested Admin endpoint with `orders.view` and strict ownership
@@ -439,7 +444,8 @@ nested-resource disclosure behavior.
   independently for nested item operations.
 - **AR-004**: Administrators MUST hold `order-item-attachments.create` and
   `order-item-attachments.delete` independently for nested attachment mutation
-  routes.
+  routes. Admin add-item additionally requires `order-item-attachments.create`
+  only when the same request contains attachments.
 - **AR-005**: Protected attachment download MUST require authenticated active
   administrator access plus `orders.view` and strict nested ownership
   verification.
@@ -518,7 +524,7 @@ nested-resource disclosure behavior.
 - **API-005**: `PATCH /api/v1/admin/orders/{order}` with `status` and
   `PATCH /api/v1/admin/orders/{order}/status` MUST share one transition
   contract; payment MUST remain isolated under the Payment endpoints.
-- **API-006**: Public Create and Admin Create MUST always use
+- **API-006**: Public Create, Admin Create, and Admin Add Item MUST always use
   `multipart/form-data` with bracket notation, whether or not files are
   included. Ordinary update endpoints MUST use JSON, attachment upload MUST use
   multipart form-data, and protected attachment download MUST return a file

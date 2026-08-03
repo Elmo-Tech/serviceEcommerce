@@ -339,7 +339,8 @@ editable, and download attachments in any order status.
 ### Tests for User Story 3 (MANDATORY)
 
 - [x] T038 [P] [US3] Add one consolidated admin order-item suite covering item
-  create, show, quantity-only update, full selected-options replacement, full
+  multipart create with optional atomic attachments, conditional attachment
+  permission, rollback compensation, show, quantity-only update, full selected-options replacement, full
   answers replacement, service immutability, required-answer preservation, and
   final-item deletion guard. Prove Create/Add Item accepts
   `answers[].orderFieldId`, existing Item Update requires
@@ -361,7 +362,7 @@ editable, and download attachments in any order status.
 ### Implementation for User Story 3
 
 - [x] T041 [P] [US3] Implement admin order-item and attachment request classes
-  for create, update, upload, and nested ownership validation in
+  for multipart create with optional attachments, update, upload, and nested ownership validation in
   `app/Http/Requests/Api/V1/Admin/Orders/CreateOrderItemRequest.php`,
   `UpdateOrderItemRequest.php`, and `UploadOrderItemAttachmentsRequest.php`
 - [x] T042 [P] [US3] Implement the complete localized admin item and
@@ -377,7 +378,8 @@ editable, and download attachments in any order status.
   `tests/Unit/Services/Orders/OrderNestedResourceResolverTest.php`
 - [x] T044 [US3] Implement transactional add-item, update-item, and delete-item
   workflows with current service validation, snapshot replacement, answer
-  replacement by `orderItemAnswerId`, total recalculation, and final-item
+  replacement by `orderItemAnswerId`, atomic attachment persistence and file
+  compensation during add-item, total recalculation, and final-item
   protection in `app/Actions/Orders/AddOrderItemAction.php`,
   `UpdateOrderItemAction.php`, and `DeleteOrderItemAction.php`
 - [x] T045 [US3] Implement attachment upload/delete/download workflows with
@@ -387,7 +389,8 @@ editable, and download attachments in any order status.
   `DeleteOrderItemAttachmentAction.php`, and
   `app/Services/Orders/OrderNestedResourceResolver.php`
 - [x] T046 [US3] Implement the thin nested admin item and attachment
-  controllers plus exact nested routes and permission middleware in
+  controllers plus exact nested routes, permission middleware, and conditional
+  `order-item-attachments.create` enforcement for add-item requests containing files in
   `app/Http/Controllers/Api/V1/Admin/Orders/OrderItemController.php`,
   `OrderItemAttachmentController.php`, and `routes/api/v1/admin.php`
 

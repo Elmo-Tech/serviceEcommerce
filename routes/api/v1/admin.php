@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\V1\Admin\Categories\SubcategoryController;
 use App\Http\Controllers\Api\V1\Admin\Customers\CustomerAddressController;
 use App\Http\Controllers\Api\V1\Admin\Customers\CustomerController;
 use App\Http\Controllers\Api\V1\Admin\Dashboard\DashboardController;
+use App\Http\Controllers\Api\V1\Admin\Faqs\FaqController;
 use App\Http\Controllers\Api\V1\Admin\HeroSlides\HeroSlideController;
 use App\Http\Controllers\Api\V1\Admin\Orders\OrderController;
 use App\Http\Controllers\Api\V1\Admin\Orders\OrderItemAttachmentController;
@@ -20,6 +21,7 @@ use App\Http\Controllers\Api\V1\Admin\Services\ServicePricingOptionController;
 use App\Http\Controllers\Api\V1\Admin\Services\ServiceSpecificationController;
 use App\Http\Controllers\Api\V1\Admin\Settings\SettingsController as AdminSettingsController;
 use App\Http\Middleware\ParseHeroSlideMultipartPatch;
+use App\Http\Middleware\ParseSettingsMultipartPatch;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware([
@@ -44,6 +46,20 @@ Route::middleware([
     Route::delete('/hero-slides/{heroSlide}', [HeroSlideController::class, 'destroy'])
         ->whereNumber('heroSlide')
         ->middleware('permission:hero-slides.delete');
+
+    Route::get('/faqs', [FaqController::class, 'index'])
+        ->middleware('permission:faqs.view');
+    Route::post('/faqs', [FaqController::class, 'store'])
+        ->middleware('permission:faqs.create');
+    Route::get('/faqs/{faq}', [FaqController::class, 'show'])
+        ->whereNumber('faq')
+        ->middleware('permission:faqs.view');
+    Route::patch('/faqs/{faq}', [FaqController::class, 'update'])
+        ->whereNumber('faq')
+        ->middleware('permission:faqs.update');
+    Route::delete('/faqs/{faq}', [FaqController::class, 'destroy'])
+        ->whereNumber('faq')
+        ->middleware('permission:faqs.delete');
 
     Route::get('/customers', [CustomerController::class, 'index'])
         ->middleware('permission:customers.view');
@@ -269,5 +285,5 @@ Route::middleware([
     Route::get('/settings', [AdminSettingsController::class, 'show'])
         ->middleware('permission:settings.view');
     Route::patch('/settings', [AdminSettingsController::class, 'update'])
-        ->middleware('permission:settings.update');
+        ->middleware(['permission:settings.update', ParseSettingsMultipartPatch::class]);
 });

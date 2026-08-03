@@ -386,7 +386,7 @@ Maximum per item: 3 files
 Maximum per file: 10 MB
 Maximum attachment files in one Public/Admin create request: 30
 Maximum combined attachment bytes in one Public/Admin create request: 100 MB
-Maximum standalone Admin attachment-upload request: 3 files / 30 MB
+Maximum Admin add-item or standalone attachment-upload request: 3 files / 30 MB
 ```
 
 The application validates these limits before persistence, while deployment
@@ -498,7 +498,7 @@ created_at DESC, id DESC
 | Admin status change | `orders.change-status` |
 | Admin payment read/update | `orders.manage-payment` |
 | Admin item list/show | `order-items.view` |
-| Admin item create | `order-items.create` |
+| Admin item create | `order-items.create`; add `order-item-attachments.create` when attachments are present |
 | Admin item update | `order-items.update` |
 | Admin item delete | `order-items.delete` |
 | Admin attachment upload | `order-item-attachments.create` |

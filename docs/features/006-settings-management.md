@@ -351,26 +351,14 @@ Normalization must:
 Phone arrays use full replacement.
 
 ```text
-phones absent + clearPhones absent
+phones absent
 → no change
 
-phones submitted
+phones submitted with one or more items
 → replace the full collection
 
-clearPhones = 1
+phones = []
 → delete all phones
-```
-
-Invalid:
-
-```text
-phones submitted + clearPhones = 1
-```
-
-Result:
-
-```text
-422 VALIDATION_ERROR
 ```
 
 To delete one phone, the frontend removes it locally and submits the remaining
@@ -427,26 +415,14 @@ Rules:
 ### 10.1 Social Replacement and Deletion
 
 ```text
-socialLinks absent + clearSocialLinks absent
+socialLinks absent
 → no change
 
-socialLinks submitted
+socialLinks submitted with one or more items
 → replace the full collection
 
-clearSocialLinks = 1
+socialLinks = []
 → delete all links
-```
-
-Invalid:
-
-```text
-socialLinks submitted + clearSocialLinks = 1
-```
-
-Result:
-
-```text
-422 VALIDATION_ERROR
 ```
 
 To delete one link, the frontend removes it locally and submits the remaining
@@ -592,11 +568,10 @@ The client must never submit existing storage paths.
 
 ### Keep Current File
 
-Do not send the file or removal flag.
+Do not send the file field.
 
 ```text
 logo absent
-removeLogo absent
 → keep current logo
 ```
 
@@ -617,18 +592,9 @@ Workflow:
 
 ### Remove File
 
-Removal flags:
-
 ```text
-removeLogo
-removeFooterLogo
-removeFavicon
-```
-
-Example:
-
-```text
-removeLogo = 1
+logo = ""
+→ remove the current logo
 ```
 
 Workflow:
@@ -639,20 +605,7 @@ Workflow:
 
 ### Conflict
 
-Invalid:
-
-```text
-logo = new-file.png
-removeLogo = 1
-```
-
 The same applies to footer logo and favicon.
-
-Result:
-
-```text
-422 VALIDATION_ERROR
-```
 
 ### Filesystem Compensation
 
@@ -1091,8 +1044,7 @@ Status guidance:
 - Zero or one WhatsApp allowed.
 - Two WhatsApp numbers rejected.
 - Full replacement.
-- `clearPhones`.
-- Conflict between array and clear flag.
+- Empty `phones` array clears all phones.
 - Order preserved.
 
 ### Social Update
@@ -1102,8 +1054,7 @@ Status guidance:
 - Duplicate platform rejected.
 - Invalid URL rejected.
 - Full replacement.
-- `clearSocialLinks`.
-- Conflict between array and clear flag.
+- Empty `socialLinks` array clears all links.
 - Order preserved.
 
 ### File Update

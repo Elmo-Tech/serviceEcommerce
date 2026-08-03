@@ -86,14 +86,14 @@ it('rejects duplicate normalized phones and duplicate social platforms during ad
         ->assertJsonStructure(['errors' => ['socialLinks']]);
 });
 
-it('clears phone and social collections when the explicit clear flags are set', function () {
+it('clears phone and social collections when empty arrays are submitted', function () {
     $setting = Setting::factory()->create(['id' => 1]);
     $setting->phones()->create(['number' => '01012345678', 'has_whats' => 1, 'position' => 0]);
     $setting->socialLinks()->create(['platform' => SocialPlatform::FACEBOOK, 'url' => 'https://facebook.com/example', 'position' => 0]);
 
     $response = $this->patchJson('/api/v1/admin/settings', [
-        'clearPhones' => 1,
-        'clearSocialLinks' => 1,
+        'phones' => [],
+        'socialLinks' => [],
     ], settingsAdminHeaders(settingsAdminToken()));
 
     $response->assertOk()
@@ -102,6 +102,46 @@ it('clears phone and social collections when the explicit clear flags are set', 
 
     expect($setting->fresh()->phones()->count())->toBe(0)
         ->and($setting->fresh()->socialLinks()->count())->toBe(0);
+});
+
+it('accepts the real multipart patch shape sent by Postman', function () {
+    Setting::factory()->create(['id' => 1]);
+    $boundary = '----SettingsPostmanBoundary7MA4YWxk';
+    $parts = [
+        ['siteNameEn', 'Service Commerce'],
+        ['publicEmail', 'info@example.com'],
+        ['phones[0][number]', '+20 101 234 5678'],
+        ['phones[0][hasWhats]', '1'],
+    ];
+    $body = '';
+
+    foreach ($parts as [$name, $value]) {
+        $body .= "--{$boundary}\r\n";
+        $body .= "Content-Disposition: form-data; name=\"{$name}\"\r\n\r\n";
+        $body .= "{$value}\r\n";
+    }
+
+    $body .= "--{$boundary}--\r\n";
+
+    $accessToken = settingsAdminToken();
+    $response = $this->call(
+        'PATCH',
+        '/api/v1/admin/settings',
+        server: [
+            'CONTENT_TYPE' => "multipart/form-data; boundary={$boundary}",
+            'CONTENT_LENGTH' => (string) strlen($body),
+            'HTTP_ACCEPT' => 'application/json',
+            'HTTP_ACCEPT_LANGUAGE' => 'en',
+            'HTTP_AUTHORIZATION' => 'Bearer '.$accessToken,
+        ],
+        content: $body,
+    );
+
+    $response->assertOk()
+        ->assertJsonPath('data.siteNameEn', 'Service Commerce')
+        ->assertJsonPath('data.publicEmail', 'info@example.com')
+        ->assertJsonPath('data.phones.0.number', '01012345678')
+        ->assertJsonPath('data.phones.0.hasWhats', 1);
 });
 
 it('preserves omitted fields and explicitly clears optional scalar fields', function () {
@@ -189,16 +229,19 @@ it('rejects phone and social collection limits and invariants', function (array 
     ], 'socialLinks'],
 ]);
 
-it('rejects collection and branding conflict flags', function (array $payload, string $errorKey) {
+it('rejects removed collection clear and branding remove keys', function (string $key) {
     Setting::factory()->create(['id' => 1]);
 
-    $this->patchJson('/api/v1/admin/settings', $payload, settingsAdminHeaders(settingsAdminToken()))
+    $this->patchJson('/api/v1/admin/settings', [$key => 1], settingsAdminHeaders(settingsAdminToken()))
         ->assertUnprocessable()
         ->assertJsonPath('code', 'VALIDATION_ERROR')
-        ->assertJsonStructure(['errors' => [$errorKey]]);
+        ->assertJsonStructure(['errors' => ['payload']]);
 })->with([
-    'phones and clear' => [['phones' => [], 'clearPhones' => 1], 'phones'],
-    'social links and clear' => [['socialLinks' => [], 'clearSocialLinks' => 1], 'socialLinks'],
+    'clearPhones',
+    'clearSocialLinks',
+    'removeLogo',
+    'removeFooterLogo',
+    'removeFavicon',
 ]);
 
 it('persists and clears coordinate pairs and rejects invalid coordinates', function () {

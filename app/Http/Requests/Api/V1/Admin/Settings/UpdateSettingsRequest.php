@@ -48,14 +48,9 @@ class UpdateSettingsRequest extends FormRequest
             'socialLinks' => ['sometimes', 'array', 'max:9'],
             'socialLinks.*.platform' => ['required_with:socialLinks', 'string', Rule::in(SocialPlatform::keys())],
             'socialLinks.*.url' => ['required_with:socialLinks', 'string', 'url:http,https'],
-            'clearPhones' => ['sometimes', 'integer', Rule::in([0, 1])],
-            'clearSocialLinks' => ['sometimes', 'integer', Rule::in([0, 1])],
-            'removeLogo' => ['sometimes', 'integer', Rule::in([0, 1])],
-            'removeFooterLogo' => ['sometimes', 'integer', Rule::in([0, 1])],
-            'removeFavicon' => ['sometimes', 'integer', Rule::in([0, 1])],
-            'logo' => ['sometimes', 'file', 'max:5120', 'mimes:jpg,jpeg,png,webp,svg'],
-            'footerLogo' => ['sometimes', 'file', 'max:5120', 'mimes:jpg,jpeg,png,webp,svg'],
-            'favicon' => ['sometimes', 'file', 'max:1024', 'mimes:png,ico,svg'],
+            'logo' => ['sometimes', 'nullable', 'file', 'max:5120', 'mimes:jpg,jpeg,png,webp,svg'],
+            'footerLogo' => ['sometimes', 'nullable', 'file', 'max:5120', 'mimes:jpg,jpeg,png,webp,svg'],
+            'favicon' => ['sometimes', 'nullable', 'file', 'max:1024', 'mimes:png,ico,svg'],
         ];
     }
 
@@ -74,24 +69,6 @@ class UpdateSettingsRequest extends FormRequest
 
                 if ($this->all() === [] && $this->allFiles() === []) {
                     $validator->errors()->add('payload', __('validation.invalid_payload'));
-                }
-
-                if ($this->has('phones') && (int) $this->input('clearPhones') === 1) {
-                    $validator->errors()->add('phones', __('validation.invalid_payload'));
-                }
-
-                if ($this->has('socialLinks') && (int) $this->input('clearSocialLinks') === 1) {
-                    $validator->errors()->add('socialLinks', __('validation.invalid_payload'));
-                }
-
-                foreach ([
-                    ['file' => 'logo', 'flag' => 'removeLogo'],
-                    ['file' => 'footerLogo', 'flag' => 'removeFooterLogo'],
-                    ['file' => 'favicon', 'flag' => 'removeFavicon'],
-                ] as $pair) {
-                    if ($this->hasFile($pair['file']) && (int) $this->input($pair['flag']) === 1) {
-                        $validator->errors()->add($pair['file'], __('validation.invalid_payload'));
-                    }
                 }
 
                 $this->ensureApprovedFileExtensions($validator);
@@ -125,6 +102,14 @@ class UpdateSettingsRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         $payload = [];
+
+        foreach (['phones', 'socialLinks'] as $field) {
+            $value = $this->input($field);
+
+            if (is_string($value) && trim($value) === '[]') {
+                $payload[$field] = [];
+            }
+        }
 
         foreach ([
             'siteNameAr',
@@ -211,9 +196,13 @@ class UpdateSettingsRequest extends FormRequest
             $payload['socialLinks'] = $socialLinks;
         }
 
-        foreach (['clearPhones', 'clearSocialLinks', 'removeLogo', 'removeFooterLogo', 'removeFavicon'] as $field) {
-            if (array_key_exists($field, $this->all())) {
-                $payload[$field] = (int) $this->input($field);
+        foreach (['logo', 'footerLogo', 'favicon'] as $field) {
+            if (! $this->hasFile($field) && array_key_exists($field, $this->all())) {
+                $value = $this->input($field);
+
+                if ($value === null || is_string($value) && trim($value) === '') {
+                    $payload[$field] = null;
+                }
             }
         }
 
@@ -245,8 +234,7 @@ class UpdateSettingsRequest extends FormRequest
             'googleMapsUrl', 'latitude', 'longitude', 'defaultSeoTitleAr',
             'defaultSeoTitleEn', 'defaultSeoDescriptionAr', 'defaultSeoDescriptionEn',
             'defaultSeoKeywordsAr', 'defaultSeoKeywordsEn', 'phones', 'socialLinks',
-            'clearPhones', 'clearSocialLinks', 'removeLogo', 'removeFooterLogo',
-            'removeFavicon', 'logo', 'footerLogo', 'favicon',
+            'logo', 'footerLogo', 'favicon',
         ];
 
         if (array_diff(array_keys($this->all()), $allowedTopLevel) !== []) {

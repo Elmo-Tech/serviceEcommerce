@@ -1231,20 +1231,29 @@
         },
         {
           "name": "Create Order Item",
-          "description": "Adds one new item to an editable order. Body keys: serviceId = selected service; quantity = requested quantity; selectedOptions[*].pricingOptionId = pricing-option group; selectedOptions[*].valueIds = chosen value IDs; answers[*].orderFieldId = service-order-field on create; answers[*].answer = plain-text answer; itemNote = optional item-level note.",
+          "description": "Adds one item to an editable order using multipart/form-data. serviceId selects the service; quantity is the requested quantity; selectedOptions use pricing-option/value IDs; answers use current service orderFieldId values; itemNote is optional; attachments[] accepts up to 3 protected PNG/JPG/JPEG/WEBP/PDF/DOC/DOCX files, maximum 10 MB each and 30 MB combined. Attachments additionally require order-item-attachments.create, and item plus files are atomic.",
           "request": {
             "method": "POST",
             "header": [
               { "key": "Accept", "value": "application/json" },
               { "key": "Accept-Language", "value": "ar" },
-              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
-              { "key": "Content-Type", "value": "application/json" }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"serviceId\": 2,\n  \"quantity\": 1,\n  \"selectedOptions\": [\n    {\n      \"pricingOptionId\": 2,\n      \"valueIds\": [3]\n    }\n  ],\n  \"answers\": [\n    {\n      \"orderFieldId\": 4,\n      \"answer\": \"Urgent request\"\n    }\n  ],\n  \"itemNote\": \"Prioritize this order item\"\n}",
-              "options": { "raw": { "language": "json" } }
-            },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+              ],
+              "body": {
+                "mode": "formdata",
+                "formdata": [
+                  { "key": "serviceId", "value": "2", "type": "text", "description": "Required active and available service ID." },
+                  { "key": "quantity", "value": "1", "type": "text", "description": "Required integer of at least 1." },
+                  { "key": "selectedOptions[0][pricingOptionId]", "value": "2", "type": "text", "description": "Optional pricing-option group ID.", "disabled": true },
+                  { "key": "selectedOptions[0][valueIds][0]", "value": "3", "type": "text", "description": "Selected value ID belonging to the pricing option.", "disabled": true },
+                  { "key": "answers[0][orderFieldId]", "value": "4", "type": "text", "description": "Current service order-field ID; required service questions must be answered.", "disabled": true },
+                  { "key": "answers[0][answer]", "value": "Urgent request", "type": "text", "description": "Plain-text answer, maximum 2000 characters.", "disabled": true },
+                  { "key": "itemNote", "value": "Prioritize this order item", "type": "text", "description": "Optional item note, maximum 2000 characters.", "disabled": true },
+                  { "key": "attachments[0]", "type": "file", "src": "", "description": "Optional protected file; PNG/JPG/JPEG/WEBP/PDF/DOC/DOCX, maximum 10 MB.", "disabled": true },
+                  { "key": "attachments[1]", "type": "file", "src": "", "description": "Optional second attachment.", "disabled": true },
+                  { "key": "attachments[2]", "type": "file", "src": "", "description": "Optional third attachment; maximum 30 MB combined.", "disabled": true }
+                ]
+              },
             "url": "{{baseUrl}}/admin/orders/1/items"
           }
         },
@@ -1447,7 +1456,7 @@
         },
         {
           "name": "Update Settings",
-          "description": "Atomic multipart partial update. Omitted values are preserved; empty optional strings clear to null. phones/socialLinks are ordered full replacements. Clear/remove flags equal 1 and conflict with their matching array/file. Coordinates are submitted together. Egyptian phone formatting is normalized to 01xxxxxxxxx.",
+          "description": "Atomic multipart partial update. Omitted values are preserved; empty optional strings clear to null. phones/socialLinks are ordered full replacements, and the literal [] clears either collection. Submit logo/footerLogo/favicon as an empty Text field to remove it, or as File to replace it. Coordinates are submitted together. Egyptian phone formatting is normalized to 01xxxxxxxxx.",
           "request": {
             "method": "PATCH",
             "header": [
@@ -1469,7 +1478,7 @@
                 { "key": "phones[0][hasWhats]", "value": "1", "type": "text", "description": "1 = WhatsApp enabled, 0 = not enabled; at most one item may be 1." },
                 { "key": "phones[1][number]", "value": "01112345678", "type": "text", "description": "Second ordered phone; maximum total is 3.", "disabled": true },
                 { "key": "phones[1][hasWhats]", "value": "0", "type": "text", "description": "WhatsApp flag for the second phone.", "disabled": true },
-                { "key": "clearPhones", "value": "1", "type": "text", "description": "1 clears all phones; cannot be sent with phones[].", "disabled": true },
+                { "key": "phones", "value": "[]", "type": "text", "description": "Enable this row and disable every phones[index] row to clear all phones.", "disabled": true },
                 { "key": "addressAr", "value": "القاهرة، مصر", "type": "text", "description": "Optional Arabic address; empty string clears it.", "disabled": true },
                 { "key": "addressEn", "value": "Cairo, Egypt", "type": "text", "description": "Optional English address; empty string clears it.", "disabled": true },
                 { "key": "googleMapsUrl", "value": "https://maps.google.com/?q=30.0444,31.2357", "type": "text", "description": "Optional HTTP/HTTPS map URL; empty string clears it.", "disabled": true },
@@ -1477,19 +1486,16 @@
                 { "key": "longitude", "value": "31.2357000", "type": "text", "description": "-180..180 with up to 7 decimals; must be sent with latitude.", "disabled": true },
                 { "key": "socialLinks[0][platform]", "value": "facebook", "type": "text", "description": "facebook, instagram, linkedin, youtube, tiktok, x, telegram, pinterest, or snapchat.", "disabled": true },
                 { "key": "socialLinks[0][url]", "value": "https://facebook.com/service-commerce", "type": "text", "description": "Absolute HTTP/HTTPS URL for the platform.", "disabled": true },
-                { "key": "clearSocialLinks", "value": "1", "type": "text", "description": "1 clears all social links; cannot be sent with socialLinks[].", "disabled": true },
+                { "key": "socialLinks", "value": "[]", "type": "text", "description": "Enable this row and disable every socialLinks[index] row to clear all social links.", "disabled": true },
                 { "key": "defaultSeoTitleAr", "value": "خدمات احترافية", "type": "text", "description": "Optional Arabic SEO title; empty string clears it.", "disabled": true },
                 { "key": "defaultSeoTitleEn", "value": "Professional Services", "type": "text", "description": "Optional English SEO title; empty string clears it.", "disabled": true },
                 { "key": "defaultSeoDescriptionAr", "value": "وصف افتراضي", "type": "text", "description": "Optional Arabic SEO description; empty string clears it.", "disabled": true },
                 { "key": "defaultSeoDescriptionEn", "value": "Default SEO description", "type": "text", "description": "Optional English SEO description; empty string clears it.", "disabled": true },
                 { "key": "defaultSeoKeywordsAr[0]", "value": "خدمات", "type": "text", "description": "Ordered non-empty keyword; trimmed case-insensitive duplicates are rejected.", "disabled": true },
                 { "key": "defaultSeoKeywordsEn[0]", "value": "Services", "type": "text", "description": "Ordered non-empty keyword; original casing is preserved.", "disabled": true },
-                { "key": "logo", "type": "file", "src": "", "description": "JPG/JPEG/PNG/WEBP/SVG, maximum 5 MB; safe SVG only.", "disabled": true },
-                { "key": "footerLogo", "type": "file", "src": "", "description": "JPG/JPEG/PNG/WEBP/SVG, maximum 5 MB; safe SVG only.", "disabled": true },
-                { "key": "favicon", "type": "file", "src": "", "description": "PNG/ICO/SVG, maximum 1 MB; safe SVG only.", "disabled": true },
-                { "key": "removeLogo", "value": "1", "type": "text", "description": "1 removes logo; cannot be sent with logo file.", "disabled": true },
-                { "key": "removeFooterLogo", "value": "1", "type": "text", "description": "1 removes footer logo; cannot be sent with footerLogo file.", "disabled": true },
-                { "key": "removeFavicon", "value": "1", "type": "text", "description": "1 removes favicon; cannot be sent with favicon file.", "disabled": true }
+                { "key": "logo", "type": "file", "src": "", "description": "File replaces the logo (JPG/JPEG/PNG/WEBP/SVG, max 5 MB). Change this row to Text with an empty value to remove it.", "disabled": true },
+                { "key": "footerLogo", "type": "file", "src": "", "description": "File replaces the footer logo (JPG/JPEG/PNG/WEBP/SVG, max 5 MB). Change this row to Text with an empty value to remove it.", "disabled": true },
+                { "key": "favicon", "type": "file", "src": "", "description": "File replaces the favicon (PNG/ICO/SVG, max 1 MB). Change this row to Text with an empty value to remove it.", "disabled": true }
               ]
             },
             "url": "{{baseUrl}}/admin/settings"
@@ -1658,6 +1664,105 @@
             "url": "{{baseUrl}}/admin/hero-slides/1"
           },
           "response": [{ "name": "200 - Hero slide deleted", "originalRequest": { "method": "DELETE", "url": "{{baseUrl}}/admin/hero-slides/1" }, "status": "OK", "code": 200, "header": [{ "key": "Content-Type", "value": "application/json" }], "body": "{\"success\":true,\"message\":\"Hero slide deleted successfully.\",\"data\":null}" }]
+        }
+      ]
+    },
+    {
+      "name": "Admin FAQs",
+      "description": "Feature 009 protected FAQ management. questionAr/questionEn are the bilingual visible questions. answerAr/answerEn are plain-text answers with line breaks preserved. isActive: 1 = publicly visible, 0 = hidden. position is optional on create/update, starts from 1, and the backend automatically shifts surrounding rows to keep positions unique and gapless. Admin list supports filter[isActive] = 0 or 1, filter[search] across Arabic and English question text, page, and perPage.",
+      "item": [
+        {
+          "name": "List FAQs",
+          "description": "Requires faqs.view. Query keys: filter[isActive] = 1 active only / 0 inactive only; filter[search] = case-insensitive search across questionAr and questionEn; page = positive page number; perPage defaults to 15 and maxes at 100. Results always return both languages ordered by position ascending.",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Accept-Language", "value": "en" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/admin/faqs?filter[isActive]=1&filter[search]=service&page=1&perPage=15"
+          }
+        },
+        {
+          "name": "Create FAQ",
+          "description": "Requires faqs.create. questionAr/questionEn = required unique questions per locale after trim and case-insensitive comparison. answerAr/answerEn = required plain-text answers. isActive = required 1 or 0. position = optional insert target; if omitted, the FAQ is appended at the end.",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Accept-Language", "value": "en" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"questionAr\": \"كيف أطلب الخدمة؟\",\n  \"questionEn\": \"How do I order a service?\",\n  \"answerAr\": \"اختر الخدمة ثم أكمل بيانات الطلب.\",\n  \"answerEn\": \"Choose the service and complete the order details.\",\n  \"isActive\": 1,\n  \"position\": 1\n}"
+            },
+            "url": "{{baseUrl}}/admin/faqs"
+          }
+        },
+        {
+          "name": "Show FAQ",
+          "description": "Requires faqs.view. Returns the full editable Admin FAQ resource for the given numeric ID.",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Accept-Language", "value": "ar" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/admin/faqs/1"
+          }
+        },
+        {
+          "name": "Update FAQ",
+          "description": "Requires faqs.update. PATCH is partial: omitted keys stay unchanged. position is optional and moves the FAQ while compacting surrounding rows. Required fields cannot be cleared to empty or null.",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Accept-Language", "value": "en" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"questionEn\": \"How can I order a service?\",\n  \"answerEn\": \"Choose the service, add the details, then submit the order.\",\n  \"isActive\": 1,\n  \"position\": 2\n}"
+            },
+            "url": "{{baseUrl}}/admin/faqs/1"
+          }
+        },
+        {
+          "name": "Delete FAQ",
+          "description": "Requires faqs.delete. Permanently deletes the FAQ, compacts later positions automatically, and returns data = null.",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Accept-Language", "value": "en" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/admin/faqs/1"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Public FAQs",
+      "description": "Feature 009 unauthenticated FAQ listing. Only active FAQs are returned, always ordered by position ascending. Accept-Language resolves Arabic or English content into neutral question/answer keys. Public pagination supports only page and perPage.",
+      "item": [
+        {
+          "name": "List Public FAQs",
+          "description": "No token required. page = positive page number; perPage defaults to 15 and maxes at 100. The response never exposes id, isActive, position, or dual-language fields.",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Accept-Language", "value": "ar" }
+            ],
+            "url": "{{baseUrl}}/public/faqs?page=1&perPage=15"
+          }
         }
       ]
     },

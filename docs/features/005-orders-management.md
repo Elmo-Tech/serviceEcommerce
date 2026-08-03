@@ -1314,29 +1314,29 @@ orders.manage-payment
 
 ```http
 POST /api/v1/admin/orders/{order}/items
+Content-Type: multipart/form-data
 ```
 
-```json
-{
-  "serviceId": 20,
-  "quantity": 2,
-  "selectedOptions": [
-    {
-      "pricingOptionId": 7,
-      "valueIds": [15]
-    }
-  ],
-  "answers": [
-    {
-      "orderFieldId": 5,
-      "answer": "200 × 100 cm"
-    }
-  ],
-  "itemNote": "Use natural wood."
-}
+```text
+serviceId
+quantity
+selectedOptions[0][pricingOptionId]
+selectedOptions[0][valueIds][0]
+answers[0][orderFieldId]
+answers[0][answer]
+itemNote
+attachments[0]
+attachments[1]
+attachments[2]
 ```
 
-Attachments use the separate upload endpoint after item creation.
+Attachments are optional. When present, the Admin must also hold
+`order-item-attachments.create`. Item creation, attachment persistence, and
+order-total recalculation are atomic. A failure removes any newly stored files
+and leaves no new item or attachment rows.
+
+The request allows at most 3 attachments, 10 MB per file, and 30 MB combined.
+The separate upload endpoint remains available after item creation.
 
 ---
 

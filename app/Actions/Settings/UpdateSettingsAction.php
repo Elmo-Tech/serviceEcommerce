@@ -72,19 +72,19 @@ class UpdateSettingsAction
                 }
 
                 foreach ([
-                    'logo' => ['column' => 'logo_path', 'flag' => 'removeLogo'],
-                    'footerLogo' => ['column' => 'footer_logo_path', 'flag' => 'removeFooterLogo'],
-                    'favicon' => ['column' => 'favicon_path', 'flag' => 'removeFavicon'],
-                ] as $field => $config) {
+                    'logo' => 'logo_path',
+                    'footerLogo' => 'footer_logo_path',
+                    'favicon' => 'favicon_path',
+                ] as $field => $column) {
                     if (isset($storedFiles[$field])) {
-                        $oldPath = $setting->{$config['column']};
-                        $setting->{$config['column']} = $storedFiles[$field]['path'];
+                        $oldPath = $setting->{$column};
+                        $setting->{$column} = $storedFiles[$field]['path'];
                         if (is_string($oldPath) && $oldPath !== '' && $oldPath !== $storedFiles[$field]['path']) {
                             $cleanupPaths[] = $oldPath;
                         }
-                    } elseif ((int) ($payload[$config['flag']] ?? 0) === 1) {
-                        $oldPath = $setting->{$config['column']};
-                        $setting->{$config['column']} = null;
+                    } elseif (array_key_exists($field, $payload) && $payload[$field] === null) {
+                        $oldPath = $setting->{$column};
+                        $setting->{$column} = null;
                         if (is_string($oldPath) && $oldPath !== '') {
                             $cleanupPaths[] = $oldPath;
                         }
@@ -103,8 +103,6 @@ class UpdateSettingsAction
                             'position' => $index,
                         ]);
                     }
-                } elseif ((int) ($payload['clearPhones'] ?? 0) === 1) {
-                    $setting->phones()->delete();
                 }
 
                 if (array_key_exists('socialLinks', $payload)) {
@@ -119,8 +117,6 @@ class UpdateSettingsAction
                             'position' => $index,
                         ]);
                     }
-                } elseif ((int) ($payload['clearSocialLinks'] ?? 0) === 1) {
-                    $setting->socialLinks()->delete();
                 }
 
                 return $setting->fresh(['phones', 'socialLinks']);

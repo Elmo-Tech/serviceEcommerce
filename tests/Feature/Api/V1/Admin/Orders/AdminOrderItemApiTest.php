@@ -10,11 +10,17 @@ use App\Enums\Services\ServicePricingInputType;
 use App\Models\Category;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\OrderItemAttachment;
 use App\Models\Service;
+use App\Models\User;
 use Database\Seeders\OrdersPermissionsSeeder;
 use Database\Seeders\RolesAndPermissionsSeeder;
 use Database\Seeders\SuperAdminSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
+use Laravel\Sanctum\Sanctum;
 
 uses(RefreshDatabase::class);
 
@@ -93,6 +99,96 @@ it('lists shows creates and deletes nested order items with strict ownership and
     $this->deleteJson('/api/v1/admin/orders/'.$order->getKey().'/items/'.$existingItem->getKey(), [], orderItemHeaders($accessToken))
         ->assertConflict()
         ->assertJsonPath('code', 'ORDER_REQUIRES_AT_LEAST_ONE_ITEM');
+});
+
+it('creates an order item and its protected attachments in one multipart request', function () {
+    Storage::fake(config('filesystems.default'));
+    $accessToken = orderItemToken();
+
+    $order = Order::factory()->create([
+        'status' => OrderStatus::PENDING,
+        'payment_status' => PaymentStatus::UNPAID,
+    ]);
+
+    $category = Category::factory()->root()->create(['is_active' => true]);
+    $subcategory = Category::factory()->subcategory($category)->create(['is_active' => true]);
+    $service = Service::factory()->underSubcategory($category, $subcategory)->create([
+        'is_active' => true,
+        'is_available' => true,
+        'price_type' => ServicePriceType::FIXED,
+        'base_price' => '125.00',
+    ]);
+
+    $response = $this->post('/api/v1/admin/orders/'.$order->getKey().'/items', [
+        'serviceId' => (string) $service->getKey(),
+        'quantity' => '2',
+        'itemNote' => 'Item with files',
+        'attachments' => [
+            UploadedFile::fake()->create('brief.pdf', 100, 'application/pdf'),
+            UploadedFile::fake()->image('reference.png'),
+        ],
+    ], [
+        'Accept' => 'application/json',
+        ...orderItemHeaders($accessToken),
+    ]);
+
+    $response->assertCreated()
+        ->assertJsonPath('data.quantity', 2)
+        ->assertJsonCount(2, 'data.attachments')
+        ->assertJsonPath('data.attachments.0.originalName', 'brief.pdf')
+        ->assertJsonMissingPath('data.attachments.0.path');
+
+    $orderItemId = (int) $response->json('data.id');
+    $attachments = OrderItemAttachment::query()
+        ->where('order_item_id', $orderItemId)
+        ->orderBy('id')
+        ->get();
+
+    expect($attachments)->toHaveCount(2);
+
+    foreach ($attachments as $attachment) {
+        Storage::disk($attachment->disk)->assertExists($attachment->path);
+    }
+});
+
+it('requires attachment permission and leaves no item or file when multipart item creation is forbidden', function () {
+    Storage::fake(config('filesystems.default'));
+
+    $admin = User::factory()->administrator()->create([
+        'email' => 'item-without-attachment-permission@example.test',
+        'password' => Hash::make('Password123!'),
+    ]);
+    $admin->givePermissionTo('order-items.create');
+    Sanctum::actingAs($admin);
+
+    $order = Order::factory()->create([
+        'status' => OrderStatus::PENDING,
+        'payment_status' => PaymentStatus::UNPAID,
+    ]);
+
+    $category = Category::factory()->root()->create(['is_active' => true]);
+    $subcategory = Category::factory()->subcategory($category)->create(['is_active' => true]);
+    $service = Service::factory()->underSubcategory($category, $subcategory)->create([
+        'is_active' => true,
+        'is_available' => true,
+        'price_type' => ServicePriceType::FIXED,
+        'base_price' => '125.00',
+    ]);
+
+    $response = $this->post('/api/v1/admin/orders/'.$order->getKey().'/items', [
+        'serviceId' => (string) $service->getKey(),
+        'quantity' => '1',
+        'attachments' => [
+            UploadedFile::fake()->create('brief.pdf', 100, 'application/pdf'),
+        ],
+    ], ['Accept' => 'application/json']);
+
+    $response->assertForbidden()
+        ->assertJsonPath('code', 'FORBIDDEN');
+
+    expect($order->items()->count())->toBe(0)
+        ->and(OrderItemAttachment::query()->count())->toBe(0);
+    Storage::disk(config('filesystems.default'))->assertDirectoryEmpty('/');
 });
 
 it('updates quantity selected options and stored answers on an existing order item', function () {

@@ -126,24 +126,24 @@ Validate:
 Submit:
 
 ```text
-clearPhones=1
+phones=[]
 ```
 
 Validate:
 
 - all phones are removed
-- submitting both `phones` and `clearPhones=1` returns `422 VALIDATION_ERROR`
+- omitting `phones` preserves the current collection
 
 ### Scenario H — Social replacement and clear
 
-Submit valid `socialLinks` and then `clearSocialLinks=1`.
+Submit valid `socialLinks` and then `socialLinks=[]`.
 
 Validate:
 
 - platforms must come from the approved enum
 - duplicate platforms are rejected
 - invalid URL is rejected
-- clear conflict with submitted array returns `422 VALIDATION_ERROR`
+- omitting `socialLinks` preserves the current collection
 
 ### Scenario I — Coordinates and location
 

@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Api\V1\Admin\Orders;
 
+use App\Services\Orders\OrderAttachmentStore;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Validation\Validator;
 
 class CreateOrderItemRequest extends FormRequest
 {
@@ -27,6 +30,27 @@ class CreateOrderItemRequest extends FormRequest
             'answers.*.orderFieldId' => ['required_with:answers', 'integer', 'min:1'],
             'answers.*.answer' => ['required_with:answers', 'string', 'min:1', 'max:2000'],
             'itemNote' => ['sometimes', 'nullable', 'string', 'max:2000'],
+            'attachments' => ['sometimes', 'array', 'max:3'],
+            'attachments.*' => [
+                'file',
+                'mimes:png,jpg,jpeg,webp,pdf,doc,docx',
+                'max:10240',
+                'mimetypes:image/png,image/jpeg,image/webp,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            ],
+        ];
+    }
+
+    /** @return array<int, callable(Validator): void> */
+    public function after(): array
+    {
+        return [
+            function (Validator $validator): void {
+                if ($validator->errors()->isNotEmpty()) {
+                    return;
+                }
+
+                app(OrderAttachmentStore::class)->ensureStandaloneUploadLimits(0, $this->attachmentFiles());
+            },
         ];
     }
 
@@ -63,5 +87,14 @@ class CreateOrderItemRequest extends FormRequest
         $normalized = preg_replace('/\s+/u', ' ', $normalized) ?? $normalized;
 
         return $normalized === '' ? null : $normalized;
+    }
+
+    /** @return list<UploadedFile> */
+    private function attachmentFiles(): array
+    {
+        return array_values(array_filter(
+            (array) $this->file('attachments', []),
+            static fn (mixed $file): bool => $file instanceof UploadedFile,
+        ));
     }
 }

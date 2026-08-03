@@ -185,8 +185,8 @@ filesystem state.
   `tests/Feature/Api/V1/Admin/Settings/AdminSettingsUpdateTest.php` covering:
   partial success; omitted-field preservation; optional scalar `""` to `null`;
   required scalar empty/null rejection; full phone/social replacement;
-  `clearPhones`/`clearSocialLinks`; every collection clear conflict; every
-  branding file/remove conflict; phone maximum 3; social-link maximum 9;
+  empty-array phone/social clearing; empty-value branding removal; phone
+  maximum 3; social-link maximum 9;
   single-WhatsApp enforcement; invalid and duplicate normalized phones;
   duplicate platforms; approved `PhoneInput` variants using `+20`, `0020`,
   spaces, dashes, and parentheses; canonical `PhoneOutput`; coordinate pair
@@ -230,8 +230,8 @@ filesystem state.
   T023–T025 in
   `app/Http/Requests/Api/V1/Admin/Settings/UpdateSettingsRequest.php`,
   including optional scalar empty-string-to-null semantics, omitted-field
-  preservation, required-field protection, all collection/file conflict
-  rules, coordinate pairing/clearing, SEO keyword duplicate rules,
+  preservation, required-field protection, empty-array collection clearing,
+  empty-value branding removal, coordinate pairing/clearing, SEO keyword duplicate rules,
   `PhoneInput` variants, child limits, enum validation, and exact file
   type/size/content boundaries
 - [X] T027 [US2] Implement the transactional update workflow after T008 and
@@ -246,7 +246,10 @@ filesystem state.
   `app/Http/Controllers/Api/V1/Admin/Settings/SettingsController.php`
 - [X] T029 [US2] Register `PATCH /api/v1/admin/settings` after T028 in the
   existing Admin route file and enforce the exact `settings.update`
-  permission without changing the GET contract in `routes/api/v1/admin.php`
+  permission without changing the GET contract in `routes/api/v1/admin.php`;
+  parse real multipart PATCH bodies through
+  `app/Http/Middleware/ParseSettingsMultipartPatch.php` and
+  `app/Services/Http/SettingsMultipartPatchParser.php`
 
 **Checkpoint**: Admin Settings updates are atomic, contract-exact,
 filesystem-safe, and concurrency-safe.

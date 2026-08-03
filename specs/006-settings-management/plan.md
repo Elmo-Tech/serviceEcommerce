@@ -55,10 +55,9 @@ Approved stable machine enums and collections:
 
 - social platforms: `facebook`, `instagram`, `linkedin`, `youtube`, `tiktok`,
   `x`, `telegram`, `pinterest`, `snapchat`
-- boolean-like collection flags in requests use approved integer semantics:
-  - `hasWhats`: `0=no`, `1=yes`
-  - `clearPhones`, `clearSocialLinks`, `removeLogo`, `removeFooterLogo`,
-    `removeFavicon`: `0/absent=no action`, `1=execute clear/remove`
+- `hasWhats` uses approved integer semantics: `0=no`, `1=yes`.
+- Empty submitted collections clear phones/social links, empty branding fields
+  remove their current file, and omission preserves current state.
 
 The OpenAPI 3.1 contract in [contracts/openapi.yaml](./contracts/openapi.yaml) is the planning source for routes, payloads, exact request/response properties, permissions, and error codes. It must contain exactly three operations, unique `operationId` values, resolvable local `$ref` values, no OpenAPI 3.0 `nullable` keywords, and explicit `security: []` on the Public operation.
 
@@ -205,10 +204,9 @@ No `first()`-style unscoped lookup is allowed.
 3. Store any replacement files using safe generated names.
 4. Open one database transaction.
 5. Update scalar Settings columns.
-6. Replace phone rows only when `phones` is submitted, or clear them only when
-   `clearPhones = 1`.
-7. Replace social-link rows only when `socialLinks` is submitted, or clear them
-   only when `clearSocialLinks = 1`.
+6. Replace phone rows when `phones` is submitted; an empty array clears them.
+7. Replace social-link rows when `socialLinks` is submitted; an empty array
+   clears them.
 8. Update branding paths and removal state.
 9. Commit the transaction.
 10. Delete superseded files after commit.
@@ -356,14 +354,14 @@ The canonical verification scenarios are detailed in
 - public localized read for Arabic and English
 - singleton-seed and singleton-recovery behavior
 - admin scalar update, collection replacement, and omission semantics
-- `clearPhones`, `clearSocialLinks`, and branding remove flags
+- empty-array collection clearing and empty-value branding removal
 - invalid phone, duplicate phone, WhatsApp limit, and invalid social platform
   handling
 - coordinate pair validation and invalid URL rejection
 - optional scalar empty-string-to-`null` behavior and omitted-field preservation
 - duplicate SEO keyword rejection after trim and case-insensitive comparison
 - safe SVG acceptance, unsafe SVG rejection, exact file size/type rules,
-  file/removal conflict rejection, and file cleanup compensation
+  empty-value removal, and file cleanup compensation
 - safe response projection without IDs or raw storage paths
 - database persistence for phones, social links, keywords, and file-path state
 - concurrency coverage for row locking and idempotent missing-singleton recovery
@@ -380,4 +378,3 @@ The canonical verification scenarios are detailed in
 ## 13. Complexity Tracking
 
 No approved governance exception is active for Feature 006.
-

@@ -183,6 +183,10 @@ Validate:
 Validate:
 
 - item create recalculates totals
+- item create uses multipart bracket notation and may include up to three
+  `attachments[]` files in the same atomic request
+- item create with attachments additionally requires
+  `order-item-attachments.create`
 - quantity-only update changes quantity and item total
 - `selectedOptions` acts as full replacement
 - Create Order/Add Item answers use `orderFieldId`

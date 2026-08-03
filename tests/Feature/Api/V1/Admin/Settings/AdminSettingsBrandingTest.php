@@ -108,7 +108,7 @@ it('rejects invalid file extensions and exact size boundaries', function () {
     ])->assertUnprocessable()->assertJsonStructure(['errors' => ['logo']]);
 });
 
-it('rejects client paths and file-remove conflicts', function () {
+it('rejects client-controlled paths and removed branding keys', function () {
     Setting::factory()->create(['id' => 1]);
     $headers = settingsAdminHeaders(settingsAdminToken());
 
@@ -117,10 +117,8 @@ it('rejects client paths and file-remove conflicts', function () {
     ], $headers)->assertUnprocessable()
         ->assertJsonStructure(['errors' => ['payload']]);
 
-    $this->withHeaders($headers)->patch('/api/v1/admin/settings', [
-        'logo' => safeSettingsSvg('logo.svg'),
-        'removeLogo' => 1,
-    ])->assertUnprocessable()->assertJsonStructure(['errors' => ['logo']]);
+    $this->patchJson('/api/v1/admin/settings', ['removeLogo' => 1], $headers)
+        ->assertUnprocessable()->assertJsonStructure(['errors' => ['payload']]);
 });
 
 it('replaces and removes branding only after valid state is committed', function () {
@@ -137,7 +135,7 @@ it('replaces and removes branding only after valid state is committed', function
     Storage::disk('public')->assertMissing('settings/logo/old.svg');
     Storage::disk('public')->assertExists($newPath);
 
-    $this->patchJson('/api/v1/admin/settings', ['removeLogo' => 1], $headers)
+    $this->patchJson('/api/v1/admin/settings', ['logo' => ''], $headers)
         ->assertOk()->assertJsonPath('data.logo', null);
     Storage::disk('public')->assertMissing($newPath);
 });

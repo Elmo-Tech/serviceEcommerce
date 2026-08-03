@@ -314,7 +314,7 @@ paths:
       tags:
       - Admin Order Items
       summary: Add one order item
-      description: Requires order-items.create. Allowed only while the order is editable.
+      description: Requires order-items.create and, when attachments are present, order-item-attachments.create. The multipart item, attachments, and total recalculation are atomic. Allowed only while the order is editable.
       security:
       - bearerAuth: []
       parameters:
@@ -323,9 +323,9 @@ paths:
       requestBody:
         required: true
         content:
-          application/json:
+          multipart/form-data:
             schema:
-              $ref: '#/components/schemas/BaseOrderItemRequest'
+              $ref: '#/components/schemas/CreateOrderItemRequest'
       responses:
         '201':
           $ref: '#/components/responses/OrderItemOk'
@@ -920,8 +920,9 @@ components:
       additionalProperties: false
     CreateOrderItemRequest:
       type: object
-      description: Public/Admin initial order item. Supports up to three item attachments. The complete create request
-        supports at most 30 files and 100 MB combined.
+      description: One proposed order item for public submission, Admin order creation, or Admin item addition.
+        Supports up to three attachments for this item; parent order-create requests additionally enforce their
+        aggregate file-count and byte limits.
       required:
       - serviceId
       - quantity

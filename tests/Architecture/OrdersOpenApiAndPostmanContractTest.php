@@ -117,6 +117,7 @@ it('ships postman folders for the complete orders feature with approved operatio
     $listOrders = collect($adminOrdersFolder['item'] ?? [])->firstWhere('name', 'List Orders');
     $changeOrderStatus = collect($adminOrdersFolder['item'] ?? [])->firstWhere('name', 'Change Order Status');
     $createOrderItem = collect($adminOrderItemsFolder['item'] ?? [])->firstWhere('name', 'Create Order Item');
+    $createOrderItemKeys = collect(data_get($createOrderItem, 'request.body.formdata', []))->pluck('key');
     $downloadAttachment = collect($adminOrderAttachmentsFolder['item'] ?? [])->firstWhere('name', 'Download Order Item Attachment');
 
     expect($publicOrdersFolder)->toBeArray()
@@ -155,6 +156,8 @@ it('ships postman folders for the complete orders feature with approved operatio
         ->and((string) data_get($listOrders, 'request.url'))->toContain('sort=-createdAt')
         ->and((string) data_get($changeOrderStatus, 'request.url'))->toBe('{{baseUrl}}/admin/orders/1/status')
         ->and((string) data_get($changeOrderStatus, 'description'))->toContain('status enum meanings')
-        ->and(collect(data_get($createOrderItem, 'request.body.raw', ''))->join(''))->toContain('orderFieldId')
+        ->and((string) data_get($createOrderItem, 'request.body.mode'))->toBe('formdata')
+        ->and($createOrderItemKeys)->toContain('answers[0][orderFieldId]')
+        ->and($createOrderItemKeys)->toContain('attachments[0]')
         ->and((string) data_get($downloadAttachment, 'request.url'))->toBe('{{baseUrl}}/admin/orders/1/items/1/attachments/1/download');
 });

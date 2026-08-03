@@ -72,9 +72,9 @@
 - [x] Phone order is preserved.
 - [x] Phone row IDs are not accepted or returned.
 - [x] Full replacement behavior is fixed.
-- [x] `clearPhones = 1` behavior is fixed.
+- [x] An explicitly submitted empty `phones` array clears all phones.
 - [x] Omitted `phones` behavior is fixed.
-- [x] `phones + clearPhones` conflict returns validation failure.
+- [x] Omitted `phones` preserves the current collection.
 
 ## Social-Link Contract
 
@@ -88,9 +88,9 @@
 - [x] Submission order is preserved.
 - [x] Social row IDs are not accepted or returned.
 - [x] Full replacement behavior is fixed.
-- [x] `clearSocialLinks = 1` behavior is fixed.
+- [x] An explicitly submitted empty `socialLinks` array clears all links.
 - [x] Omitted `socialLinks` behavior is fixed.
-- [x] `socialLinks + clearSocialLinks` conflict returns validation failure.
+- [x] Omitted `socialLinks` preserves the current collection.
 - [x] `availableSocialPlatforms` is fixed in the Admin response only.
 
 ## Branding and File Contract
@@ -103,7 +103,7 @@
 - [x] Favicon maximum size is fixed at 1 MB.
 - [x] Omitted file behavior means keep current file.
 - [x] Replacement-file behavior is fixed.
-- [x] `removeLogo`, `removeFooterLogo`, and `removeFavicon` are fixed.
+- [x] Empty `logo`, `footerLogo`, and `favicon` values remove the matching file.
 - [x] File plus matching remove flag is rejected.
 - [x] Client-controlled storage paths are rejected.
 - [x] Responses return public URLs or null only.
