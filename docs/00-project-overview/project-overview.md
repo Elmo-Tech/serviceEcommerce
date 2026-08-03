@@ -31,7 +31,7 @@ backend source of truth for:
 - order-item attachments
 - site settings
 - hero sections
-- contact-us inbox and replies
+- contact message inbox management
 - testimonials
 - frequently asked questions
 - featured services
@@ -977,7 +977,7 @@ The frontend decides how the configured hero content is rendered.
 
 ## 26. Contact Inbox
 
-The public website provides a contact-us form.
+The public website provides a Contact Us form backed by the public contact-messages endpoint.
 
 A contact enquiry may contain:
 

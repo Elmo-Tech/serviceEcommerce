@@ -1668,6 +1668,69 @@
       ]
     },
     {
+      "name": "Admin Contact Messages",
+      "description": "Feature 010 protected contact inbox management. Public visitors create messages through the public endpoint only. Admins can list, show, update the workflow status, and delete permanently. status machine keys: new = unread message, read = reviewed message. Admin index supports filter[status], filter[search], filter[date][0], filter[date][1], page, and perPage.",
+      "item": [
+        {
+          "name": "List Contact Messages",
+          "description": "Requires contact-messages.view. Query keys: filter[status] = new or read; filter[search] = case-insensitive text search across name, email, phone, and subject; filter[date][0] = inclusive UTC start date YYYY-MM-DD; filter[date][1] = inclusive UTC end date YYYY-MM-DD; page = page number; perPage defaults to 15 and maxes at 100. Results are newest first and do not include message content.",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Accept-Language", "value": "en" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/admin/contact-messages?filter[status]=new&filter[search]=mohamed&filter[date][0]=2026-08-01&filter[date][1]=2026-08-03&page=1&perPage=15"
+          }
+        },
+        {
+          "name": "Show Contact Message",
+          "description": "Requires contact-messages.view. Returns the full stored message body. Showing a message does not change its status automatically.",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Accept-Language", "value": "en" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/admin/contact-messages/1"
+          }
+        },
+        {
+          "name": "Update Contact Message Status",
+          "description": "Requires contact-messages.update. Only the status key is accepted. status = new means the message is still unread in workflow terms; status = read means it has been reviewed. Contact fields and message text are immutable.",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Accept-Language", "value": "en" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"read\"\n}"
+            },
+            "url": "{{baseUrl}}/admin/contact-messages/1"
+          }
+        },
+        {
+          "name": "Delete Contact Message",
+          "description": "Requires contact-messages.delete. Permanently deletes the stored message and returns data = null.",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Accept-Language", "value": "en" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{baseUrl}}/admin/contact-messages/1"
+          }
+        }
+      ]
+    },
+    {
       "name": "Admin FAQs",
       "description": "Feature 009 protected FAQ management. questionAr/questionEn are the bilingual visible questions. answerAr/answerEn are plain-text answers with line breaks preserved. isActive: 1 = publicly visible, 0 = hidden. position is optional on create/update, starts from 1, and the backend automatically shifts surrounding rows to keep positions unique and gapless. Admin list supports filter[isActive] = 0 or 1, filter[search] across Arabic and English question text, page, and perPage.",
       "item": [
@@ -1744,6 +1807,29 @@
               { "key": "Authorization", "value": "Bearer {{accessToken}}" }
             ],
             "url": "{{baseUrl}}/admin/faqs/1"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Public Contact Messages",
+      "description": "Feature 010 unauthenticated Contact Us submission. Required keys: name, phone, subject, message. email is optional and an empty string becomes null. The backend applies rate limiting only: maximum 5 attempts per minute per IP. The success response returns data = null and never exposes id or status.",
+      "item": [
+        {
+          "name": "Create Contact Message",
+          "description": "No token required. name = visitor name; email = optional visitor email; phone = stored exactly as submitted after outer trim; subject = short message title; message = plain-text message body with line breaks preserved. Unknown keys, status, ids, timestamps, honeypot fields, and attachments are rejected.",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Accept-Language", "value": "ar" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Mohamed Hassan\",\n  \"email\": \"mohamed@example.com\",\n  \"phone\": \"+20 101 234 5678\",\n  \"subject\": \"Service inquiry\",\n  \"message\": \"I would like to know more about the available services.\"\n}"
+            },
+            "url": "{{baseUrl}}/public/contact-messages"
           }
         }
       ]

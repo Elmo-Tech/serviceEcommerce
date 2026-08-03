@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Http\Controllers\Api\V1\Admin\Categories\CategoryController;
 use App\Http\Controllers\Api\V1\Admin\Categories\SubcategoryController;
+use App\Http\Controllers\Api\V1\Admin\ContactMessages\ContactMessageController;
 use App\Http\Controllers\Api\V1\Admin\Customers\CustomerAddressController;
 use App\Http\Controllers\Api\V1\Admin\Customers\CustomerController;
 use App\Http\Controllers\Api\V1\Admin\Dashboard\DashboardController;
@@ -60,6 +61,18 @@ Route::middleware([
     Route::delete('/faqs/{faq}', [FaqController::class, 'destroy'])
         ->whereNumber('faq')
         ->middleware('permission:faqs.delete');
+
+    Route::get('/contact-messages', [ContactMessageController::class, 'index'])
+        ->middleware('permission:contact-messages.view');
+    Route::get('/contact-messages/{contactMessage}', [ContactMessageController::class, 'show'])
+        ->whereNumber('contactMessage')
+        ->middleware('permission:contact-messages.view');
+    Route::patch('/contact-messages/{contactMessage}', [ContactMessageController::class, 'update'])
+        ->whereNumber('contactMessage')
+        ->middleware('permission:contact-messages.update');
+    Route::delete('/contact-messages/{contactMessage}', [ContactMessageController::class, 'destroy'])
+        ->whereNumber('contactMessage')
+        ->middleware('permission:contact-messages.delete');
 
     Route::get('/customers', [CustomerController::class, 'index'])
         ->middleware('permission:customers.view');

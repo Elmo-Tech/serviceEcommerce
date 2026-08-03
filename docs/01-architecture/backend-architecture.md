@@ -860,7 +860,7 @@ GET  /api/v1/public/faqs
 GET  /api/v1/public/featured-services
 GET  /api/v1/public/best-selling-services
 POST /api/v1/public/orders
-POST /api/v1/public/contact-us
+POST /api/v1/public/contact-messages
 ```
 
 Public mutation endpoints must have stricter rate limiting than ordinary public

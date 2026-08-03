@@ -1076,18 +1076,15 @@ Recommended permissions:
 
 ```text
 contact-messages.view
-contact-messages.update-status
-contact-messages.reply
+contact-messages.update
+contact-messages.delete
 ```
 
 Rules:
 
 - `view` protects list and detail.
-- `update-status` protects read, unread, archived, or resolved state when such
-  state exists.
-- `reply` protects saving and queuing an administrator reply.
-- Reply permission does not imply deletion.
-- Email sending occurs after persistence.
+- `update` protects the explicit status mutation endpoint.
+- `delete` protects permanent deletion.
 - Permission does not claim delivery.
 - Administrator free-form reply content is not automatically translated.
 - Contact message locale controls the email wrapper where approved.

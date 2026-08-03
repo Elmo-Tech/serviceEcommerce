@@ -148,7 +148,7 @@ GET  /api/v1/admin/orders
 GET  /api/v1/public/categories
 GET  /api/v1/public/services
 POST /api/v1/public/orders
-POST /api/v1/public/contact-us
+POST /api/v1/public/contact-messages
 ```
 
 Rules:
@@ -246,7 +246,7 @@ GET  /api/v1/public/faqs
 GET  /api/v1/public/featured-services
 GET  /api/v1/public/best-selling-services
 POST /api/v1/public/orders
-POST /api/v1/public/contact-us
+POST /api/v1/public/contact-messages
 ```
 
 Public APIs do not imply customer authentication.
@@ -1898,28 +1898,16 @@ an approved URL or route and never the internal filesystem path.
 Public submission:
 
 ```http
-POST /api/v1/public/contact-us
+POST /api/v1/public/contact-messages
 ```
 
 The endpoint must:
 
 - validate approved fields
 - apply rate limiting
-- avoid revealing mail infrastructure
+- avoid revealing internal implementation details
 - persist the enquiry
 - return `201 Created`
-
-Administrator reply:
-
-```http
-POST /api/v1/admin/contact-messages/{contactMessage}/reply
-```
-
-The endpoint must:
-
-1. authenticate and authorize the administrator
-2. validate reply content
-3. save the reply
 4. update the enquiry state
 5. commit the transaction
 6. dispatch the email Job after commit

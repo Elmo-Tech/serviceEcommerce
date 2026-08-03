@@ -77,6 +77,10 @@ class AppServiceProvider extends ServiceProvider
 
             return Limit::perMinute(5)->by(((string) $request->ip()).'|'.$limiterPhone);
         });
+
+        RateLimiter::for('public-contact-messages-create', function (Request $request) {
+            return Limit::perMinute(5)->by((string) $request->ip());
+        });
     }
 
     private function configureAdminCors(): void

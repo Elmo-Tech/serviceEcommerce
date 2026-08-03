@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\Api\V1\Public\Categories\CategoryController;
+use App\Http\Controllers\Api\V1\Public\ContactMessages\ContactMessageController;
 use App\Http\Controllers\Api\V1\Public\Faqs\FaqController;
 use App\Http\Controllers\Api\V1\Public\HeroSlides\HeroSlideController;
 use App\Http\Controllers\Api\V1\Public\Orders\OrderController;
@@ -19,5 +20,7 @@ Route::get('/categories/{categorySlug}/subcategories/{subcategorySlug}', [Catego
 Route::get('/services', [ServiceController::class, 'index']);
 Route::get('/services/{serviceSlug}', [ServiceController::class, 'show']);
 Route::get('/settings', [PublicSettingsController::class, 'show']);
+Route::post('/contact-messages', [ContactMessageController::class, 'store'])
+    ->middleware('throttle:public-contact-messages-create');
 Route::post('/orders', [OrderController::class, 'store'])
     ->middleware('throttle:public-orders-create');
