@@ -229,13 +229,14 @@ it('rejects phone and social collection limits and invariants', function (array 
     ], 'socialLinks'],
 ]);
 
-it('rejects removed collection clear and branding remove keys', function (string $key) {
-    Setting::factory()->create(['id' => 1]);
+it('ignores removed collection clear and branding remove keys', function (string $key) {
+    $setting = Setting::factory()->create(['id' => 1]);
+    $before = $setting->fresh()->getAttributes();
 
     $this->patchJson('/api/v1/admin/settings', [$key => 1], settingsAdminHeaders(settingsAdminToken()))
-        ->assertUnprocessable()
-        ->assertJsonPath('code', 'VALIDATION_ERROR')
-        ->assertJsonStructure(['errors' => ['payload']]);
+        ->assertOk();
+
+    expect($setting->fresh()->getAttributes())->toBe($before);
 })->with([
     'clearPhones',
     'clearSocialLinks',

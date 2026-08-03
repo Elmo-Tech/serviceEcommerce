@@ -53,8 +53,6 @@ class SettingsMultipartPatchParser
         $fields = [];
         $files = [];
         $tempPaths = [];
-        $seenNames = [];
-
         try {
             foreach ($segments as $segment) {
                 if ($segment === "--\r\n" || $segment === '--') {
@@ -77,17 +75,11 @@ class SettingsMultipartPatchParser
                 }
 
                 $name = $matches[1];
-
-                if (isset($seenNames[$name])) {
-                    $this->invalid($name);
-                }
-
-                $seenNames[$name] = true;
                 $hasFilename = array_key_exists(2, $matches);
 
                 if ($hasFilename) {
                     if (! in_array($name, self::FILE_FIELDS, true) || $matches[2] === '') {
-                        $this->invalid($name);
+                        continue;
                     }
 
                     $tempPath = tempnam(sys_get_temp_dir(), 'settings-');
@@ -153,7 +145,7 @@ class SettingsMultipartPatchParser
             return;
         }
 
-        $this->invalid($name === '' ? 'payload' : $name);
+        // Ignore extra Postman rows or unsupported keys instead of rejecting the whole payload.
     }
 
     private function boundary(string $contentType): string

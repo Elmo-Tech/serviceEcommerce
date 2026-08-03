@@ -61,12 +61,6 @@ class UpdateSettingsRequest extends FormRequest
     {
         return [
             function (Validator $validator): void {
-                $this->guardUnexpectedKeys($validator);
-
-                if ($validator->errors()->isNotEmpty()) {
-                    return;
-                }
-
                 if ($this->all() === [] && $this->allFiles() === []) {
                     $validator->errors()->add('payload', __('validation.invalid_payload'));
                 }
@@ -224,34 +218,6 @@ class UpdateSettingsRequest extends FormRequest
         }
 
         return $payload;
-    }
-
-    private function guardUnexpectedKeys(Validator $validator): void
-    {
-        $allowedTopLevel = [
-            'siteNameAr', 'siteNameEn', 'siteDescriptionAr', 'siteDescriptionEn',
-            'sloganAr', 'sloganEn', 'publicEmail', 'addressAr', 'addressEn',
-            'googleMapsUrl', 'latitude', 'longitude', 'defaultSeoTitleAr',
-            'defaultSeoTitleEn', 'defaultSeoDescriptionAr', 'defaultSeoDescriptionEn',
-            'defaultSeoKeywordsAr', 'defaultSeoKeywordsEn', 'phones', 'socialLinks',
-            'logo', 'footerLogo', 'favicon',
-        ];
-
-        if (array_diff(array_keys($this->all()), $allowedTopLevel) !== []) {
-            $validator->errors()->add('payload', __('validation.invalid_payload'));
-        }
-
-        foreach ((array) $this->input('phones', []) as $phone) {
-            if (is_array($phone) && array_diff(array_keys($phone), ['number', 'hasWhats']) !== []) {
-                $validator->errors()->add('payload', __('validation.invalid_payload'));
-            }
-        }
-
-        foreach ((array) $this->input('socialLinks', []) as $link) {
-            if (is_array($link) && array_diff(array_keys($link), ['platform', 'url']) !== []) {
-                $validator->errors()->add('payload', __('validation.invalid_payload'));
-            }
-        }
     }
 
     private function ensureUniqueKeywordArray(Validator $validator, string $field): void
