@@ -678,6 +678,30 @@ Rules:
 
 Public endpoints require no authentication permission.
 
+### 11.1 Printing Catalogue Seed Data
+
+The normal database seed flow includes an idempotent printing-catalogue
+seeder containing exactly:
+
+- six active root Categories representing real printing business areas;
+- two active Subcategories beneath each root Category, for twelve
+  Subcategories in total;
+- complete Arabic and English names, descriptions, and stable unique slugs;
+- deterministic `sort_order` values;
+- one image for every seeded Category and Subcategory.
+
+Seed images originate from explicit external HTTPS image URLs, are downloaded
+before database mutation, validated as JPEG, PNG, or WebP with a maximum size
+of 5 MB, and are then stored on the Laravel `public` disk under deterministic
+seed paths. API Resources continue to return the normal Storage-generated
+`image` URL and never expose the external source URL or a raw storage path.
+
+Re-running the seeder must update the same seeded catalogue rows, restore a
+seeded row if it was soft-deleted, reuse valid files that already exist, and
+must not create duplicate Categories, Subcategories, or files. External HTTP
+requests must not run inside a database transaction. Files newly written by a
+failed seeding attempt must be removed as compensation.
+
 ---
 
 ## 12. Canonical Admin API Routes

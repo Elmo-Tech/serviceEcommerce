@@ -441,3 +441,15 @@ With multiple developers:
   required story labels for story phases, and exact file paths
 - The approved source remains
   `docs/features/003-categories-subcategories.md`
+
+---
+
+## Phase 8: Printing Catalogue Seed Data
+
+- [X] T040 Add an idempotent `PrintingCatalogSeeder` with six real
+  printing-domain Categories, twelve nested Subcategories, bilingual content,
+  deterministic ordering, validated external image downloads stored on the
+  public disk, failure compensation, normal `DatabaseSeeder` integration, and
+  focused automated coverage in `database/seeders/PrintingCatalogSeeder.php`,
+  `database/seeders/DatabaseSeeder.php`, and
+  `tests/Feature/Database/Seeders/PrintingCatalogSeederTest.php`.

@@ -9,11 +9,22 @@ use Database\Seeders\RolesAndPermissionsSeeder;
 use Database\Seeders\SuperAdminSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
 use Spatie\Permission\Models\Role;
 
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
+    Storage::fake('public');
+    Http::fake([
+        'commons.wikimedia.org/*' => Http::response(
+            base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=', true),
+            200,
+            ['Content-Type' => 'image/png'],
+        ),
+    ]);
+
     setSeederEnvironment([
         'SUPER_ADMIN_NAME' => 'Service Commerce Super Admin',
         'SUPER_ADMIN_EMAIL' => 'Admin@Example.Test',

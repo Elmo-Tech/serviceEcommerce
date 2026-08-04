@@ -267,6 +267,21 @@ ordering, localized slugs, and hidden-record `404` behavior.
   only an uploaded file MAY create or replace the stored image.
 - **FR-030**: The feature MUST NOT introduce multiple images, icons, video, or
   attachment behavior for Categories or Subcategories.
+- **FR-031**: The normal database seed flow MUST idempotently create exactly six
+  active printing-domain root Categories and twelve active Subcategories, with
+  two Subcategories beneath each seeded root.
+- **FR-032**: Every seeded Category and Subcategory MUST contain complete
+  Arabic and English content, globally unique locale slugs, deterministic
+  ordering, and one image.
+- **FR-033**: Seed images MUST be downloaded from explicit external HTTPS
+  sources, validated as JPEG, PNG, or WebP and no larger than 5 MB, then stored
+  on the Laravel `public` disk so existing Resources return working Storage
+  URLs.
+- **FR-034**: Re-running the catalogue seeder MUST update or restore the same
+  records, reuse valid existing seed files, and MUST NOT duplicate records,
+  files, or external downloads.
+- **FR-035**: External downloads MUST happen outside database transactions;
+  newly created files MUST be deleted if database persistence fails.
 
 ### Actors and Authorization *(mandatory for protected behaviour)*
 

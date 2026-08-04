@@ -68,6 +68,19 @@ If Feature 003 permissions are seeded separately during implementation:
 php artisan db:seed --class=Database\\Seeders\\CategoriesPermissionsSeeder
 ```
 
+Seed the printing catalogue (six Categories, twelve Subcategories, and their
+externally sourced images) independently with:
+
+```powershell
+php artisan db:seed --class=Database\\Seeders\\PrintingCatalogSeeder
+php artisan storage:link
+```
+
+The normal `php artisan db:seed` and `php artisan migrate:fresh --seed` flows
+also run this seeder. The first run requires outbound HTTPS access to Wikimedia
+Commons; later runs reuse valid files already stored under
+`storage/app/public/categories/seed`.
+
 ## 5. Contract References
 
 - API contract: [contracts/openapi.yaml](./contracts/openapi.yaml)

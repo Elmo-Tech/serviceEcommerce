@@ -369,6 +369,11 @@ partially updated ordering set.
 - follow the existing feature-owned seeder pattern by adding a dedicated
   permissions seeder for categories/subcategories and integrating it into the
   repository seeding flow
+- add a dedicated printing catalogue content seeder to the normal database
+  seed flow; fetch and validate explicit external HTTPS images before opening
+  the database transaction, persist them on the `public` disk under
+  deterministic per-record paths, cache repeated source downloads during one
+  run, and compensate only files created by a failed run
 
 ## Project Structure
 

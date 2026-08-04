@@ -22,6 +22,7 @@ class DatabaseSeeder extends Seeder
             SuperAdminSeeder::class,
             ProjectAdditionalSuperAdminSeeder::class,
             SettingsSeeder::class,
+            PrintingCatalogSeeder::class,
         ]);
     }
 }
