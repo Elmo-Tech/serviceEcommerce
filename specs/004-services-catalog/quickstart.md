@@ -294,14 +294,16 @@ Implementation is ready only when:
 The default database seed flow runs `PrintingCatalogSeeder` followed by
 `PrintingServicesSeeder`. The second seeder creates exactly 15 active and
 available printing services, assigns every service to one of the seeded root
-category/subcategory pairs, reserves both localized slugs, downloads validated
-PNG/JPEG/WebP images from the approved external Pixabay sources, and stores one
-main image per service on the public disk.
+category/subcategory pairs, reserves both localized slugs, downloads a distinct
+product-specific validated PNG/JPEG/WebP image from Pexels for every service,
+and stores one main image per service on the public disk under
+`services/seed/pexels-print-products-v2`.
 
 ```powershell
 php artisan db:seed --class=PrintingServicesSeeder
 ```
 
 Run `PrintingCatalogSeeder` first when invoking the service seeder directly on
-an empty database. Both seeders are idempotent. A manually replaced main service
-image remains authoritative during later seeder runs.
+an empty database. Both seeders are idempotent. Later runs upgrade older
+seeder-managed images to the current image set, while a manually replaced main
+service image remains authoritative.

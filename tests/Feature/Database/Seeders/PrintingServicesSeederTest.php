@@ -52,7 +52,7 @@ it('seeds fifteen printing services under the existing hierarchy with main image
         Storage::disk('public')->assertExists((string) $service->mainImage?->path);
     }
 
-    Http::assertSentCount(6);
+    Http::assertSentCount(15);
 });
 
 it('is idempotent, restores seeded services, and preserves a manually selected main image', function () {
@@ -99,8 +99,7 @@ it('rejects an invalid external image without persisting services or files', fun
     Storage::disk('public')->deleteDirectory('services/seed');
     Http::swap(new Factory);
     Http::fake([
-        '*cmyk-877604_640.png' => Http::response('not-an-image', 200, ['Content-Type' => 'text/plain']),
-        'cdn.pixabay.com/*' => Http::response('not-an-image', 200, ['Content-Type' => 'text/plain']),
+        'images.pexels.com/*' => Http::response('not-an-image', 200, ['Content-Type' => 'text/plain']),
     ]);
 
     expect(fn () => $this->seed(PrintingServicesSeeder::class))
@@ -114,6 +113,11 @@ it('rejects an invalid external image without persisting services or files', fun
 function fakePrintingSeederImages(): void
 {
     Http::fake([
+        'images.pexels.com/*' => Http::response(
+            base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=', true),
+            200,
+            ['Content-Type' => 'image/png'],
+        ),
         'cdn.pixabay.com/*' => Http::response(
             base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=', true),
             200,
