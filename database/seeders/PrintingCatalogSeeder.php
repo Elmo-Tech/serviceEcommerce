@@ -125,22 +125,20 @@ class PrintingCatalogSeeder extends Seeder
     private function validatedImage(Response $response, string $source): array
     {
         $contents = $response->body();
-        $contentType = strtolower(trim(explode(';', $response->header('Content-Type'))[0]));
         $imageInfo = @getimagesizefromstring($contents);
         $detectedMime = is_array($imageInfo) && isset($imageInfo['mime']) ? strtolower((string) $imageInfo['mime']) : null;
 
         if (
             $contents === ''
             || strlen($contents) > self::MAX_IMAGE_BYTES
-            || ! isset(self::EXTENSIONS_BY_MIME[$contentType])
-            || $detectedMime !== $contentType
+            || ! isset(self::EXTENSIONS_BY_MIME[(string) $detectedMime])
         ) {
             throw new RuntimeException("The external catalogue image source returned an invalid image: [{$source}].");
         }
 
         return [
             'contents' => $contents,
-            'extension' => self::EXTENSIONS_BY_MIME[$contentType],
+            'extension' => self::EXTENSIONS_BY_MIME[(string) $detectedMime],
         ];
     }
 
@@ -202,12 +200,12 @@ class PrintingCatalogSeeder extends Seeder
      */
     private function catalogue(): array
     {
-        $commercialImage = 'https://cdn.pixabay.com/photo/2015/08/06/10/14/cmyk-877604_1280.png';
-        $largeFormatImage = 'https://cdn.pixabay.com/photo/2025/12/21/22/12/billboard-10028202_1280.png';
-        $packagingImage = 'https://cdn.pixabay.com/photo/2022/08/30/21/07/moving-boxes-7421938_1280.png';
-        $textileImage = 'https://cdn.pixabay.com/photo/2013/07/12/15/53/t-shirt-150525_1280.png';
-        $promotionalImage = 'https://cdn.pixabay.com/photo/2024/10/26/10/53/mug-9150982_1280.png';
-        $publicationsImage = 'https://cdn.pixabay.com/photo/2015/12/15/00/23/printing-1093509_1280.png';
+        $commercialImage = 'https://cdn.pixabay.com/photo/2015/08/06/10/14/cmyk-877604_640.png';
+        $largeFormatImage = 'https://cdn.pixabay.com/photo/2025/12/21/22/12/billboard-10028202_640.png';
+        $packagingImage = 'https://cdn.pixabay.com/photo/2022/08/30/21/07/moving-boxes-7421938_640.png';
+        $textileImage = 'https://cdn.pixabay.com/photo/2013/07/12/15/53/t-shirt-150525_640.png';
+        $promotionalImage = 'https://cdn.pixabay.com/photo/2024/10/26/10/53/mug-9150982_640.png';
+        $publicationsImage = 'https://cdn.pixabay.com/photo/2015/12/15/00/23/printing-1093509_640.png';
 
         return [
             $this->root('الطباعة التجارية', 'Commercial Printing', 'حلول مطبوعة احترافية للشركات والأنشطة التجارية.', 'Professional printed materials for businesses and organizations.', 'الطباعة-التجارية', 'commercial-printing', 10, $commercialImage, [

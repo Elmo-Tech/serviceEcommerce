@@ -17,7 +17,7 @@ beforeEach(function () {
         'cdn.pixabay.com/*' => Http::response(
             base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=', true),
             200,
-            ['Content-Type' => 'image/png'],
+            ['Content-Type' => 'application/octet-stream'],
         ),
     ]);
 });
@@ -66,7 +66,7 @@ it('rejects an invalid external image without persisting catalogue rows or files
     Storage::disk('public')->deleteDirectory('categories/seed');
     Http::swap(new Factory);
     Http::fake([
-        '*cmyk-877604_1280.png' => Http::response(
+        '*cmyk-877604_640.png' => Http::response(
             base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=', true),
             200,
             ['Content-Type' => 'image/png'],

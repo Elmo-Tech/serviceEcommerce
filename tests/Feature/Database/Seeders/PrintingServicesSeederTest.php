@@ -99,7 +99,7 @@ it('rejects an invalid external image without persisting services or files', fun
     Storage::disk('public')->deleteDirectory('services/seed');
     Http::swap(new Factory);
     Http::fake([
-        '*cmyk-877604_1280.png' => Http::response('not-an-image', 200, ['Content-Type' => 'text/plain']),
+        '*cmyk-877604_640.png' => Http::response('not-an-image', 200, ['Content-Type' => 'text/plain']),
         'cdn.pixabay.com/*' => Http::response('not-an-image', 200, ['Content-Type' => 'text/plain']),
     ]);
 
