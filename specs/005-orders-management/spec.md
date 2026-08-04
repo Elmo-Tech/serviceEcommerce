@@ -430,6 +430,12 @@ nested-resource disclosure behavior.
   and business-conflict examples appropriate to each endpoint, including every
   valid and invalid status path and the unpaid, partial, paid, negative
   remaining, fixed-discount, percentage-discount, and discount-removal cases.
+- **FR-047**: Public order create, Admin order create, and Admin add-item MUST
+  reject a new item with `422 REQUIRED_SERVICE_ATTACHMENT_MISSING` when its
+  current service has `isAttachmentRequired = true` and that item contains no
+  valid attachment. Services with the flag disabled keep the existing optional
+  attachment behavior. Existing order items are unaffected when the service
+  flag changes later.
 
 ### Actors and Authorization *(mandatory for protected behaviour)*
 

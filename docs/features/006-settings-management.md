@@ -9,10 +9,10 @@ It covers:
 - Localized website identity.
 - Logo, footer logo, and favicon.
 - One public email.
-- Up to three Egyptian phone numbers.
+- Up to three phone numbers, each normalized to exactly 10 or 11 digits.
 - At most one WhatsApp-enabled phone number.
 - One localized business address.
-- Google Maps URL and optional coordinates.
+- One optional Google Maps URL; latitude and longitude are not part of the API.
 - Dynamic social links selected from predefined platforms.
 - Localized default SEO title, description, and keyword arrays.
 - Admin and Public APIs.
@@ -20,6 +20,16 @@ It covers:
 
 It does not cover analytics, SMTP, order settings, multiple branches, theme
 colors, cache, audit history, secrets, or Open Graph images.
+
+### Google Maps URL amendment — 2026-08-04
+
+- The approved machine key is `googleMapsUrl`.
+- Admin PATCH accepts an optional absolute HTTP/HTTPS URL up to 2048 characters.
+- Omitting the key preserves its current value; an empty string clears it to
+  `null`.
+- Admin and Public Settings responses always return `googleMapsUrl` as the
+  stored URL or `null`.
+- `latitude` and `longitude` remain excluded from requests and responses.
 
 ---
 
@@ -292,7 +302,7 @@ Rules:
 
 - `phones` is optional in PATCH.
 - Maximum array size: 3.
-- Egyptian mobile numbers only.
+- Numbers must contain exactly 10 or 11 digits after normalization.
 - Duplicate normalized numbers are rejected.
 - `hasWhats` accepts `0` or `1`.
 - Maximum one WhatsApp-enabled number.
@@ -306,6 +316,7 @@ Accepted equivalents include:
 
 ```text
 01012345678
+0501234567
 +201012345678
 00201012345678
 010 1234 5678
@@ -324,8 +335,8 @@ Normalization must:
 - Trim whitespace.
 - Remove spaces, dashes, and parentheses.
 - Convert `+20` and `0020` to local `0`.
-- Reject non-Egyptian numbers.
-- Reject invalid Egyptian mobile formats.
+- Accept the normalized local value when it contains exactly 10 or 11 digits.
+- Reject values shorter than 10 digits or longer than 11 digits after normalization.
 - Perform duplicate checks after normalization.
 
 ### 9.2 Phone Replacement and Deletion
@@ -978,7 +989,7 @@ The feature is complete when:
 3. Admin can partially update Settings using multipart PATCH.
 4. Public can read localized Settings.
 5. Required fields remain valid.
-6. Maximum three Egyptian phones are enforced.
+6. Maximum three normalized 10-digit or 11-digit phones are enforced.
 7. Maximum one WhatsApp-enabled phone is enforced.
 8. Phone and social deletion work through replacement and clear flags.
 9. Social platforms come from a predefined enum Select.
@@ -1010,7 +1021,7 @@ Logo
 Footer logo
 Favicon
 One public email
-Maximum three Egyptian phone numbers
+Maximum three phone numbers of 10 or 11 normalized digits
 Maximum one WhatsApp-enabled number
 One localized address
 Dynamic predefined social platforms

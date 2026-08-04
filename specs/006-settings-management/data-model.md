@@ -46,7 +46,7 @@ project-configured public disk is the single storage authority.
 
 ## 2. SettingPhone
 
-Represents one public Egyptian mobile number.
+Represents one public phone number normalized to 10 or 11 digits.
 
 ### Fields
 
@@ -74,12 +74,13 @@ Represents one public Egyptian mobile number.
 - Admin update requests use `PhoneInput` and may contain approved formatted
   Egyptian local or international variants.
 - Admin and Public responses use `PhoneOutput` and always return canonical
-  normalized local format.
+  normalized digits-only local format containing exactly 10 or 11 digits.
 
 ### Rules
 
 - Normalize before validation, duplicate checking, and persistence.
-- Accept approved Egyptian variants and store local canonical form.
+- Accept formatted local or Egyptian country-prefixed variants and store a
+  10-digit or 11-digit local canonical form.
 - No item IDs enter or leave the API.
 - Submitting `phones` replaces the full ordered collection.
 - An explicitly submitted empty `phones` array clears all rows.

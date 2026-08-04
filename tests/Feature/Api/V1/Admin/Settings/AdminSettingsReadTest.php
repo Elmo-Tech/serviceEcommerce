@@ -23,6 +23,7 @@ it('returns the complete admin settings resource with ordered children and avail
         'id' => 1,
         'site_name_ar' => 'اسم الموقع',
         'site_name_en' => 'Website Name',
+        'google_maps_url' => 'https://maps.google.com/?q=30.0444,31.2357',
     ]);
 
     $setting->phones()->createMany([
@@ -48,8 +49,8 @@ it('returns the complete admin settings resource with ordered children and avail
         ->assertJsonPath('data.phones.1.number', '01111111111')
         ->assertJsonPath('data.socialLinks.0.platform', 'facebook')
         ->assertJsonPath('data.socialLinks.1.platform', 'instagram')
+        ->assertJsonPath('data.googleMapsUrl', 'https://maps.google.com/?q=30.0444,31.2357')
         ->assertJsonPath('data.availableSocialPlatforms', SocialPlatform::keys())
-        ->assertJsonMissingPath('data.googleMapsUrl')
         ->assertJsonMissingPath('data.latitude')
         ->assertJsonMissingPath('data.longitude')
         ->assertJsonMissingPath('data.defaultSeoTitleAr')

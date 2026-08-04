@@ -993,6 +993,17 @@ Attachments may be added or deleted only through `IN_PROGRESS`.
 
 Public users may upload attachments only during initial order creation.
 
+Each service exposes `isAttachmentRequired`:
+
+- `false` (default): attachments remain optional for a newly created item.
+- `true`: Public order create, Admin order create, and Admin add-item must
+  include at least one valid attachment for that item in the same multipart
+  request; otherwise the API returns `422 REQUIRED_SERVICE_ATTACHMENT_MISSING`.
+
+Changing the service flag never retroactively invalidates an existing order
+item and does not require retaining an attachment after the item has already
+been created.
+
 For deletion workflows, the committed database mutation is authoritative.
 Physical file deletion happens after commit. Cleanup failures are logged safely
 without restoring deleted rows or exposing internal paths.

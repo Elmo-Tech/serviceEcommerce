@@ -69,6 +69,7 @@ class UpdateServiceAction
                 'base_price' => $payload['basePrice'] ?? $lockedService->base_price,
                 'is_active' => $payload['isActive'] ?? $lockedService->is_active,
                 'is_available' => $payload['isAvailable'] ?? $lockedService->is_available,
+                'is_attachment_required' => $payload['isAttachmentRequired'] ?? $lockedService->is_attachment_required,
                 'seo_title_ar' => array_key_exists('seoTitleAr', $payload) ? $payload['seoTitleAr'] : $lockedService->seo_title_ar,
                 'seo_title_en' => array_key_exists('seoTitleEn', $payload) ? $payload['seoTitleEn'] : $lockedService->seo_title_en,
                 'seo_description_ar' => array_key_exists('seoDescriptionAr', $payload) ? $payload['seoDescriptionAr'] : $lockedService->seo_description_ar,

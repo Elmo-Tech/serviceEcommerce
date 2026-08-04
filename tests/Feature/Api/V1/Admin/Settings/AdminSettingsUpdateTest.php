@@ -25,6 +25,7 @@ it('updates admin settings with normalized phones and ordered social links', fun
         'siteNameAr' => '  الموقع الرسمي  ',
         'siteDescriptionAr' => '',
         'publicEmail' => ' INFO@example.com ',
+        'googleMapsUrl' => ' https://maps.google.com/?q=30.0444,31.2357 ',
         'phones' => [
             ['number' => '+20 101 234 5678', 'hasWhats' => 1],
             ['number' => '010-9999-8888', 'hasWhats' => 0],
@@ -39,6 +40,7 @@ it('updates admin settings with normalized phones and ordered social links', fun
         ->assertJsonPath('data.siteNameAr', 'الموقع الرسمي')
         ->assertJsonPath('data.siteDescriptionAr', null)
         ->assertJsonPath('data.publicEmail', 'info@example.com')
+        ->assertJsonPath('data.googleMapsUrl', 'https://maps.google.com/?q=30.0444,31.2357')
         ->assertJsonPath('data.phones.0.number', '01012345678')
         ->assertJsonPath('data.phones.0.hasWhats', 1)
         ->assertJsonPath('data.phones.1.number', '01099998888')
@@ -48,6 +50,7 @@ it('updates admin settings with normalized phones and ordered social links', fun
     $setting = Setting::query()->with(['phones', 'socialLinks'])->sole();
 
     expect($setting->public_email)->toBe('info@example.com')
+        ->and($setting->google_maps_url)->toBe('https://maps.google.com/?q=30.0444,31.2357')
         ->and($setting->phones->pluck('number')->all())->toBe(['01012345678', '01099998888'])
         ->and($setting->socialLinks->pluck('platform')->map(fn (SocialPlatform $platform): string => $platform->key())->all())
         ->toBe(['instagram', 'facebook']);
@@ -103,6 +106,7 @@ it('accepts the real multipart patch shape sent by Postman', function () {
     $parts = [
         ['siteNameEn', 'Service Commerce'],
         ['publicEmail', 'info@example.com'],
+        ['googleMapsUrl', 'https://maps.google.com/location'],
         ['phones[0][number]', '+20 101 234 5678'],
         ['phones[0][hasWhats]', '1'],
     ];
@@ -133,6 +137,7 @@ it('accepts the real multipart patch shape sent by Postman', function () {
     $response->assertOk()
         ->assertJsonPath('data.siteNameEn', 'Service Commerce')
         ->assertJsonPath('data.publicEmail', 'info@example.com')
+        ->assertJsonPath('data.googleMapsUrl', 'https://maps.google.com/location')
         ->assertJsonPath('data.phones.0.number', '01012345678')
         ->assertJsonPath('data.phones.0.hasWhats', 1);
 });
@@ -143,6 +148,7 @@ it('preserves omitted fields and explicitly clears optional scalar fields', func
         'site_name_en' => 'Preserved Name',
         'site_description_en' => 'Clear me',
         'address_en' => 'Preserved Address',
+        'google_maps_url' => 'https://maps.google.com/preserved',
     ]);
 
     $this->patchJson('/api/v1/admin/settings', [
@@ -153,7 +159,30 @@ it('preserves omitted fields and explicitly clears optional scalar fields', func
         ->assertJsonPath('data.siteNameEn', 'Preserved Name')
         ->assertJsonPath('data.siteDescriptionEn', null)
         ->assertJsonPath('data.sloganEn', 'Updated slogan')
+        ->assertJsonPath('data.googleMapsUrl', 'https://maps.google.com/preserved')
         ->assertJsonPath('data.addressEn', 'Preserved Address');
+});
+
+it('clears an empty Google Maps URL and rejects an invalid URL', function () {
+    $setting = Setting::factory()->create([
+        'id' => 1,
+        'google_maps_url' => 'https://maps.google.com/?q=30.0444,31.2357',
+    ]);
+
+    $this->patchJson('/api/v1/admin/settings', [
+        'googleMapsUrl' => '   ',
+    ], settingsAdminHeaders(settingsAdminToken()))
+        ->assertOk()
+        ->assertJsonPath('data.googleMapsUrl', null);
+
+    expect($setting->fresh()?->google_maps_url)->toBeNull();
+
+    $this->patchJson('/api/v1/admin/settings', [
+        'googleMapsUrl' => 'javascript:alert(1)',
+    ], settingsAdminHeaders(settingsAdminToken()))
+        ->assertUnprocessable()
+        ->assertJsonPath('code', 'VALIDATION_ERROR')
+        ->assertJsonStructure(['errors' => ['googleMapsUrl']]);
 });
 
 it('rejects empty required settings fields without changing persisted values', function (string $field, mixed $value) {
@@ -182,6 +211,9 @@ it('accepts every approved Egyptian phone input and returns canonical output', f
         ->assertJsonPath('data.phones.0.number', $expected);
 })->with([
     'local' => ['01012345678', '01012345678'],
+    'ten digit local' => ['0501234567', '0501234567'],
+    'ten digit formatted' => ['050 123 4567', '0501234567'],
+    'ten digit plus 20' => ['+20 50 123 4567', '0501234567'],
     'plus 20' => ['+20 101 234 5678', '01012345678'],
     'double-zero 20' => ['00201012345678', '01012345678'],
     'spaces' => ['010 1234 5678', '01012345678'],
@@ -211,8 +243,11 @@ it('rejects phone and social collection limits and invariants', function (array 
             ['number' => '01111111111', 'hasWhats' => 1],
         ],
     ], 'phones'],
-    'invalid Egyptian phone' => [[
-        'phones' => [['number' => '01912345678', 'hasWhats' => 0]],
+    'phone shorter than ten digits' => [[
+        'phones' => [['number' => '123456789', 'hasWhats' => 0]],
+    ], 'phones.0.number'],
+    'phone longer than eleven digits' => [[
+        'phones' => [['number' => '012345678901', 'hasWhats' => 0]],
     ], 'phones.0.number'],
     'ten social links' => [[
         'socialLinks' => array_map(
@@ -246,12 +281,11 @@ it('ignores removed settings keys during update requests', function () {
         'siteNameEn' => 'Updated Settings Name',
         'latitude' => '30.0444000',
         'longitude' => '31.2357000',
-        'googleMapsUrl' => 'https://maps.google.com/?q=30.0444,31.2357',
         'defaultSeoTitleEn' => 'Ignored SEO title',
         'defaultSeoKeywordsEn' => ['Service Commerce', 'Web Design'],
     ], $headers)->assertOk()
         ->assertJsonPath('data.siteNameEn', 'Updated Settings Name')
-        ->assertJsonMissingPath('data.googleMapsUrl')
+        ->assertJsonPath('data.googleMapsUrl', 'https://maps.google.com/example')
         ->assertJsonMissingPath('data.latitude')
         ->assertJsonMissingPath('data.longitude')
         ->assertJsonMissingPath('data.defaultSeoTitleEn')

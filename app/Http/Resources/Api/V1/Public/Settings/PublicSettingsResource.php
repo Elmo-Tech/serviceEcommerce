@@ -34,6 +34,7 @@ class PublicSettingsResource extends JsonResource
                 'hasWhats' => (int) $phone->has_whats,
             ])->values()->all(),
             'address' => $isArabic ? $this->address_ar : $this->address_en,
+            'googleMapsUrl' => $this->google_maps_url,
             'socialLinks' => $this->socialLinks->map(fn ($link) => [
                 'platform' => $link->platform?->key(),
                 'url' => $link->url,

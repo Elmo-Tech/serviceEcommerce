@@ -21,6 +21,7 @@ use App\Services\Orders\OrderNumberAllocator;
 use App\Services\Orders\OrderPaymentSummaryService;
 use App\Services\Orders\OrderPricingService;
 use App\Services\Orders\OrderSnapshotFactory;
+use App\Services\Orders\RequiredServiceAttachmentValidator;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 
@@ -34,6 +35,7 @@ class CreateAdminOrderAction
         private readonly OrderPaymentSummaryService $orderPaymentSummaryService,
         private readonly OrderAttachmentStore $orderAttachmentStore,
         private readonly CreateCustomerAddressAction $createCustomerAddressAction,
+        private readonly RequiredServiceAttachmentValidator $requiredServiceAttachmentValidator,
     ) {}
 
     public function execute(array $payload, User $admin): Order
@@ -157,6 +159,7 @@ class CreateAdminOrderAction
     private function prepareItemPayload(array $itemPayload): array
     {
         $service = $this->resolveEligibleService((int) $itemPayload['serviceId']);
+        $this->requiredServiceAttachmentValidator->validate($service, (array) ($itemPayload['attachments'] ?? []));
         $pricing = $this->orderPricingService->priceService($service, $itemPayload['selectedOptions'] ?? []);
         $answerSnapshots = $this->validateAndMapAnswers($service, $itemPayload['answers'] ?? []);
 

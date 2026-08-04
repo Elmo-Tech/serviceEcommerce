@@ -615,7 +615,7 @@
     },
     {
       "name": "Admin Services",
-      "description": "Feature 004 protected service-catalog routes. Common list query keys: filter[search] = text search across localized names/descriptions/slugs; filter[categoryId] = root category ID; filter[subcategoryId] = subcategory ID; filter[priceType] enum: 0 = fixed price, 1 = starting from; filter[isActive] = true active only / false inactive only; filter[isAvailable] = true available only / false unavailable only; filter[trashed] = without non-deleted only, with deleted + non-deleted, only deleted only; sort/page/perPage follow the same pagination pattern. Common boolean keys: isActive true = published/active, false = inactive; isAvailable true = available to order, false = unavailable. Common integer enums: priceType 0 = fixed, 1 = starting_from; pricingOptions[*].inputType 0 = select, 1 = multi_select, 2 = radio, 3 = checkbox; media[*].type 0 = image, 1 = video; values[*].actionStatus in pricing-option update accepts create, update, delete, or empty string for unchanged existing rows.",
+      "description": "Feature 004 protected service-catalog routes. Common list query keys: filter[search] = text search across localized names/descriptions/slugs; filter[categoryId] = root category ID; filter[subcategoryId] = subcategory ID; filter[priceType] enum: 0 = fixed price, 1 = starting from; filter[isActive] = true active only / false inactive only; filter[isAvailable] = true available only / false unavailable only; filter[trashed] = without non-deleted only, with deleted + non-deleted, only deleted only; sort/page/perPage follow the same pagination pattern. Common boolean keys: isActive true = published/active, false = inactive; isAvailable true = available to order, false = unavailable; isAttachmentRequired true = every new order item must upload at least one attachment, false = attachments are optional. Common integer enums: priceType 0 = fixed, 1 = starting_from; pricingOptions[*].inputType 0 = select, 1 = multi_select, 2 = radio, 3 = checkbox; media[*].type 0 = image, 1 = video; values[*].actionStatus in pricing-option update accepts create, update, delete, or empty string for unchanged existing rows.",
       "item": [
         {
           "name": "List Services",
@@ -632,7 +632,7 @@
         },
         {
           "name": "Create Service",
-          "description": "Multipart bracket-notation request. Top-level keys: nameAr/nameEn = required Arabic/English names; shortDescriptionAr/shortDescriptionEn = required short localized summaries; descriptionAr/descriptionEn = required full localized descriptions; slugAr/slugEn = required localized slugs; categoryId = root category ID; subcategoryId = subcategory ID; priceType enum 0 = fixed, 1 = starting_from; basePrice = decimal string used with supported price types; isActive = true active/published, false inactive; isAvailable = true available for ordering, false unavailable; productionTimeAr/productionTimeEn = optional localized duration text; seoTitleAr/seoTitleEn and seoDescriptionAr/seoDescriptionEn = optional SEO text. Nested keys: specifications[*][labelAr|labelEn|valueAr|valueEn] = bilingual display specs; orderFields[*][labelAr|labelEn|isRequired] = bilingual order questions where isRequired true means mandatory answer; pricingOptions[*][nameAr|nameEn|inputType|isRequired] where inputType enum is 0 select, 1 multi_select, 2 radio, 3 checkbox; pricingOptions[*][values][*][labelAr|labelEn|priceAdjustment|isActive] where isActive true means selectable and false means disabled; media[*][file|type|isMain|altAr|altEn] where type enum is 0 image, 1 video and isMain=true marks the main media item. Sending nested specifications, orderFields, pricingOptions, or media also requires the matching nested-resource permission.",
+          "description": "Multipart bracket-notation request. Top-level keys: nameAr/nameEn = required Arabic/English names; shortDescriptionAr/shortDescriptionEn = required short localized summaries; descriptionAr/descriptionEn = required full localized descriptions; slugAr/slugEn = required localized slugs; categoryId = root category ID; subcategoryId = subcategory ID; priceType enum 0 = fixed, 1 = starting_from; basePrice = decimal string used with supported price types; isActive = true active/published, false inactive; isAvailable = true available for ordering, false unavailable; isAttachmentRequired = true requires at least one attachment for every new order item, false keeps attachments optional (default false); productionTimeAr/productionTimeEn = optional localized duration text; seoTitleAr/seoTitleEn and seoDescriptionAr/seoDescriptionEn = optional SEO text. Nested keys: specifications[*][labelAr|labelEn|valueAr|valueEn] = bilingual display specs; orderFields[*][labelAr|labelEn|isRequired] = bilingual order questions where isRequired true means mandatory answer; pricingOptions[*][nameAr|nameEn|inputType|isRequired] where inputType enum is 0 select, 1 multi_select, 2 radio, 3 checkbox; pricingOptions[*][values][*][labelAr|labelEn|priceAdjustment|isActive] where isActive true means selectable and false means disabled; media[*][file|type|isMain|altAr|altEn] where type enum is 0 image, 1 video and isMain=true marks the main media item. Sending nested specifications, orderFields, pricingOptions, or media also requires the matching nested-resource permission.",
           "request": {
             "method": "POST",
             "header": [
@@ -657,6 +657,7 @@
                 { "key": "basePrice", "value": "250.00", "type": "text" },
                 { "key": "isActive", "value": "true", "type": "text" },
                 { "key": "isAvailable", "value": "true", "type": "text" },
+                { "key": "isAttachmentRequired", "value": "false", "type": "text", "description": "true requires at least one item attachment; false keeps attachments optional." },
                 { "key": "productionTimeAr", "value": "يوم واحد", "type": "text" },
                 { "key": "productionTimeEn", "value": "One day", "type": "text" },
                 { "key": "seoTitleAr", "value": "عنوان سيو", "type": "text" },
@@ -703,7 +704,7 @@
         },
         {
           "name": "Update Service",
-          "description": "Updates mutable service fields. Common keys: categoryId and subcategoryId = classification IDs; priceType enum 0 fixed / 1 starting_from; basePrice = decimal string; isActive true = active/published, false = inactive; isAvailable true = available, false = unavailable. Send only the fields you want to change.",
+          "description": "Updates mutable service fields. Common keys: categoryId and subcategoryId = classification IDs; priceType enum 0 fixed / 1 starting_from; basePrice = decimal string; isActive true = active/published, false = inactive; isAvailable true = available, false = unavailable; isAttachmentRequired true = attachments required for new order items, false = optional. Send only the fields you want to change.",
           "request": {
             "method": "PATCH",
             "header": [
@@ -713,7 +714,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nameAr\": \"خدمة تنظيف محدثة\",\n  \"nameEn\": \"Updated Cleaning Service\",\n  \"categoryId\": 1,\n  \"subcategoryId\": 2,\n  \"priceType\": 1,\n  \"basePrice\": 300,\n  \"isActive\": true,\n  \"isAvailable\": true\n}",
+              "raw": "{\n  \"nameAr\": \"خدمة تنظيف محدثة\",\n  \"nameEn\": \"Updated Cleaning Service\",\n  \"categoryId\": 1,\n  \"subcategoryId\": 2,\n  \"priceType\": 1,\n  \"basePrice\": 300,\n  \"isActive\": true,\n  \"isAvailable\": true,\n  \"isAttachmentRequired\": false\n}",
               "options": { "raw": { "language": "json" } }
             },
             "url": "{{baseUrl}}/admin/services/1"
@@ -1029,7 +1030,7 @@
       "item": [
         {
           "name": "Create Public Order",
-          "description": "Creates one guest order in a single multipart request. Header meanings: Idempotency-Key = unique UUID for one business payload only; Accept-Language = localized response language. Body key meanings: customer[name|email|phone] = guest customer snapshot; address[province|city|address] = optional order-only address snapshot; customerNote = optional general order note; items[*][serviceId] = current service to order; items[*][quantity] = service quantity; items[*][selectedOptions][*][pricingOptionId|valueIds] = chosen pricing-option values; items[*][answers][*][orderFieldId|answer] = chosen service-order-field answers; items[*][itemNote] = optional item-level note; items[*][attachments] = item-level files. Order status enum meaning on create: 0 = pending. Payment status enum meaning on create: 0 = unpaid.",
+          "description": "Creates one guest order in a single multipart request. Header meanings: Idempotency-Key = unique UUID for one business payload only; Accept-Language = localized response language. Body key meanings: customer[name|email|phone] = guest customer snapshot; address[province|city|address] = optional order-only address snapshot; customerNote = optional general order note; items[*][serviceId] = current service to order; items[*][quantity] = service quantity; items[*][selectedOptions][*][pricingOptionId|valueIds] = chosen pricing-option values; items[*][answers][*][orderFieldId|answer] = chosen service-order-field answers; items[*][itemNote] = optional item-level note; items[*][attachments] = item-level files, optional unless the selected service returns isAttachmentRequired=true. Missing a required attachment returns 422 REQUIRED_SERVICE_ATTACHMENT_MISSING. Order status enum meaning on create: 0 = pending. Payment status enum meaning on create: 0 = unpaid.",
           "request": {
             "method": "POST",
             "header": [
@@ -1081,7 +1082,7 @@
         },
         {
           "name": "Create Admin Order",
-          "description": "Creates an order from the dashboard. Top-level keys: customerId = use existing customer; customer = inline new customer snapshot when no customerId is sent; customerAddressId = saved customer address ID when reused; address = inline new address snapshot when no customerAddressId is sent; orderPlace enum 0 = website, 1 = whatsapp; customerNote = optional general order note; adminNote = optional internal Admin note; discountType enum 0 = fixed, 1 = percentage; discountValue = discount amount or percent based on discountType; discountReason = required whenever discountType is sent; items[*] = initial order items. Initial attachments inside items additionally require order-item-attachments.create permission.",
+          "description": "Creates an order from the dashboard. Top-level keys: customerId = use existing customer; customer = inline new customer snapshot when no customerId is sent; customerAddressId = saved customer address ID when reused; address = inline new address snapshot when no customerAddressId is sent; orderPlace enum 0 = website, 1 = whatsapp; customerNote = optional general order note; adminNote = optional internal Admin note; discountType enum 0 = fixed, 1 = percentage; discountValue = discount amount or percent based on discountType; discountReason = required whenever discountType is sent; items[*] = initial order items. Initial attachments inside items additionally require order-item-attachments.create permission. If a selected service has isAttachmentRequired=true, its item must include at least one attachment.",
           "request": {
             "method": "POST",
             "header": [
@@ -1231,7 +1232,7 @@
         },
         {
           "name": "Create Order Item",
-          "description": "Adds one item to an editable order using multipart/form-data. serviceId selects the service; quantity is the requested quantity; selectedOptions use pricing-option/value IDs; answers use current service orderFieldId values; itemNote is optional; attachments[] accepts up to 3 protected PNG/JPG/JPEG/WEBP/PDF/DOC/DOCX files, maximum 10 MB each and 30 MB combined. Attachments additionally require order-item-attachments.create, and item plus files are atomic.",
+          "description": "Adds one item to an editable order using multipart/form-data. serviceId selects the service; quantity is the requested quantity; selectedOptions use pricing-option/value IDs; answers use current service orderFieldId values; itemNote is optional; attachments[] accepts up to 3 protected PNG/JPG/JPEG/WEBP/PDF/DOC/DOCX files, maximum 10 MB each and 30 MB combined. Attachments are optional unless the service has isAttachmentRequired=true. Attachments additionally require order-item-attachments.create, and item plus files are atomic.",
           "request": {
             "method": "POST",
             "header": [
@@ -1456,7 +1457,7 @@
         },
         {
           "name": "Update Settings",
-          "description": "Atomic multipart partial update. Omitted values are preserved; empty optional strings clear to null. phones/socialLinks are ordered full replacements, and the literal [] clears either collection. Submit logo/footerLogo/favicon as an empty Text field to remove it, or as File to replace it. Coordinates are submitted together. Egyptian phone formatting is normalized to 01xxxxxxxxx.",
+          "description": "Atomic multipart partial update. Omitted values are preserved; empty optional strings clear to null. phones/socialLinks are ordered full replacements, and the literal [] clears either collection. Submit logo/footerLogo/favicon as an empty Text field to remove it, or as File to replace it. googleMapsUrl accepts an absolute HTTP/HTTPS URL and an empty value clears it. Phone input is normalized to digits-only local format and must contain exactly 10 or 11 digits after +20/0020 normalization.",
           "request": {
             "method": "PATCH",
             "header": [
@@ -1474,13 +1475,14 @@
                 { "key": "sloganAr", "value": "خدماتك في مكان واحد", "type": "text", "description": "Optional Arabic slogan; empty string clears it.", "disabled": true },
                 { "key": "sloganEn", "value": "Services in one place", "type": "text", "description": "Optional English slogan; empty string clears it.", "disabled": true },
                 { "key": "publicEmail", "value": "info@example.com", "type": "text", "description": "Required contact email; normalized to lowercase." },
-                { "key": "phones[0][number]", "value": "+20 101 234 5678", "type": "text", "description": "Egyptian phone in local/+20/0020 formatted input; normalized output is 01012345678." },
+                { "key": "phones[0][number]", "value": "0501234567", "type": "text", "description": "Phone number with exactly 10 or 11 digits after formatting and +20/0020 normalization." },
                 { "key": "phones[0][hasWhats]", "value": "1", "type": "text", "description": "1 = WhatsApp enabled, 0 = not enabled; at most one item may be 1." },
-                { "key": "phones[1][number]", "value": "01112345678", "type": "text", "description": "Second ordered phone; maximum total is 3.", "disabled": true },
+                { "key": "phones[1][number]", "value": "01112345678", "type": "text", "description": "Second ordered 11-digit phone; maximum total is 3.", "disabled": true },
                 { "key": "phones[1][hasWhats]", "value": "0", "type": "text", "description": "WhatsApp flag for the second phone.", "disabled": true },
                 { "key": "phones", "value": "[]", "type": "text", "description": "Enable this row and disable every phones[index] row to clear all phones.", "disabled": true },
                 { "key": "addressAr", "value": "القاهرة، مصر", "type": "text", "description": "Optional Arabic address; empty string clears it.", "disabled": true },
                 { "key": "addressEn", "value": "Cairo, Egypt", "type": "text", "description": "Optional English address; empty string clears it.", "disabled": true },
+                { "key": "googleMapsUrl", "value": "https://maps.google.com/?q=30.0444,31.2357", "type": "text", "description": "Optional absolute HTTP/HTTPS Google Maps URL; empty string clears it.", "disabled": true },
                 { "key": "socialLinks[0][platform]", "value": "facebook", "type": "text", "description": "facebook, instagram, linkedin, youtube, tiktok, x, telegram, pinterest, or snapchat.", "disabled": true },
                 { "key": "socialLinks[0][url]", "value": "https://facebook.com/service-commerce", "type": "text", "description": "Absolute HTTP/HTTPS URL for the platform.", "disabled": true },
                 { "key": "socialLinks", "value": "[]", "type": "text", "description": "Enable this row and disable every socialLinks[index] row to clear all social links.", "disabled": true },
@@ -1865,11 +1867,11 @@
     },
     {
       "name": "Public Settings",
-      "description": "Feature 006 unauthenticated localized projection. Accept-Language resolves ar/en; response includes Content-Language and Vary: Accept-Language.",
+      "description": "Feature 006 unauthenticated localized projection. Accept-Language resolves ar/en; response includes Content-Language, Vary: Accept-Language, and googleMapsUrl as an absolute URL or null.",
       "item": [
         {
           "name": "Show Public Settings",
-          "description": "Returns localized neutral keys, ordered phones/social links, and absolute branding URLs. Missing singleton returns safe defaults without a database write.",
+          "description": "Returns localized neutral keys, ordered phones/social links, absolute branding URLs, and googleMapsUrl. Missing singleton returns safe defaults without a database write.",
           "request": {
             "method": "GET",
             "header": [

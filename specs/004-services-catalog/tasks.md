@@ -563,7 +563,7 @@ After Setup and Foundational:
 
 ## Notes
 
-- Total tasks: **47**
+- Total tasks: **49**
 - User story task counts:
   - **US1**: 10
   - **US2**: 11
@@ -578,3 +578,10 @@ After Setup and Foundational:
   OpenAPI structural validation are explicit implementation and verification
   requirements
 - The approved source remains `docs/features/004-services-catalog.md`
+
+## Attachment requirement amendment
+
+- [x] T048 Add the optional-by-default service attachment requirement flag to
+  persistence, Admin create/update, Admin/Public resources, and service tests.
+- [x] T049 Enforce required attachments for every new Public/Admin order item
+  and synchronize Feature 004/005 contracts and Postman examples.

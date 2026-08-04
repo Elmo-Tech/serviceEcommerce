@@ -20,7 +20,7 @@ class EgyptianPhoneNormalizer
             $digits = '0'.substr($digits, 2);
         }
 
-        if (! preg_match('/^01[0125][0-9]{8}$/', $digits)) {
+        if (! preg_match('/^[0-9]{10,11}$/', $digits)) {
             return null;
         }
 

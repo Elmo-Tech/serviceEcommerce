@@ -28,6 +28,7 @@ class ServiceIndexResource extends JsonResource
             'basePrice' => (float) $this->base_price,
             'isActive' => (bool) $this->is_active,
             'isAvailable' => (bool) $this->is_available,
+            'isAttachmentRequired' => (bool) $this->is_attachment_required,
             'category' => $this->category ? [
                 'id' => $this->category->id,
                 'name' => $locale === 'en' ? $this->category->name_en : $this->category->name_ar,

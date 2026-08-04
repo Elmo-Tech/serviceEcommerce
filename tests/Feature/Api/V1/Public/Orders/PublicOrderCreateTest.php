@@ -9,6 +9,8 @@ use App\Models\Category;
 use App\Models\Order;
 use App\Models\Service;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 uses(RefreshDatabase::class);
@@ -110,4 +112,46 @@ it('rate limits public order creation after five requests per minute for the sam
         'Idempotency-Key' => (string) Str::uuid(),
     ])->assertStatus(429)
         ->assertJsonPath('code', 'RATE_LIMITED');
+});
+
+it('requires an attachment only when the selected service enables the requirement', function () {
+    Storage::fake(config('filesystems.default'));
+
+    $service = Service::factory()->create([
+        'is_active' => true,
+        'is_available' => true,
+        'is_attachment_required' => true,
+        'price_type' => ServicePriceType::FIXED,
+        'base_price' => '150.00',
+    ]);
+
+    $payload = [
+        'customer' => [
+            'name' => 'Attachment Customer',
+            'email' => 'attachment@example.com',
+            'phone' => '01001234567',
+        ],
+        'items' => [
+            [
+                'serviceId' => $service->getKey(),
+                'quantity' => 1,
+            ],
+        ],
+    ];
+
+    $this->postJson('/api/v1/public/orders', $payload, [
+        'Accept-Language' => 'en',
+        'Idempotency-Key' => (string) Str::uuid(),
+    ])->assertUnprocessable()
+        ->assertJsonPath('code', 'REQUIRED_SERVICE_ATTACHMENT_MISSING');
+
+    $payload['items'][0]['attachments'] = [
+        UploadedFile::fake()->image('design.png'),
+    ];
+
+    $this->post('/api/v1/public/orders', $payload, [
+        'Accept' => 'application/json',
+        'Accept-Language' => 'en',
+        'Idempotency-Key' => (string) Str::uuid(),
+    ])->assertCreated();
 });

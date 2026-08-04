@@ -82,6 +82,8 @@ On category change, verify the old subcategory is cleared atomically.
 - Reject fixed service containing pricing options.
 - Create start-from service with zero and positive `priceAdjustment` values.
 - Reject `basePrice = 0` and negative adjustments.
+- Verify `isAttachmentRequired` defaults to false, accepts boolean-like
+  multipart strings, and is returned by Admin/Public list and detail resources.
 - Verify response money values are strings such as `"1000.00"`.
 
 ### C. Multipart atomic create

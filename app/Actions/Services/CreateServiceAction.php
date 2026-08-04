@@ -65,6 +65,7 @@ class CreateServiceAction
                     'base_price' => $payload['basePrice'],
                     'is_active' => (bool) ($payload['isActive'] ?? false),
                     'is_available' => (bool) ($payload['isAvailable'] ?? true),
+                    'is_attachment_required' => (bool) ($payload['isAttachmentRequired'] ?? false),
                     'seo_title_ar' => $payload['seoTitleAr'] ?? null,
                     'seo_title_en' => $payload['seoTitleEn'] ?? null,
                     'seo_description_ar' => $payload['seoDescriptionAr'] ?? null,

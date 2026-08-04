@@ -99,6 +99,9 @@ that govern this feature:
 - external order enums use integer values
 - order numbers use `ORD-YYYYMMDD-####`
 - order attachments use protected storage and protected download endpoints
+- a reusable service-level attachment guard enforces
+  `isAttachmentRequired` for Public/Admin creation of new order items without
+  changing historical order items
 - order address payloads use `province`, `city`, and `address`
 
 These are treated as approved feature decisions for Feature 005. Shared

@@ -62,7 +62,7 @@
 
 - [x] Phone item shape is exactly `{number, hasWhats}`.
 - [x] Maximum count is exactly three.
-- [x] Egyptian mobile numbers only are allowed.
+- [x] Normalized phone numbers contain exactly 10 or 11 digits.
 - [x] `+20`, `0020`, spaces, dashes, and parentheses normalization is fixed.
 - [x] Canonical stored format is fixed.
 - [x] Duplicate checks occur after normalization.

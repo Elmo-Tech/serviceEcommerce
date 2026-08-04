@@ -55,6 +55,14 @@ Validate:
 
 ## 4. Validate Admin update
 
+### Google Maps URL amendment
+
+Submit `googleMapsUrl=https://maps.google.com/?q=30.0444,31.2357` in the
+multipart PATCH and verify both Admin and Public responses return the same URL.
+Omitting the key must preserve it, an empty string must clear it to `null`, and
+non-HTTP/HTTPS values must return `422 VALIDATION_ERROR`. `latitude` and
+`longitude` remain absent from both contracts.
+
 ### Scenario C — Scalar partial update
 
 Send multipart PATCH updating only:
@@ -114,6 +122,7 @@ phones[1][hasWhats]=0
 Validate:
 
 - phones are normalized and stored in canonical local format
+- both 10-digit and 11-digit normalized phone numbers are accepted
 - order matches submission order
 - duplicate normalized numbers are rejected
 - more than three phones is rejected
@@ -250,7 +259,7 @@ Validate:
 - exact request/response objects reject undocumented fields
 - all approved Admin and Public response keys are required and nullable values use JSON Schema null unions
 - Admin update phones reference `PhoneInput`, while Admin/Public response phones reference `PhoneOutput`
-- approved formatted Egyptian phone inputs are accepted by the contract and canonical output remains normalized
+- approved formatted 10-digit and 11-digit phone inputs are accepted by the contract and canonical output remains normalized
 - Admin and Public projections match the approved contract
 
 ## 8. Postman collection

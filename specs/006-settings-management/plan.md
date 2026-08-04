@@ -43,6 +43,15 @@ normalization, and SVG/file validation behavior.
 
 ## 3. Scope and Contract Freeze
 
+### 3.1 Google Maps URL amendment — 2026-08-04
+
+The implementation exposes `googleMapsUrl` as one nullable scalar backed by
+`settings.google_maps_url`. Admin multipart PATCH validates an absolute
+HTTP/HTTPS URL with a 2048-character maximum, omission preserves the value, and
+an empty string clears it. Both Admin and Public Resources return the URL or
+`null`. No coordinate fields are exposed. This amendment supersedes older
+coordinate-pair planning references below.
+
 The plan implements exactly:
 
 - **2 protected Admin operations**:
@@ -215,6 +224,8 @@ No `first()`-style unscoped lookup is allowed.
 ### 7.3 Phone normalization and duplication rules
 
 `EgyptianPhoneNormalizer` owns:
+
+- accepting canonical local numbers containing exactly 10 or 11 digits
 
 - trimming whitespace
 - removing spaces, dashes, and parentheses

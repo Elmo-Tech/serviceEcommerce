@@ -226,8 +226,9 @@ Rules:
 Database:
 
 ```text
-is_active    TINYINT(1)
-is_available TINYINT(1)
+is_active              TINYINT(1)
+is_available           TINYINT(1)
+is_attachment_required TINYINT(1)
 ```
 
 API:
@@ -235,7 +236,8 @@ API:
 ```json
 {
   "isActive": true,
-  "isAvailable": true
+  "isAvailable": true,
+  "isAttachmentRequired": false
 }
 ```
 
@@ -244,6 +246,7 @@ Defaults:
 ```text
 isActive = false
 isAvailable = true
+isAttachmentRequired = false
 ```
 
 Meaning:
@@ -252,6 +255,10 @@ Meaning:
 - `isActive = false`: hidden from public APIs.
 - `isAvailable = true`: the service can be ordered.
 - `isAvailable = false`: the service remains publicly visible when active, but ordering is blocked.
+- `isAttachmentRequired = true`: every newly created order item for this service must include at least one valid protected attachment in the same multipart request.
+- `isAttachmentRequired = false`: order-item attachments remain optional.
+
+The flag is returned by Admin and Public service resources so both frontends can render the upload field correctly. Existing services default to optional attachments. Changing the flag does not rewrite or invalidate historical order items.
 
 An active service may have no images.
 
@@ -1079,6 +1086,7 @@ priceType
 basePrice
 isActive
 isAvailable
+isAttachmentRequired
 productionTimeAr
 productionTimeEn
 
@@ -1194,6 +1202,7 @@ Example fields:
   "basePrice": 15000,
   "isActive": true,
   "isAvailable": true,
+  "isAttachmentRequired": false,
   "mainMedia": null,
   "category": null,
   "subcategory": null,
@@ -1731,6 +1740,7 @@ priceType                               required, 0|1
 basePrice                               required, numeric, >0
 isActive                                boolean
 isAvailable                             boolean
+isAttachmentRequired                    boolean, defaults to false
 categoryId                              nullable, active non-deleted category
 subcategoryId                           nullable, requires valid category
 ```

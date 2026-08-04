@@ -154,12 +154,13 @@ components:
       properties:
         number:
           type: string
-          minLength: 1
-          description: Accepts approved Egyptian local or international variants, including formatting
-            with spaces, dashes, parentheses, +20, or 0020. The backend normalizes before validation and
-            persistence.
+          minLength: 10
+          maxLength: 32
+          description: Accepts formatted local or Egyptian country-prefixed variants. After removing formatting
+            and converting +20/0020 to a local 0 prefix, the normalized value must contain exactly 10 or 11 digits.
           examples:
           - 01012345678
+          - 0501234567
           - '+201012345678'
           - 00201012345678
           - 010 1234 5678
@@ -179,10 +180,11 @@ components:
       properties:
         number:
           type: string
-          pattern: ^01[0125][0-9]{8}$
-          description: Canonical normalized Egyptian mobile number.
+          pattern: ^[0-9]{10,11}$
+          description: Canonical normalized digits-only phone number containing 10 or 11 digits.
           examples:
           - 01012345678
+          - 0501234567
         hasWhats:
           type: integer
           enum:
@@ -239,6 +241,7 @@ components:
       - phones
       - addressAr
       - addressEn
+      - googleMapsUrl
       - socialLinks
       - availableSocialPlatforms
       properties:
@@ -297,6 +300,11 @@ components:
           type:
           - string
           - 'null'
+        googleMapsUrl:
+          type:
+          - string
+          - 'null'
+          format: uri
         socialLinks:
           type: array
           maxItems: 9
@@ -323,6 +331,7 @@ components:
       - email
       - phones
       - address
+      - googleMapsUrl
       - socialLinks
       properties:
         siteName:
@@ -364,6 +373,11 @@ components:
           type:
           - string
           - 'null'
+        googleMapsUrl:
+          type:
+          - string
+          - 'null'
+          format: uri
         socialLinks:
           type: array
           maxItems: 9
@@ -481,6 +495,11 @@ components:
         addressEn:
           type: string
           description: Empty string explicitly clears the field to null.
+        googleMapsUrl:
+          type: string
+          format: uri
+          maxLength: 2048
+          description: Optional absolute HTTP/HTTPS Google Maps URL; an empty string explicitly clears the field to null.
         phones:
           type: array
           maxItems: 3

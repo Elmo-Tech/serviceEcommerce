@@ -358,6 +358,13 @@ delete-versus-update, and restore races.
   pair. Submitting one without the other MUST return `422 VALIDATION_ERROR`.
   The media update endpoint MUST update alt text only and MUST NOT replace the
   stored file.
+- **FR-039**: Every service MUST expose an `isAttachmentRequired` boolean in
+  Admin and Public resources. Admin create and update MUST accept the flag,
+  including multipart boolean strings `"true"` and `"false"`; omitted create
+  values and existing migrated rows MUST default to `false`. When true, every
+  newly created order item for that service MUST include at least one valid
+  protected attachment in the same multipart request. The rule MUST NOT
+  retroactively invalidate historical order items.
 
 ### Actors and Authorization *(mandatory for protected behaviour)*
 

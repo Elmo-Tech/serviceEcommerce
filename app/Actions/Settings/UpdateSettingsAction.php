@@ -54,6 +54,7 @@ class UpdateSettingsAction
                     'publicEmail' => 'public_email',
                     'addressAr' => 'address_ar',
                     'addressEn' => 'address_en',
+                    'googleMapsUrl' => 'google_maps_url',
                 ];
 
                 foreach ($fieldMap as $input => $column) {

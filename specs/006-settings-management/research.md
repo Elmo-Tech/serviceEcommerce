@@ -28,11 +28,11 @@
   - Split every small write into a separate Action: rejected because it adds
     unnecessary orchestration layers for one cohesive workflow.
 
-## Decision 3: Normalize Egyptian mobile numbers before all duplicate checks
+## Decision 3: Normalize 10-digit and 11-digit phone numbers before all duplicate checks
 
 - **Decision**: Use one focused phone normalizer service that converts accepted
-  Egyptian variants to a canonical local format like `01012345678` before
-  validation and persistence.
+  formatted local or Egyptian country-prefixed variants to a digits-only local
+  format containing exactly 10 or 11 digits before validation and persistence.
 - **Rationale**: The feature reference defines one canonical stored format and
   requires duplicate checks after normalization.
 - **Alternatives considered**:

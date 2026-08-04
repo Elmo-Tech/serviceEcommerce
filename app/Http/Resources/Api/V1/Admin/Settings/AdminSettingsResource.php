@@ -33,6 +33,7 @@ class AdminSettingsResource extends JsonResource
             ])->values()->all(),
             'addressAr' => $this->address_ar,
             'addressEn' => $this->address_en,
+            'googleMapsUrl' => $this->google_maps_url,
             'socialLinks' => $this->socialLinks->map(fn ($link) => [
                 'platform' => $link->platform?->key(),
                 'url' => $link->url,

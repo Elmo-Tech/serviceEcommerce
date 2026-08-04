@@ -27,6 +27,7 @@ class UpdateServiceRequest extends StoreServiceRequest
             'basePrice' => ['sometimes', 'numeric', 'gt:0'],
             'isActive' => ['sometimes', 'boolean'],
             'isAvailable' => ['sometimes', 'boolean'],
+            'isAttachmentRequired' => ['sometimes', 'boolean'],
             'seoTitleAr' => ['sometimes', 'nullable', 'string', 'max:70', 'required_with:seoTitleEn'],
             'seoTitleEn' => ['sometimes', 'nullable', 'string', 'max:70', 'required_with:seoTitleAr'],
             'seoDescriptionAr' => ['sometimes', 'nullable', 'string', 'max:180', 'required_with:seoDescriptionEn'],

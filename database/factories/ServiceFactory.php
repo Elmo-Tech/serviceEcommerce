@@ -37,6 +37,7 @@ class ServiceFactory extends Factory
             'base_price' => fake()->randomFloat(2, 100, 5000),
             'is_active' => true,
             'is_available' => true,
+            'is_attachment_required' => false,
             'seo_title_ar' => null,
             'seo_title_en' => null,
             'seo_description_ar' => null,

@@ -64,6 +64,7 @@ it('manages admin services with localized listing, slug stability, restore clean
         'basePrice' => 250,
         'isActive' => true,
         'isAvailable' => true,
+        'isAttachmentRequired' => true,
     ], serviceAdminHeaders($accessToken, 'en'));
 
     $createResponse->assertCreated()
@@ -72,7 +73,8 @@ it('manages admin services with localized listing, slug stability, restore clean
         ->assertJsonPath('data.subcategoryId', $subcategory->getKey())
         ->assertJsonPath('data.priceType', 0)
         ->assertJsonPath('data.isActive', true)
-        ->assertJsonPath('data.isAvailable', true);
+        ->assertJsonPath('data.isAvailable', true)
+        ->assertJsonPath('data.isAttachmentRequired', true);
 
     $service = Service::query()->firstOrFail();
     expect(trim((string) $service->name_ar))->not->toBe('');
@@ -119,6 +121,7 @@ it('manages admin services with localized listing, slug stability, restore clean
             'categoryId' => null,
             'nameAr' => 'خدمة التنظيف المحدثة',
             'nameEn' => 'Updated Cleaning Service',
+            'isAttachmentRequired' => false,
         ],
         serviceAdminHeaders($accessToken, 'en'),
     );
@@ -126,6 +129,7 @@ it('manages admin services with localized listing, slug stability, restore clean
     $updateResponse->assertOk()
         ->assertJsonPath('data.categoryId', null)
         ->assertJsonPath('data.subcategoryId', null)
+        ->assertJsonPath('data.isAttachmentRequired', false)
         ->assertJsonPath('data.slugAr', $originalArabicSlug)
         ->assertJsonPath('data.slugEn', $originalEnglishSlug);
 
@@ -228,11 +232,13 @@ it('accepts boolean-like string values for service activation flags during creat
         'basePrice' => '500',
         'isActive' => 'true',
         'isAvailable' => 'false',
+        'isAttachmentRequired' => 'true',
     ], serviceAdminHeaders($accessToken, 'en'));
 
     $response->assertCreated()
         ->assertJsonPath('data.isActive', true)
-        ->assertJsonPath('data.isAvailable', false);
+        ->assertJsonPath('data.isAvailable', false)
+        ->assertJsonPath('data.isAttachmentRequired', true);
 });
 
 it('returns the approved authentication and permission boundaries for admin service routes', function () {

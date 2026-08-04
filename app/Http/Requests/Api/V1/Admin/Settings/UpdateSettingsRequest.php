@@ -31,8 +31,9 @@ class UpdateSettingsRequest extends FormRequest
             'publicEmail' => ['sometimes', 'string', 'email:rfc', 'min:1', 'max:255'],
             'addressAr' => ['sometimes', 'nullable', 'string'],
             'addressEn' => ['sometimes', 'nullable', 'string'],
+            'googleMapsUrl' => ['sometimes', 'nullable', 'string', 'url:http,https', 'max:2048'],
             'phones' => ['sometimes', 'array', 'max:3'],
-            'phones.*.number' => ['required_with:phones', 'string', 'regex:/^01[0125][0-9]{8}$/'],
+            'phones.*.number' => ['required_with:phones', 'string', 'regex:/^[0-9]{10,11}$/'],
             'phones.*.hasWhats' => ['required_with:phones', 'integer', Rule::in([0, 1])],
             'socialLinks' => ['sometimes', 'array', 'max:9'],
             'socialLinks.*.platform' => ['required_with:socialLinks', 'string', Rule::in(SocialPlatform::keys())],
@@ -85,6 +86,7 @@ class UpdateSettingsRequest extends FormRequest
             'sloganEn',
             'addressAr',
             'addressEn',
+            'googleMapsUrl',
         ] as $field) {
             if (array_key_exists($field, $this->all())) {
                 $payload[$field] = $this->normalizeOptionalString($this->input($field));

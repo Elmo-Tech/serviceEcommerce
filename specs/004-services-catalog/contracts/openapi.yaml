@@ -1425,6 +1425,7 @@ components:
       - basePrice
       - isActive
       - isAvailable
+      - isAttachmentRequired
       - mainMedia
       - category
       - subcategory
@@ -1451,6 +1452,9 @@ components:
           type: boolean
         isAvailable:
           type: boolean
+        isAttachmentRequired:
+          type: boolean
+          description: True when a new order item must include at least one protected attachment.
         mainMedia:
           oneOf:
           - $ref: '#/components/schemas/AdminMedia'
@@ -1491,6 +1495,7 @@ components:
       - basePrice
       - isActive
       - isAvailable
+      - isAttachmentRequired
       - category
       - subcategory
       - productionTimeAr
@@ -1538,6 +1543,9 @@ components:
           type: boolean
         isAvailable:
           type: boolean
+        isAttachmentRequired:
+          type: boolean
+          description: True when a new order item must include at least one protected attachment.
         category:
           oneOf:
           - $ref: '#/components/schemas/AdminClassificationSummary'
@@ -1620,6 +1628,7 @@ components:
       - priceType
       - basePrice
       - isAvailable
+      - isAttachmentRequired
       - mainMedia
       - category
       - subcategory
@@ -1641,6 +1650,9 @@ components:
         basePrice: *id011
         isAvailable:
           type: boolean
+        isAttachmentRequired:
+          type: boolean
+          description: Controls whether the public order form must upload at least one attachment for this service.
         mainMedia:
           oneOf:
           - $ref: '#/components/schemas/PublicMedia'
@@ -1665,6 +1677,7 @@ components:
       - priceType
       - basePrice
       - isAvailable
+      - isAttachmentRequired
       - productionTime
       - category
       - subcategory
@@ -1695,6 +1708,9 @@ components:
         basePrice: *id011
         isAvailable:
           type: boolean
+        isAttachmentRequired:
+          type: boolean
+          description: Controls whether the public order form must upload at least one attachment for this service.
         productionTime:
           type:
           - string
@@ -2024,6 +2040,10 @@ components:
         isAvailable: &id027
           type: boolean
           default: true
+        isAttachmentRequired: &id040
+          type: boolean
+          default: false
+          description: Require at least one protected attachment whenever a new order item is created for this service.
         productionTimeAr: &id028
           type:
           - string
@@ -2141,6 +2161,7 @@ components:
         basePrice: *id025
         isActive: *id026
         isAvailable: *id027
+        isAttachmentRequired: *id040
         productionTimeAr: *id028
         productionTimeEn: *id029
         seoTitleAr: *id030

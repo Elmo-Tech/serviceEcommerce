@@ -158,6 +158,34 @@ it('requires the order item attachments permission when admin create includes at
         ->assertJsonPath('code', 'FORBIDDEN');
 });
 
+it('rejects admin order creation when a service requires an attachment and its item has none', function () {
+    $accessToken = orderAdminToken();
+
+    $customer = Customer::factory()->create();
+    $service = Service::factory()->create([
+        'is_active' => true,
+        'is_available' => true,
+        'is_attachment_required' => true,
+        'price_type' => ServicePriceType::FIXED,
+        'base_price' => '80.00',
+    ]);
+
+    $this->postJson('/api/v1/admin/orders', [
+        'customerId' => $customer->getKey(),
+        'orderPlace' => OrderPlace::WEBSITE->value,
+        'items' => [
+            [
+                'serviceId' => $service->getKey(),
+                'quantity' => 1,
+            ],
+        ],
+    ], orderAdminHeaders($accessToken))
+        ->assertUnprocessable()
+        ->assertJsonPath('code', 'REQUIRED_SERVICE_ATTACHMENT_MISSING');
+
+    expect(Order::query()->count())->toBe(0);
+});
+
 it('updates an editable admin order and can delegate an allowed status change through patch', function () {
     $accessToken = orderAdminToken();
     $adminId = User::query()->value('id');

@@ -15,6 +15,7 @@ it('returns localized public settings without admin-only fields', function () {
         'site_name_en' => 'English Name',
         'address_ar' => 'القاهرة، مصر',
         'address_en' => 'Cairo, Egypt',
+        'google_maps_url' => 'https://maps.google.com/?q=30.0444,31.2357',
     ]);
 
     $setting->phones()->create(['number' => '01012345678', 'has_whats' => 1, 'position' => 0]);
@@ -32,7 +33,7 @@ it('returns localized public settings without admin-only fields', function () {
         ->assertJsonPath('data.address', 'القاهرة، مصر')
         ->assertJsonPath('data.phones.0.number', '01012345678')
         ->assertJsonPath('data.socialLinks.0.platform', 'facebook')
-        ->assertJsonMissingPath('data.googleMapsUrl')
+        ->assertJsonPath('data.googleMapsUrl', 'https://maps.google.com/?q=30.0444,31.2357')
         ->assertJsonMissingPath('data.latitude')
         ->assertJsonMissingPath('data.longitude')
         ->assertJsonMissingPath('data.defaultSeo')
@@ -61,6 +62,7 @@ it('returns approved safe defaults for public settings without persisting a row'
         ->assertJsonPath('data.siteName', 'Website Name')
         ->assertJsonPath('data.email', 'info@example.com')
         ->assertJsonPath('data.phones', [])
+        ->assertJsonPath('data.googleMapsUrl', null)
         ->assertJsonPath('data.socialLinks', []);
 
     expect(Setting::query()->count())->toBe(0);

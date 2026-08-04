@@ -28,6 +28,7 @@ return [
         'service_unavailable' => 'The requested service is currently unavailable.',
         'order_field_not_found' => 'The requested order field was not found.',
         'required_order_field_missing' => 'A required order field answer is missing.',
+        'required_service_attachment_missing' => 'At least one attachment is required for this service.',
         'invalid_order_field_answer' => 'The submitted order field answer is invalid.',
         'invalid_discount' => 'The submitted discount is invalid.',
     ],

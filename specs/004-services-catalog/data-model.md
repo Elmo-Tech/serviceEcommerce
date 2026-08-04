@@ -36,6 +36,7 @@ All use unsigned TINYINT columns and PHP integer-backed enums. Native MySQL ENUM
 | `base_price` | DECIMAL(12,2) | no | — | Application rule `> 0` |
 | `is_active` | TINYINT(1) | no | `0` | API boolean |
 | `is_available` | TINYINT(1) | no | `1` | API boolean |
+| `is_attachment_required` | TINYINT(1) | no | `0` | Requires at least one protected attachment on every newly created order item |
 | `seo_title_ar` | VARCHAR(70) | yes | null | Optional pair |
 | `seo_title_en` | VARCHAR(70) | yes | null | Optional pair |
 | `seo_description_ar` | VARCHAR(180) | yes | null | Optional pair |
@@ -299,7 +300,7 @@ Both locales, SEO pairs, production-time pair, active/non-deleted specifications
 
 ### Public list
 
-Localized summary, integer `priceType`, fixed-precision `basePrice`, `isAvailable`, main image, and only publicly visible active classification.
+Localized summary, integer `priceType`, fixed-precision `basePrice`, `isAvailable`, `isAttachmentRequired`, main image, and only publicly visible active classification.
 
 ### Public detail
 

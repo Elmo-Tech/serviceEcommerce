@@ -115,6 +115,7 @@ it('creates an order item and its protected attachments in one multipart request
     $service = Service::factory()->underSubcategory($category, $subcategory)->create([
         'is_active' => true,
         'is_available' => true,
+        'is_attachment_required' => true,
         'price_type' => ServicePriceType::FIXED,
         'base_price' => '125.00',
     ]);
@@ -149,6 +150,30 @@ it('creates an order item and its protected attachments in one multipart request
     foreach ($attachments as $attachment) {
         Storage::disk($attachment->disk)->assertExists($attachment->path);
     }
+});
+
+it('rejects adding an item without files when its service requires an attachment', function () {
+    $accessToken = orderItemToken();
+    $order = Order::factory()->create([
+        'status' => OrderStatus::PENDING,
+        'payment_status' => PaymentStatus::UNPAID,
+    ]);
+    $service = Service::factory()->create([
+        'is_active' => true,
+        'is_available' => true,
+        'is_attachment_required' => true,
+        'price_type' => ServicePriceType::FIXED,
+        'base_price' => '125.00',
+    ]);
+
+    $this->postJson('/api/v1/admin/orders/'.$order->getKey().'/items', [
+        'serviceId' => $service->getKey(),
+        'quantity' => 1,
+    ], orderItemHeaders($accessToken))
+        ->assertUnprocessable()
+        ->assertJsonPath('code', 'REQUIRED_SERVICE_ATTACHMENT_MISSING');
+
+    expect($order->items()->count())->toBe(0);
 });
 
 it('requires attachment permission and leaves no item or file when multipart item creation is forbidden', function () {

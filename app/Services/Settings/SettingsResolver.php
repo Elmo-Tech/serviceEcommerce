@@ -84,6 +84,7 @@ class SettingsResolver
             'email' => 'info@example.com',
             'phones' => [],
             'address' => null,
+            'googleMapsUrl' => null,
             'socialLinks' => [],
         ];
     }

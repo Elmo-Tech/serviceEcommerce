@@ -27,6 +27,7 @@ class PublicServiceListItemResource extends JsonResource
             'priceType' => $this->price_type?->value,
             'basePrice' => (float) $this->base_price,
             'isAvailable' => (bool) $this->is_available,
+            'isAttachmentRequired' => (bool) $this->is_attachment_required,
             'mainMedia' => $mainImage ? [
                 'id' => $mainImage->id,
                 'type' => $mainImage->type?->value,

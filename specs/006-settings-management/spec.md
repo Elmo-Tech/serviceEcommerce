@@ -16,10 +16,11 @@
 - Localized site identity, description, slogan, and address.
 - Public email.
 - Logo, footer logo, and favicon.
-- Up to three Egyptian mobile phone numbers.
+- Up to three phone numbers normalized to exactly 10 or 11 digits.
 - At most one WhatsApp-enabled phone number.
 - Dynamic social links selected from predefined platforms.
-- Google Maps URL and optional coordinate pair.
+- One optional Google Maps URL; latitude and longitude are excluded from the
+  API contract.
 - Localized default SEO title, description, and keyword arrays.
 - Exact replacement and clear semantics for phone and social collections.
 - Safe branding-file replacement, removal, and filesystem compensation.
@@ -62,6 +63,15 @@
 - `docs/features/006-settings-management.md`
 
 ### Known Conflicts
+
+#### Approved Google Maps URL amendment — 2026-08-04
+
+`googleMapsUrl` is an approved optional scalar Settings field. It accepts only
+an absolute HTTP/HTTPS URL up to 2048 characters. Omission preserves the stored
+value and an explicitly submitted empty string clears it to `null`. Admin and
+Public projections return the field as a URL or `null`. Earlier coordinate-pair
+references in this artifact are superseded; `latitude` and `longitude` remain
+outside request and response contracts.
 
 - None.
 
@@ -316,13 +326,14 @@ Rules:
 ```
 
 - **FR-016**: The system MUST allow a maximum of three phone entries.
-- **FR-017**: The system MUST accept Egyptian mobile numbers only.
+- **FR-017**: The system MUST accept phone numbers containing exactly 10 or 11
+  digits after formatting and Egyptian country-prefix normalization.
 - **FR-018**: The system MUST normalize accepted Egyptian equivalents to local
   format before persistence and duplicate checking.
 - **FR-019**: Normalization MUST trim whitespace, remove spaces, dashes, and
   parentheses, and convert `+20` or `0020` to the local `0` prefix.
-- **FR-020**: The canonical stored format MUST be the normalized local Egyptian
-  mobile form, for example `01012345678`.
+- **FR-020**: The canonical stored format MUST contain digits only and MUST be
+  exactly 10 or 11 digits, for example `0501234567` or `01012345678`.
 - **FR-021**: Duplicate normalized phone numbers MUST be rejected.
 - **FR-022**: `hasWhats` MUST accept only `0` or `1`.
 - **FR-023**: At most one phone may have `hasWhats = 1`.
@@ -789,8 +800,9 @@ managed with safe upload, replacement, removal, and compensation behavior.
   returns the complete updated Admin resource.
 - **SC-003**: Phone and social collections can each be replaced, reduced,
   reordered, or fully cleared without partial persistence.
-- **SC-004**: Every supported Egyptian phone equivalent is normalized
-  consistently, and invalid or duplicate numbers are rejected.
+- **SC-004**: Every supported formatted phone equivalent is normalized to a
+  10-digit or 11-digit local value consistently, and invalid or duplicate
+  numbers are rejected.
 - **SC-005**: Branding files can be preserved, replaced, and removed without
   exposing storage paths or leaving new orphan files after failure.
 - **SC-006**: Public Arabic and English responses use the exact approved keys,

@@ -34,6 +34,7 @@ it('returns localized active public services with filters and detail projection'
         'slug_en' => 'cleaning-service',
         'is_active' => true,
         'is_available' => true,
+        'is_attachment_required' => true,
     ]);
 
     ServiceMedia::factory()->image(true)->create([
@@ -55,6 +56,7 @@ it('returns localized active public services with filters and detail projection'
         ->assertHeader('Content-Language', 'en')
         ->assertJsonPath('success', true)
         ->assertJsonPath('meta.locale', 'en')
+        ->assertJsonPath('data.0.isAttachmentRequired', true)
         ->assertJsonCount(1, 'data');
 
     $detailResponse = $this->getJson('/api/v1/public/services/cleaning-service', [
@@ -63,6 +65,7 @@ it('returns localized active public services with filters and detail projection'
 
     $detailResponse->assertOk()
         ->assertJsonPath('data.name', 'Cleaning Service')
+        ->assertJsonPath('data.isAttachmentRequired', true)
         ->assertJsonPath('data.category.slug', 'home-services')
         ->assertJsonPath('data.subcategory.slug', 'cleaning');
 });

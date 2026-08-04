@@ -28,6 +28,7 @@ return [
         'service_unavailable' => 'الخدمة المطلوبة غير متاحة حاليًا.',
         'order_field_not_found' => 'حقل الطلب المطلوب غير موجود.',
         'required_order_field_missing' => 'هناك إجابة مطلوبة لحقل طلب مفقودة.',
+        'required_service_attachment_missing' => 'يجب إرفاق ملف واحد على الأقل لهذه الخدمة.',
         'invalid_order_field_answer' => 'إجابة حقل الطلب المرسلة غير صالحة.',
         'invalid_discount' => 'بيانات الخصم المرسلة غير صالحة.',
     ],

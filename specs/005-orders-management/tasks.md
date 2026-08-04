@@ -658,3 +658,9 @@ With multiple developers:
 ## Feature 007 synchronized amendment
 
 - [x] T062 Expose read-only `completedAt` on Admin Order index/show, reject it from every order mutation, and synchronize Feature 005 docs, OpenAPI, Postman, resource tests, and contract tests.
+
+## Service attachment requirement amendment
+
+- [x] T063 Reject Public/Admin creation of a new item without an attachment
+  when the current service has `isAttachmentRequired = true`, while preserving
+  optional attachments for other services and historical items.

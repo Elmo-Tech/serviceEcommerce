@@ -922,7 +922,8 @@ components:
       type: object
       description: One proposed order item for public submission, Admin order creation, or Admin item addition.
         Supports up to three attachments for this item; parent order-create requests additionally enforce their
-        aggregate file-count and byte limits.
+        aggregate file-count and byte limits. When the selected service exposes isAttachmentRequired=true, at
+        least one attachment must be included or the API returns REQUIRED_SERVICE_ATTACHMENT_MISSING.
       required:
       - serviceId
       - quantity
@@ -956,7 +957,7 @@ components:
           description: Optional plain-text note for this item.
         attachments:
           type: array
-          description: Optional initial item files; maximum three files for this item.
+          description: Initial item files; maximum three. Optional unless the selected service has isAttachmentRequired=true.
           items: &id001
             type: string
             format: binary

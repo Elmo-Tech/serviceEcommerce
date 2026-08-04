@@ -34,6 +34,7 @@ class ServiceResource extends JsonResource
             'basePrice' => (float) $this->base_price,
             'isActive' => (bool) $this->is_active,
             'isAvailable' => (bool) $this->is_available,
+            'isAttachmentRequired' => (bool) $this->is_attachment_required,
             'seoTitleAr' => $this->seo_title_ar,
             'seoTitleEn' => $this->seo_title_en,
             'seoDescriptionAr' => $this->seo_description_ar,

@@ -104,6 +104,9 @@ Validate:
 
 - inactive or deleted service returns `SERVICE_NOT_FOUND`
 - active unavailable service returns `SERVICE_UNAVAILABLE`
+- service with `isAttachmentRequired = true` rejects Public/Admin item
+  creation without files using `REQUIRED_SERVICE_ATTACHMENT_MISSING`, while
+  the same item succeeds with one valid attachment
 - invalid selected option or value returns the approved pricing error
 - missing required answer returns the approved order-field error
 - exceeding per-item count, 10 MB per-file size, 30-file create total, or

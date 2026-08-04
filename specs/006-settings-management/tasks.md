@@ -213,7 +213,7 @@ filesystem state.
 - [X] T023 [P] [US2] Implement Egyptian phone normalization and duplicate
   comparison in `app/Services/Settings/EgyptianPhoneNormalizer.php`, accepting
   approved local/international formatting variants and returning canonical
-  local output such as `01012345678`
+  digits-only local output containing exactly 10 or 11 digits
 - [X] T024 [P] [US2] Implement strict SVG content inspection in
   `app/Services/Settings/SvgSafetyInspector.php`; accept safe SVG unchanged and
   reject invalid XML/SVG, scripts, `javascript:`, event handlers,
@@ -444,6 +444,13 @@ Task: "Implement SettingsConcurrencyTest.php"
 ---
 
 ## Notes
+
+### Post-implementation Google Maps URL amendment — 2026-08-04
+
+- [x] T072 Add nullable `googleMapsUrl` validation, normalization, persistence,
+  and Admin/Public resource projection without restoring coordinates.
+- [x] T073 Synchronize the OpenAPI and Postman contracts and cover update,
+  clearing, invalid URL, Admin read, Public read, and safe-default behavior.
 
 - `HttpStatusCode` is intentionally retained because it is the established
   enum used by the existing application modules.

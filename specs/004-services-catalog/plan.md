@@ -51,6 +51,9 @@ The plan implements exactly:
   - internal pricing-option type: `0=add_on`.
 - `basePrice > 0`.
 - `priceAdjustment >= 0`.
+- Optional-by-default `isAttachmentRequired` is persisted per service,
+  accepted by Admin create/update, exposed by Admin/Public resources, and
+  enforced by Feature 005 whenever a new order item is created.
 - No quote-required pricing, negative adjustments, replacement pricing, media reorder, child restore, public sorting, order submission, or customer-answer storage.
 
 The OpenAPI contract in [contracts/openapi.yaml](./contracts/openapi.yaml) is the implementation source for paths, request shapes, response schemas, security, permissions, headers, filters, and errors.

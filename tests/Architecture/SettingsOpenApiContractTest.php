@@ -84,11 +84,11 @@ it('freezes exact request and response settings objects', function () {
         'AdminSettingsData' => [
             'siteNameAr', 'siteNameEn', 'siteDescriptionAr', 'siteDescriptionEn',
             'sloganAr', 'sloganEn', 'logo', 'footerLogo', 'favicon', 'publicEmail',
-            'phones', 'addressAr', 'addressEn', 'socialLinks', 'availableSocialPlatforms',
+            'phones', 'addressAr', 'addressEn', 'googleMapsUrl', 'socialLinks', 'availableSocialPlatforms',
         ],
         'PublicSettingsData' => [
             'siteName', 'siteDescription', 'slogan', 'logo', 'footerLogo', 'favicon',
-            'email', 'phones', 'address', 'socialLinks',
+            'email', 'phones', 'address', 'googleMapsUrl', 'socialLinks',
         ],
         'AdminSettingsSuccessResponse' => ['success', 'message', 'data'],
         'PublicSettingsSuccessResponse' => ['success', 'message', 'data'],
@@ -96,7 +96,7 @@ it('freezes exact request and response settings objects', function () {
         'ValidationErrorResponse' => ['success', 'message', 'code', 'errors'],
         'AdminSettingsUpdateRequest' => [
             'siteNameAr', 'siteNameEn', 'siteDescriptionAr', 'siteDescriptionEn',
-            'sloganAr', 'sloganEn', 'publicEmail', 'addressAr', 'addressEn',
+            'sloganAr', 'sloganEn', 'publicEmail', 'addressAr', 'addressEn', 'googleMapsUrl',
             'phones', 'socialLinks', 'logo', 'footerLogo', 'favicon',
         ],
     ];
@@ -123,8 +123,8 @@ it('separates formatted phone input from canonical phone output and uses JSON Sc
     expect($update)->toContain("\$ref: '#/components/schemas/PhoneInput'")
         ->and($admin)->toContain("\$ref: '#/components/schemas/PhoneOutput'")
         ->and($public)->toContain("\$ref: '#/components/schemas/PhoneOutput'")
-        ->and(settingsOpenApiSchemaBlock($document, 'PhoneInput'))->toContain("- '+201012345678'", '- 00201012345678', '- (010) 12345678')
-        ->and(settingsOpenApiSchemaBlock($document, 'PhoneOutput'))->toContain('pattern: ^01[0125][0-9]{8}$');
+        ->and(settingsOpenApiSchemaBlock($document, 'PhoneInput'))->toContain('- 0501234567', "- '+201012345678'", '- 00201012345678', '- (010) 12345678')
+        ->and(settingsOpenApiSchemaBlock($document, 'PhoneOutput'))->toContain('pattern: ^[0-9]{10,11}$');
 
     foreach (['AdminSettingsData', 'PublicSettingsData', 'ErrorResponse'] as $schema) {
         expect(settingsOpenApiSchemaBlock($document, $schema))->toMatch("/type:\\R\s+- [^\\r\\n]+\\R\s+- 'null'/");

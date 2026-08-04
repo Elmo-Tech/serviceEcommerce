@@ -12,6 +12,7 @@ use App\Models\Service;
 use App\Services\Orders\OrderAttachmentStore;
 use App\Services\Orders\OrderPricingService;
 use App\Services\Orders\OrderSnapshotFactory;
+use App\Services\Orders\RequiredServiceAttachmentValidator;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Throwable;
@@ -22,6 +23,7 @@ class AddOrderItemAction
         private readonly OrderSnapshotFactory $orderSnapshotFactory,
         private readonly OrderPricingService $orderPricingService,
         private readonly OrderAttachmentStore $orderAttachmentStore,
+        private readonly RequiredServiceAttachmentValidator $requiredServiceAttachmentValidator,
     ) {}
 
     public function execute(Order $order, array $payload): OrderItem
@@ -45,6 +47,7 @@ class AddOrderItemAction
                 }
 
                 $service = $this->resolveEligibleService((int) $payload['serviceId']);
+                $this->requiredServiceAttachmentValidator->validate($service, (array) ($payload['attachments'] ?? []));
                 $pricing = $this->orderPricingService->priceService($service, $payload['selectedOptions'] ?? []);
                 $answerSnapshots = $this->validateAndMapAnswers($service, $payload['answers'] ?? []);
 

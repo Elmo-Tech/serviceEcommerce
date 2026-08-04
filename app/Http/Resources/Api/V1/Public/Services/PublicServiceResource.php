@@ -27,6 +27,7 @@ class PublicServiceResource extends JsonResource
             'priceType' => $this->price_type?->value,
             'basePrice' => (float) $this->base_price,
             'isAvailable' => (bool) $this->is_available,
+            'isAttachmentRequired' => (bool) $this->is_attachment_required,
             'productionTime' => $locale === 'en' ? $this->production_time_en : $this->production_time_ar,
             'seo' => [
                 'title' => ($locale === 'en' ? $this->seo_title_en : $this->seo_title_ar) ?: ($locale === 'en' ? $this->name_en : $this->name_ar),

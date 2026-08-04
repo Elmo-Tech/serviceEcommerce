@@ -19,6 +19,7 @@ use App\Services\Orders\OrderPaymentSummaryService;
 use App\Services\Orders\OrderPricingService;
 use App\Services\Orders\OrderSnapshotFactory;
 use App\Services\Orders\PublicOrderIdempotencyService;
+use App\Services\Orders\RequiredServiceAttachmentValidator;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 
@@ -32,6 +33,7 @@ class CreatePublicOrderAction
         private readonly OrderPaymentSummaryService $orderPaymentSummaryService,
         private readonly OrderAttachmentStore $orderAttachmentStore,
         private readonly PublicOrderIdempotencyService $publicOrderIdempotencyService,
+        private readonly RequiredServiceAttachmentValidator $requiredServiceAttachmentValidator,
     ) {}
 
     /**
@@ -118,6 +120,7 @@ class CreatePublicOrderAction
     private function createOrderItem(Order $order, array $itemPayload, array &$storedFiles): OrderItem
     {
         $service = $this->resolveEligibleService((int) $itemPayload['serviceId']);
+        $this->requiredServiceAttachmentValidator->validate($service, (array) ($itemPayload['attachments'] ?? []));
         $pricing = $this->orderPricingService->priceService($service, $itemPayload['selectedOptions'] ?? []);
         $this->validateAndMapAnswers($service, $itemPayload['answers'] ?? []);
         $serviceSnapshot = $this->orderSnapshotFactory->serviceSnapshot($service);
