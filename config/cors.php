@@ -17,6 +17,7 @@ return [
         'Accept-Language',
         'Authorization',
         'Content-Type',
+        'Idempotency-Key',
         'Origin',
         'X-Requested-With',
     ],

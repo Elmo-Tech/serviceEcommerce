@@ -25,6 +25,7 @@ it('uses an explicit origin and a relative browser api base without wildcard cre
         ->and(config('cors.allowed_origins'))->toBe(['https://admin.example-frontend.com', 'https://admin.example-frontend-staging.com'])
         ->and(config('cors.allowed_origins'))->not->toContain('*')
         ->and(config('cors.allowed_headers'))->toContain('Authorization')
+        ->and(config('cors.allowed_headers'))->toContain('Idempotency-Key')
         ->and(config('cors.allowed_headers'))->not->toContain('X-CSRF-TOKEN');
 });
 
