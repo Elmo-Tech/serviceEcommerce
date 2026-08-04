@@ -32,7 +32,7 @@ it('seeds five active ordered printing Hero slides with locally stored images', 
             ->and($slide->title_en)->not->toBeEmpty()
             ->and($slide->description_ar)->not->toBeEmpty()
             ->and($slide->description_en)->not->toBeEmpty()
-            ->and($slide->image_path)->toStartWith('hero-slides/seed/pixabay-printing-v1/');
+            ->and($slide->image_path)->toStartWith('hero-slides/seed/pexels-printing-slider-v2/');
 
         Storage::disk('public')->assertExists($slide->image_path);
     }
@@ -64,10 +64,29 @@ it('keeps Hero slide seeding idempotent and preserves a manually replaced image'
     Http::assertNothingSent();
 });
 
+it('upgrades an older seeder-managed Hero image without downloading an existing current image again', function () {
+    $this->seed(PrintingHeroSlidesSeeder::class);
+
+    $slide = HeroSlide::query()->where('title_en', 'Large-Format Printing with Lasting Impact')->sole();
+    $currentPath = $slide->image_path;
+    $slide->update([
+        'image_path' => 'hero-slides/seed/pixabay-printing-v1/large-format-impact.png',
+    ]);
+
+    Http::fake(fn () => throw new RuntimeException('No HTTP request was expected.'));
+
+    $this->seed(PrintingHeroSlidesSeeder::class);
+
+    expect($slide->fresh()?->image_path)->toBe($currentPath)
+        ->and($currentPath)->toStartWith('hero-slides/seed/pexels-printing-slider-v2/');
+
+    Http::assertNothingSent();
+});
+
 it('rejects invalid Hero slide images without persisting slides or files', function () {
     Http::swap(new Factory);
     Http::fake([
-        'cdn.pixabay.com/*' => Http::response('not-an-image', 200, ['Content-Type' => 'text/plain']),
+        'images.pexels.com/*' => Http::response('not-an-image', 200, ['Content-Type' => 'text/plain']),
     ]);
 
     expect(fn () => $this->seed(PrintingHeroSlidesSeeder::class))
@@ -93,7 +112,7 @@ it('seeds ten active ordered printing FAQs and remains idempotent', function () 
 function fakePrintingHeroSeederImages(): void
 {
     Http::fake([
-        'cdn.pixabay.com/*' => Http::response(
+        'images.pexels.com/*' => Http::response(
             base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=', true),
             200,
             ['Content-Type' => 'image/png'],
