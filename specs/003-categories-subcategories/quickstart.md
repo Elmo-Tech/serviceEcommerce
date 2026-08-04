@@ -79,7 +79,10 @@ php artisan storage:link
 The normal `php artisan db:seed` and `php artisan migrate:fresh --seed` flows
 also run this seeder. The first run requires outbound HTTPS access to Pixabay's
 image CDN; later runs reuse valid files already stored under
-`storage/app/public/categories/seed/pixabay-vector-v1`.
+`storage/app/public/categories/seed/print-products-v2`. Each root category and
+subcategory uses a product-specific printing image (for example printed
+T-shirts, mugs, business cards, brochures, banners, boxes, labels, books, or
+magazines) sourced from Pexels rather than sharing one generic image.
 
 ## 5. Contract References
 

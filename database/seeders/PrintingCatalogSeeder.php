@@ -19,7 +19,7 @@ class PrintingCatalogSeeder extends Seeder
 
     private const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 
-    private const IMAGE_SET = 'pixabay-vector-v1';
+    private const IMAGE_SET = 'print-products-v2';
 
     /**
      * @var array<string, string>
@@ -200,36 +200,45 @@ class PrintingCatalogSeeder extends Seeder
      */
     private function catalogue(): array
     {
-        $commercialImage = 'https://cdn.pixabay.com/photo/2015/08/06/10/14/cmyk-877604_640.png';
-        $largeFormatImage = 'https://cdn.pixabay.com/photo/2025/12/21/22/12/billboard-10028202_640.png';
-        $packagingImage = 'https://cdn.pixabay.com/photo/2022/08/30/21/07/moving-boxes-7421938_640.png';
-        $textileImage = 'https://cdn.pixabay.com/photo/2013/07/12/15/53/t-shirt-150525_640.png';
-        $promotionalImage = 'https://cdn.pixabay.com/photo/2024/10/26/10/53/mug-9150982_640.png';
-        $publicationsImage = 'https://cdn.pixabay.com/photo/2015/12/15/00/23/printing-1093509_640.png';
+        $commercialImage = 'https://images.pexels.com/photos/8490095/pexels-photo-8490095.jpeg?auto=compress&cs=tinysrgb&w=900';
+        $businessCardsImage = 'https://images.pexels.com/photos/10932011/pexels-photo-10932011.jpeg?auto=compress&cs=tinysrgb&w=900';
+        $brochuresImage = 'https://images.pexels.com/photos/5420976/pexels-photo-5420976.jpeg?auto=compress&cs=tinysrgb&w=900';
+        $largeFormatImage = 'https://images.pexels.com/photos/14843552/pexels-photo-14843552.jpeg?auto=compress&cs=tinysrgb&w=900';
+        $postersImage = 'https://images.pexels.com/photos/12838778/pexels-photo-12838778.jpeg?auto=compress&cs=tinysrgb&w=900';
+        $packagingImage = 'https://images.pexels.com/photos/4440800/pexels-photo-4440800.jpeg?auto=compress&cs=tinysrgb&w=900';
+        $productBoxesImage = 'https://images.pexels.com/photos/9594430/pexels-photo-9594430.jpeg?auto=compress&cs=tinysrgb&w=900';
+        $labelsImage = 'https://images.pexels.com/photos/4440874/pexels-photo-4440874.jpeg?auto=compress&cs=tinysrgb&w=900';
+        $printedTShirtImage = 'https://images.pexels.com/photos/19473187/pexels-photo-19473187.jpeg?auto=compress&cs=tinysrgb&w=900';
+        $textileImage = $printedTShirtImage;
+        $fabricImage = 'https://images.pexels.com/photos/14944356/pexels-photo-14944356.jpeg?auto=compress&cs=tinysrgb&w=900';
+        $promotionalImage = 'https://images.pexels.com/photos/18868628/pexels-photo-18868628.jpeg?auto=compress&cs=tinysrgb&w=900';
+        $corporateGiftsImage = 'https://images.pexels.com/photos/5926234/pexels-photo-5926234.jpeg?auto=compress&cs=tinysrgb&w=900';
+        $publicationsImage = 'https://images.pexels.com/photos/17352878/pexels-photo-17352878.jpeg?auto=compress&cs=tinysrgb&w=900';
+        $bookPrintingImage = 'https://images.pexels.com/photos/36933802/pexels-photo-36933802.jpeg?auto=compress&cs=tinysrgb&w=900';
 
         return [
             $this->root('الطباعة التجارية', 'Commercial Printing', 'حلول مطبوعة احترافية للشركات والأنشطة التجارية.', 'Professional printed materials for businesses and organizations.', 'الطباعة-التجارية', 'commercial-printing', 10, $commercialImage, [
-                $this->child('كروت شخصية', 'Business Cards', 'تصميم وطباعة كروت شخصية بمقاسات وتشطيبات متعددة.', 'Business card printing with multiple sizes and finishes.', 'كروت-شخصية', 'business-cards', 10, $commercialImage),
-                $this->child('بروشورات وفلايرز', 'Brochures and Flyers', 'مطبوعات تسويقية للتعريف بالخدمات والعروض.', 'Marketing brochures and flyers for services and offers.', 'بروشورات-وفلايرز', 'brochures-and-flyers', 20, $commercialImage),
+                $this->child('كروت شخصية', 'Business Cards', 'تصميم وطباعة كروت شخصية بمقاسات وتشطيبات متعددة.', 'Business card printing with multiple sizes and finishes.', 'كروت-شخصية', 'business-cards', 10, $businessCardsImage),
+                $this->child('بروشورات وفلايرز', 'Brochures and Flyers', 'مطبوعات تسويقية للتعريف بالخدمات والعروض.', 'Marketing brochures and flyers for services and offers.', 'بروشورات-وفلايرز', 'brochures-and-flyers', 20, $brochuresImage),
             ]),
             $this->root('الطباعة كبيرة الحجم', 'Large Format Printing', 'طباعة عالية الجودة للمساحات الإعلانية الكبيرة.', 'High-quality printing for large advertising formats.', 'الطباعة-كبيرة-الحجم', 'large-format-printing', 20, $largeFormatImage, [
                 $this->child('بانرات ورول أب', 'Banners and Roll Ups', 'بانرات ورول أب للمعارض والحملات الإعلانية.', 'Banners and roll-up displays for exhibitions and campaigns.', 'بانرات-ورول-اب', 'banners-and-roll-ups', 10, $largeFormatImage),
-                $this->child('بوسترات ولافتات', 'Posters and Signage', 'بوسترات ولافتات داخلية وخارجية بمقاسات متنوعة.', 'Indoor and outdoor posters and signage in various sizes.', 'بوسترات-ولافتات', 'posters-and-signage', 20, $largeFormatImage),
+                $this->child('بوسترات ولافتات', 'Posters and Signage', 'بوسترات ولافتات داخلية وخارجية بمقاسات متنوعة.', 'Indoor and outdoor posters and signage in various sizes.', 'بوسترات-ولافتات', 'posters-and-signage', 20, $postersImage),
             ]),
             $this->root('طباعة التغليف والعبوات', 'Packaging Printing', 'حلول طباعة للعبوات والمنتجات والعلامات التجارية.', 'Printed packaging solutions for products and brands.', 'طباعة-التغليف-والعبوات', 'packaging-printing', 30, $packagingImage, [
-                $this->child('علب المنتجات', 'Product Boxes', 'علب مطبوعة ومخصصة لحماية وعرض المنتجات.', 'Custom printed boxes for product protection and presentation.', 'علب-المنتجات', 'product-boxes', 10, $packagingImage),
-                $this->child('ليبلز واستيكرات', 'Labels and Stickers', 'ملصقات وليبلز للعبوات والمنتجات بمقاسات مختلفة.', 'Labels and stickers for packaging and products.', 'ليبلز-واستيكرات', 'labels-and-stickers', 20, $packagingImage),
+                $this->child('علب المنتجات', 'Product Boxes', 'علب مطبوعة ومخصصة لحماية وعرض المنتجات.', 'Custom printed boxes for product protection and presentation.', 'علب-المنتجات', 'product-boxes', 10, $productBoxesImage),
+                $this->child('ليبلز واستيكرات', 'Labels and Stickers', 'ملصقات وليبلز للعبوات والمنتجات بمقاسات مختلفة.', 'Labels and stickers for packaging and products.', 'ليبلز-واستيكرات', 'labels-and-stickers', 20, $labelsImage),
             ]),
             $this->root('طباعة المنسوجات', 'Textile Printing', 'طباعة ثابتة وعالية الجودة على الملابس والأقمشة.', 'Durable, high-quality printing on garments and fabrics.', 'طباعة-المنسوجات', 'textile-printing', 40, $textileImage, [
-                $this->child('طباعة تيشيرتات', 'T-Shirt Printing', 'طباعة شعارات وتصميمات مخصصة على التيشيرتات.', 'Custom logos and designs printed on T-shirts.', 'طباعة-تيشيرتات', 't-shirt-printing', 10, $textileImage),
-                $this->child('طباعة أقمشة', 'Fabric Printing', 'طباعة تصميمات وأنماط مخصصة على أنواع الأقمشة.', 'Custom patterns and designs printed on fabrics.', 'طباعة-اقمشة', 'fabric-printing', 20, $textileImage),
+                $this->child('طباعة تيشيرتات', 'T-Shirt Printing', 'طباعة شعارات وتصميمات مخصصة على التيشيرتات.', 'Custom logos and designs printed on T-shirts.', 'طباعة-تيشيرتات', 't-shirt-printing', 10, $printedTShirtImage),
+                $this->child('طباعة أقمشة', 'Fabric Printing', 'طباعة تصميمات وأنماط مخصصة على أنواع الأقمشة.', 'Custom patterns and designs printed on fabrics.', 'طباعة-اقمشة', 'fabric-printing', 20, $fabricImage),
             ]),
             $this->root('الهدايا الدعائية', 'Promotional Products', 'منتجات دعائية مطبوعة لتعزيز حضور العلامة التجارية.', 'Printed promotional products that strengthen brand presence.', 'الهدايا-الدعائية', 'promotional-products', 50, $promotionalImage, [
                 $this->child('طباعة مجات', 'Printed Mugs', 'طباعة صور وشعارات مخصصة على المجات.', 'Custom images and logos printed on mugs.', 'طباعة-مجات', 'printed-mugs', 10, $promotionalImage),
-                $this->child('هدايا شركات', 'Corporate Gifts', 'هدايا عملية مخصصة بشعار وهوية الشركة.', 'Practical gifts customized with company branding.', 'هدايا-شركات', 'corporate-gifts', 20, $promotionalImage),
+                $this->child('هدايا شركات', 'Corporate Gifts', 'هدايا عملية مخصصة بشعار وهوية الشركة.', 'Practical gifts customized with company branding.', 'هدايا-شركات', 'corporate-gifts', 20, $corporateGiftsImage),
             ]),
             $this->root('الكتب والمطبوعات', 'Books and Publications', 'إنتاج المطبوعات متعددة الصفحات بجودة احترافية.', 'Professional production of multi-page printed publications.', 'الكتب-والمطبوعات', 'books-and-publications', 60, $publicationsImage, [
-                $this->child('طباعة كتب', 'Book Printing', 'طباعة وتجليد الكتب بمقاسات وكميات مختلفة.', 'Book printing and binding in multiple sizes and quantities.', 'طباعة-كتب', 'book-printing', 10, $publicationsImage),
+                $this->child('طباعة كتب', 'Book Printing', 'طباعة وتجليد الكتب بمقاسات وكميات مختلفة.', 'Book printing and binding in multiple sizes and quantities.', 'طباعة-كتب', 'book-printing', 10, $bookPrintingImage),
                 $this->child('مجلات وكتالوجات', 'Magazines and Catalogues', 'طباعة مجلات وكتالوجات لعرض المنتجات والمحتوى.', 'Magazine and catalogue printing for products and editorial content.', 'مجلات-وكتالوجات', 'magazines-and-catalogues', 20, $publicationsImage),
             ]),
         ];

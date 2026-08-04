@@ -14,6 +14,11 @@ uses(RefreshDatabase::class);
 beforeEach(function () {
     Storage::fake('public');
     Http::fake([
+        'images.pexels.com/*' => Http::response(
+            base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=', true),
+            200,
+            ['Content-Type' => 'application/octet-stream'],
+        ),
         'cdn.pixabay.com/*' => Http::response(
             base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=', true),
             200,
@@ -42,7 +47,7 @@ it('seeds six printing categories and twelve nested subcategories with working i
         Storage::disk('public')->assertExists((string) $category->image_path);
     }
 
-    Http::assertSentCount(6);
+    Http::assertSentCount(14);
 });
 
 it('is idempotent, restores seeded rows, and reuses existing image files without new downloads', function () {
@@ -66,11 +71,7 @@ it('rejects an invalid external image without persisting catalogue rows or files
     Storage::disk('public')->deleteDirectory('categories/seed');
     Http::swap(new Factory);
     Http::fake([
-        '*cmyk-877604_640.png' => Http::response(
-            base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=', true),
-            200,
-            ['Content-Type' => 'image/png'],
-        ),
+        'images.pexels.com/*' => Http::response('not-an-image', 200, ['Content-Type' => 'text/plain']),
         'cdn.pixabay.com/*' => Http::response('not-an-image', 200, ['Content-Type' => 'text/plain']),
     ]);
 
