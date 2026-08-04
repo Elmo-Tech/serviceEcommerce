@@ -267,8 +267,9 @@ authoritative.
 - `users.type` is not a replacement for roles and permissions.
 - Laravel Sanctum personal access tokens secure administration APIs.
 - Administrator authentication uses only `/api/v1/admin/auth/*`.
-- The Access Token is returned in JSON, expires after 15 minutes, and is stored
-  by React in memory only.
+- The Access Token is returned in JSON, has no automatic expiration, and is
+  stored by React in memory only. Session replacement and revocation remain
+  authoritative.
 - The Refresh Token is stored in an HttpOnly, Secure, host-only cookie and is
   never returned in JSON.
 - Refresh tokens use `refresh_tokens`; password recovery uses

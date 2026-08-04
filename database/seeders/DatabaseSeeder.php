@@ -23,6 +23,9 @@ class DatabaseSeeder extends Seeder
             ProjectAdditionalSuperAdminSeeder::class,
             SettingsSeeder::class,
             PrintingCatalogSeeder::class,
+            PrintingServicesSeeder::class,
+            PrintingHeroSlidesSeeder::class,
+            PrintingFaqSeeder::class,
         ]);
     }
 }

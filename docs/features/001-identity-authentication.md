@@ -24,7 +24,7 @@ Transport:      Direct browser-to-backend HTTPS
 The approved token model is:
 
 - access token: Laravel Sanctum Bearer token
-- access token lifetime: `900` seconds
+- access token lifetime: no automatic expiration (`null`)
 - refresh token: custom opaque rotating token
 - refresh token lifetime: `2592000` seconds
 - Web access-token storage: runtime memory only
@@ -217,7 +217,7 @@ Success response:
     "accessToken": "plain-access-token",
     "refreshToken": "plain-refresh-token",
     "tokenType": "Bearer",
-    "tokenExpiresIn": 900,
+    "tokenExpiresIn": null,
     "refreshTokenExpiresIn": 2592000,
     "profile": {
       "name": "Super Admin",
@@ -291,7 +291,7 @@ Success response:
     "accessToken": "new-access-token",
     "refreshToken": "new-refresh-token",
     "tokenType": "Bearer",
-    "tokenExpiresIn": 900,
+    "tokenExpiresIn": null,
     "refreshTokenExpiresIn": 2592000
   }
 }
@@ -651,7 +651,7 @@ Feature completion requires proof of:
 - no CSRF
 - no proxy/BFF
 - Super Admin only
-- access token lifetime `900`
+- access token lifetime is `null` (no automatic expiration)
 - refresh token lifetime `2592000`
 - recovery code lifetime `600`
 - reset token lifetime `600`

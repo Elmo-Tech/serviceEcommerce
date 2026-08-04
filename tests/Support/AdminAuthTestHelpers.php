@@ -12,7 +12,7 @@ function seedAdminAuthEnvironment(array $values = []): void
         'SUPER_ADMIN_EMAIL' => 'admin@example.test',
         'SUPER_ADMIN_PASSWORD' => 'AdminPassword1!',
         'SUPER_ADMIN_ADDITIONAL_USERS' => '',
-        'AUTH_ACCESS_TOKEN_TTL_MINUTES' => '15',
+        'AUTH_ACCESS_TOKEN_TTL_MINUTES' => 'null',
         'AUTH_REFRESH_TOKEN_TTL_MINUTES' => '43200',
         'AUTH_PASSWORD_RESET_CODE_TTL_MINUTES' => '10',
         'AUTH_PASSWORD_RESET_TOKEN_TTL_MINUTES' => '10',
@@ -26,7 +26,7 @@ function seedAdminAuthEnvironment(array $values = []): void
         $_SERVER[$key] = $value;
     }
 
-    config()->set('auth.access_token_ttl_minutes', 15);
+    config()->set('auth.access_token_ttl_minutes');
     config()->set('auth.refresh_token_ttl_minutes', 43200);
     config()->set('auth.password_reset_code_ttl_minutes', 10);
     config()->set('auth.password_reset_token_ttl_minutes', 10);

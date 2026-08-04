@@ -149,3 +149,17 @@ Feature 008 is ready only when:
 - real MySQL concurrency tests prove count and ordering invariants;
 - no out-of-scope reorder, button, slider setting, soft delete, cache, queue,
   video, scheduling, analytics, or frontend code exists.
+
+## 9. Printing Demo Slides
+
+The default database seed flow runs `PrintingHeroSlidesSeeder`. It creates five
+active bilingual slides in contiguous positions, downloads validated
+PNG/JPEG/WebP printing images from the configured external Pixabay sources, and
+stores them under `hero-slides/seed` on the public disk.
+
+```powershell
+php artisan db:seed --class=PrintingHeroSlidesSeeder
+```
+
+The Seeder is idempotent and preserves a slide image that an administrator has
+replaced through the existing update API.

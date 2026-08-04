@@ -114,7 +114,7 @@ return [
 
     'password_timeout' => env('AUTH_PASSWORD_TIMEOUT', 10800),
 
-    'access_token_ttl_minutes' => (int) env('AUTH_ACCESS_TOKEN_TTL_MINUTES', 15),
+    'access_token_ttl_minutes' => null,
 
     'refresh_token_ttl_minutes' => (int) env('AUTH_REFRESH_TOKEN_TTL_MINUTES', 43200),
 

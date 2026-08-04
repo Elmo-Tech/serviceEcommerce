@@ -30,7 +30,7 @@ Authentication:
 Sanctum Bearer Access Token + custom rotating JSON Refresh Token
 
 Access Token:
-900 seconds
+No automatic expiration (`null`)
 Web runtime memory only
 
 Refresh Token:
@@ -246,7 +246,7 @@ infrastructure before endpoint work.
   predictable generators (`FR-132`, `FR-214`, `FR-216`, `FR-218`,
   `FR-219`, `VER-044`–`VER-047`).
 - [X] T032 Implement `app/Services/Auth/AccessTokenService.php` for Sanctum
-  issuance with 900-second expiry, scoped owner revocation, and replacement
+  issuance with null expiry, scoped owner revocation, and replacement
   issuance without plaintext persistence (`FR-024`, `FR-032`, `FR-065`,
   `FR-075`, `FR-102`, `FR-113`, `FR-149`, `FR-165`,
   `FR-196`, `FR-202`, `FR-203`, `DATA-002`).

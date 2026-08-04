@@ -29,7 +29,7 @@ The approved auth transport remains:
   - Laravel Sanctum Bearer token
   - returned in JSON
   - sent in `Authorization: Bearer ...`
-  - `900`-second lifetime
+  - no automatic expiration (`null` lifetime)
   - Web storage: runtime memory only
 - Refresh Token:
   - custom opaque rotating token
@@ -271,8 +271,8 @@ Acceptance criteria:
 - FR-023: Successful login MUST return `accessToken`, `refreshToken`,
   `tokenType`, `tokenExpiresIn`, `refreshTokenExpiresIn`, and the approved
   profile in JSON.
-- FR-024: The access token MUST be a Sanctum Bearer token with a lifetime of
-  `900` seconds.
+- FR-024: The access token MUST be a Sanctum Bearer token with no automatic
+  expiration; `tokenExpiresIn` and the persisted `expires_at` MUST be `null`.
 - FR-025: The refresh token MUST be a custom opaque rotating token with a
   lifetime of `2592000` seconds.
 - FR-026: Login MUST accept only `email` and `password`.
@@ -650,7 +650,7 @@ Acceptance criteria:
     "accessToken": "plain-sanctum-token",
     "refreshToken": "plain-opaque-refresh-token",
     "tokenType": "Bearer",
-    "tokenExpiresIn": 900,
+    "tokenExpiresIn": null,
     "refreshTokenExpiresIn": 2592000,
     "profile": {
       "name": "Administrator",
@@ -674,7 +674,7 @@ Acceptance criteria:
     "accessToken": "new-sanctum-token",
     "refreshToken": "new-opaque-refresh-token",
     "tokenType": "Bearer",
-    "tokenExpiresIn": 900,
+    "tokenExpiresIn": null,
     "refreshTokenExpiresIn": 2592000
   }
 }

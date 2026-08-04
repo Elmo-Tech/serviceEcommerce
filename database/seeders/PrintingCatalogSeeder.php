@@ -19,6 +19,8 @@ class PrintingCatalogSeeder extends Seeder
 
     private const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 
+    private const IMAGE_SET = 'pixabay-vector-v1';
+
     /**
      * @var array<string, string>
      */
@@ -87,7 +89,7 @@ class PrintingCatalogSeeder extends Seeder
 
                 $source = $record['image_source'];
                 $download = $downloadCache[$source] ??= $this->downloadImage($source);
-                $path = "categories/seed/{$slug}.{$download['extension']}";
+                $path = 'categories/seed/'.self::IMAGE_SET."/{$slug}.{$download['extension']}";
 
                 if (! Storage::disk(self::DISK)->put($path, $download['contents'], ['visibility' => 'public'])) {
                     throw new RuntimeException("Unable to store the seeded catalogue image for [{$slug}].");
@@ -145,7 +147,7 @@ class PrintingCatalogSeeder extends Seeder
     private function validExistingImagePath(string $slug): ?string
     {
         foreach (array_values(self::EXTENSIONS_BY_MIME) as $extension) {
-            $path = "categories/seed/{$slug}.{$extension}";
+            $path = 'categories/seed/'.self::IMAGE_SET."/{$slug}.{$extension}";
 
             if (! Storage::disk(self::DISK)->exists($path)) {
                 continue;
@@ -200,12 +202,12 @@ class PrintingCatalogSeeder extends Seeder
      */
     private function catalogue(): array
     {
-        $commercialImage = $this->wikimediaImageUrl('Offset_press.jpg');
-        $largeFormatImage = $this->wikimediaImageUrl('Digital_Printing_Press.JPG');
-        $packagingImage = $this->wikimediaImageUrl('Plastic_wrap_packaging_machine.jpg');
-        $textileImage = $this->wikimediaImageUrl('Cloth_Printing_using_screens_04.jpg');
-        $promotionalImage = $this->wikimediaImageUrl('ItWikiCon_2024_-_Gadget_-_T1.jpg');
-        $publicationsImage = $this->wikimediaImageUrl('The_Printing_Press.jpg');
+        $commercialImage = 'https://cdn.pixabay.com/photo/2015/08/06/10/14/cmyk-877604_1280.png';
+        $largeFormatImage = 'https://cdn.pixabay.com/photo/2025/12/21/22/12/billboard-10028202_1280.png';
+        $packagingImage = 'https://cdn.pixabay.com/photo/2022/08/30/21/07/moving-boxes-7421938_1280.png';
+        $textileImage = 'https://cdn.pixabay.com/photo/2013/07/12/15/53/t-shirt-150525_1280.png';
+        $promotionalImage = 'https://cdn.pixabay.com/photo/2024/10/26/10/53/mug-9150982_1280.png';
+        $publicationsImage = 'https://cdn.pixabay.com/photo/2015/12/15/00/23/printing-1093509_1280.png';
 
         return [
             $this->root('الطباعة التجارية', 'Commercial Printing', 'حلول مطبوعة احترافية للشركات والأنشطة التجارية.', 'Professional printed materials for businesses and organizations.', 'الطباعة-التجارية', 'commercial-printing', 10, $commercialImage, [
@@ -262,10 +264,5 @@ class PrintingCatalogSeeder extends Seeder
             'sort_order' => $sortOrder,
             'image_source' => $imageSource,
         ];
-    }
-
-    private function wikimediaImageUrl(string $filename): string
-    {
-        return 'https://commons.wikimedia.org/wiki/Special:Redirect/file/'.rawurlencode($filename).'?width=1200';
     }
 }

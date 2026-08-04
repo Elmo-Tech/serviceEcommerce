@@ -100,7 +100,7 @@ Feature invariants:
 
 - only Sanctum's token hash is persisted;
 - plaintext exists only in successful login or refresh JSON;
-- lifetime is exactly `900` seconds;
+- `expires_at` is `null` so the token has no automatic expiration;
 - owner is the Administrator User;
 - login revokes every prior Access Token before issuing a replacement session;
 - successful refresh revokes every predecessor Access Token inside the same

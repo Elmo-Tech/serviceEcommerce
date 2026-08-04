@@ -16,7 +16,7 @@ x-auth-contract:
   actor: Super Admin only
   operations: 9
   uniquePaths: 8
-  accessTokenLifetimeSeconds: 900
+  accessTokenLifetimeSeconds: null
   refreshTokenLifetimeSeconds: 2592000
   oneActiveAdministratorSession: true
   webAccessTokenStorage: runtime memory only
@@ -167,8 +167,10 @@ components:
           type: string
           const: Bearer
         tokenExpiresIn:
-          type: integer
-          const: 900
+          type:
+          - integer
+          - 'null'
+          const: null
         refreshTokenExpiresIn:
           type: integer
           const: 2592000
@@ -204,8 +206,10 @@ components:
           type: string
           const: Bearer
         tokenExpiresIn:
-          type: integer
-          const: 900
+          type:
+          - integer
+          - 'null'
+          const: null
         refreshTokenExpiresIn:
           type: integer
           const: 2592000

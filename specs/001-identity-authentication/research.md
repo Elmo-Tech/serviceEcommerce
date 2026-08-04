@@ -55,7 +55,7 @@ Decision:
 - Laravel Sanctum Bearer Token;
 - returned once in successful login or refresh JSON;
 - sent as `Authorization: Bearer ...`;
-- lifetime: `900` seconds;
+- lifetime: no automatic expiration (`null`);
 - Web storage: runtime memory only.
 
 Successful refresh atomically revokes every predecessor Sanctum Access Token

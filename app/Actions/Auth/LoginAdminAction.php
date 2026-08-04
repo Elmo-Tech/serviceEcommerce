@@ -70,10 +70,7 @@ class LoginAdminAction
 
             $this->refreshTokenService->cleanupExpiredFor($user, $now);
 
-            $accessToken = $this->accessTokenService->issueFor(
-                $user,
-                $now->copy()->addMinutes($this->accessTokenService->ttlMinutes()),
-            );
+            $accessToken = $this->accessTokenService->issueFor($user);
 
             $refreshToken = $this->refreshTokenService->issueFor($user, null, $now);
 

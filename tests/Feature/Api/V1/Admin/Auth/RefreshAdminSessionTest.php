@@ -43,7 +43,7 @@ it('refreshes the session with a body refresh token and rotates the token pair',
         ->assertJsonPath('success', true)
         ->assertJsonPath('message', trans('auth.refresh_success', [], 'en'))
         ->assertJsonPath('data.tokenType', 'Bearer')
-        ->assertJsonPath('data.tokenExpiresIn', 900)
+        ->assertJsonPath('data.tokenExpiresIn', null)
         ->assertJsonPath('data.refreshTokenExpiresIn', 2592000)
         ->assertJsonMissingPath('data.profile')
         ->assertHeader('Content-Language', 'en');

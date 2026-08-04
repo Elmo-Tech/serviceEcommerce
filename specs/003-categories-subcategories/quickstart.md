@@ -77,9 +77,9 @@ php artisan storage:link
 ```
 
 The normal `php artisan db:seed` and `php artisan migrate:fresh --seed` flows
-also run this seeder. The first run requires outbound HTTPS access to Wikimedia
-Commons; later runs reuse valid files already stored under
-`storage/app/public/categories/seed`.
+also run this seeder. The first run requires outbound HTTPS access to Pixabay's
+image CDN; later runs reuse valid files already stored under
+`storage/app/public/categories/seed/pixabay-vector-v1`.
 
 ## 5. Contract References
 

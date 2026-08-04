@@ -107,10 +107,7 @@ class RefreshAdminSessionAction
             $this->accessTokenService->revokeAllFor($user);
 
             $rotatedToken = $this->refreshTokenService->rotate($refreshToken, $now);
-            $accessToken = $this->accessTokenService->issueFor(
-                $user,
-                $now->copy()->addMinutes($this->accessTokenService->ttlMinutes()),
-            );
+            $accessToken = $this->accessTokenService->issueFor($user);
 
             $this->securityLogger->info('admin_auth.refresh_success', [
                 'ip' => $ipAddress,

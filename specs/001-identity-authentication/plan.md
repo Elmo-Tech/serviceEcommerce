@@ -112,7 +112,7 @@ compatibility only and is not a tenth operation.
 ### Access Token
 
 - Sanctum Bearer Token;
-- lifetime: `900` seconds;
+- lifetime: no automatic expiration (`null`);
 - returned once in successful login or refresh JSON;
 - Web storage: memory only;
 - never logged or placed in persistent browser storage.
@@ -155,7 +155,7 @@ hashes of predictable values without secure randomness
 
 | Control | Contract |
 |---|---|
-| Access Token | `900` seconds |
+| Access Token | `null` (no automatic expiration) |
 | Refresh Token | `2592000` seconds |
 | Recovery code | `600` seconds |
 | Reset Token | `600` seconds |

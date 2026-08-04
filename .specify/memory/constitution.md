@@ -135,8 +135,10 @@ Tests MUST use a dedicated MySQL database and MUST NOT use production data.
 
 ### V. Authentication and Session Security
 
-Administrator authentication MUST use Laravel Sanctum Bearer access tokens with
-a 15-minute lifetime and custom rotating refresh tokens with a 30-day lifetime.
+Administrator authentication MUST use non-expiring Laravel Sanctum Bearer
+access tokens and custom rotating refresh tokens with a 30-day lifetime.
+Access tokens remain revocable and are replaced by the approved login and
+refresh-session rules.
 The access token MUST be returned in JSON, and the React client MUST keep it in
 memory only. Refresh tokens MUST be hashed at rest, returned in JSON only at
 login and refresh, accepted only from the documented refresh JSON body, stored

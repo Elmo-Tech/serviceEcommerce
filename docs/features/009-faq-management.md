@@ -1220,3 +1220,18 @@ permanent delete
 ```
 
 Inactive state remains available for temporary hiding.
+
+---
+
+## 35. Printing Demo FAQ Seeder
+
+The default database seed flow runs `PrintingFaqSeeder`. It creates ten active
+bilingual frequently asked questions about printing orders, pricing, accepted
+files, design assistance, production time, order changes, samples, order
+status, delivery, and print-file quality. New records append to the existing
+contiguous order and repeated Seeder runs do not duplicate the canonical
+questions.
+
+```powershell
+php artisan db:seed --class=PrintingFaqSeeder
+```

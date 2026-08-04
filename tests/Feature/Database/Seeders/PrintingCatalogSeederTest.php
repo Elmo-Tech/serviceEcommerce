@@ -14,7 +14,7 @@ uses(RefreshDatabase::class);
 beforeEach(function () {
     Storage::fake('public');
     Http::fake([
-        'commons.wikimedia.org/*' => Http::response(
+        'cdn.pixabay.com/*' => Http::response(
             base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=', true),
             200,
             ['Content-Type' => 'image/png'],
@@ -66,12 +66,12 @@ it('rejects an invalid external image without persisting catalogue rows or files
     Storage::disk('public')->deleteDirectory('categories/seed');
     Http::swap(new Factory);
     Http::fake([
-        '*Offset_press.jpg*' => Http::response(
+        '*cmyk-877604_1280.png' => Http::response(
             base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=', true),
             200,
             ['Content-Type' => 'image/png'],
         ),
-        'commons.wikimedia.org/*' => Http::response('not-an-image', 200, ['Content-Type' => 'text/plain']),
+        'cdn.pixabay.com/*' => Http::response('not-an-image', 200, ['Content-Type' => 'text/plain']),
     ]);
 
     expect(fn () => $this->seed(PrintingCatalogSeeder::class))

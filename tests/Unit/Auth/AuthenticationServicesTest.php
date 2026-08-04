@@ -19,7 +19,7 @@ afterEach(function () {
     Carbon::setTestNow();
 });
 
-it('issues sanctum access tokens with the approved ability and exact lifetime', function () {
+it('issues non-expiring sanctum access tokens with the approved ability', function () {
     Carbon::setTestNow('2026-07-28 12:00:00');
 
     $user = User::factory()->create();
@@ -32,9 +32,8 @@ it('issues sanctum access tokens with the approved ability and exact lifetime', 
         ->and($persistedToken)->not->toBeNull()
         ->and($persistedToken->name)->toBe('admin-access-token')
         ->and($persistedToken->abilities)->toBe(['admin:access'])
-        ->and($persistedToken->expires_at?->timestamp)->toBe(now()->addMinutes(15)->timestamp)
-        ->and($service->ttlMinutes())->toBe(15)
-        ->and($service->ttlSeconds())->toBe(900);
+        ->and($persistedToken->expires_at)->toBeNull()
+        ->and($service->ttlSeconds())->toBeNull();
 
     expect($service->revokeAllFor($user))->toBe(1)
         ->and($user->tokens()->count())->toBe(0);

@@ -72,7 +72,7 @@ it('enforces the login and refresh request contracts and returns typed token res
 
     $loginResponse->assertOk()
         ->assertJsonPath('data.tokenType', 'Bearer')
-        ->assertJsonPath('data.tokenExpiresIn', 900)
+        ->assertJsonPath('data.tokenExpiresIn', null)
         ->assertJsonPath('data.refreshTokenExpiresIn', 2592000)
         ->assertJsonMissingPath('data.id');
 

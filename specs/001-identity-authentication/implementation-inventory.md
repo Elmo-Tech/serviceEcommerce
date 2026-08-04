@@ -58,7 +58,7 @@ The following active implementation dependencies were removed because the approv
 ## Configuration audit
 
 - `ADMIN_FRONTEND_ORIGIN` remains the exact configured browser origin for CORS validation.
-- Access token lifetime remains 900 seconds.
+- Access token lifetime is `null` (no automatic expiration).
 - Refresh token lifetime remains 2,592,000 seconds.
 - Super Admin provisioning remains environment-backed and must not introduce production default credentials.
 - Mail configuration remains environment-backed; production values are deployment-owned.

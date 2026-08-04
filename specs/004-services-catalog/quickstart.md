@@ -288,3 +288,20 @@ Implementation is ready only when:
 - No partial DB rows or orphaned request-created files remain after failures.
 - All concurrency invariants pass on MySQL.
 - Pest, Pint, and Larastan/PHPStan pass.
+
+## 10. Printing Demo Data
+
+The default database seed flow runs `PrintingCatalogSeeder` followed by
+`PrintingServicesSeeder`. The second seeder creates exactly 15 active and
+available printing services, assigns every service to one of the seeded root
+category/subcategory pairs, reserves both localized slugs, downloads validated
+PNG/JPEG/WebP images from the approved external Pixabay sources, and stores one
+main image per service on the public disk.
+
+```powershell
+php artisan db:seed --class=PrintingServicesSeeder
+```
+
+Run `PrintingCatalogSeeder` first when invoking the service seeder directly on
+an empty database. Both seeders are idempotent. A manually replaced main service
+image remains authoritative during later seeder runs.

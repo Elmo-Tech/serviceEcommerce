@@ -50,7 +50,7 @@ it('logs in successfully with normalized email and returns the approved token an
         ->assertJsonPath('success', true)
         ->assertJsonPath('message', trans('auth.login_success', [], 'en'))
         ->assertJsonPath('data.tokenType', 'Bearer')
-        ->assertJsonPath('data.tokenExpiresIn', 900)
+        ->assertJsonPath('data.tokenExpiresIn', null)
         ->assertJsonPath('data.refreshTokenExpiresIn', 2592000)
         ->assertJsonPath('data.profile.name', 'Service Commerce Super Admin')
         ->assertJsonPath('data.profile.email', 'admin@example.test')
