@@ -47,7 +47,7 @@ it('uploads deletes and downloads nested attachments with strict ownership', fun
     $orderItem = OrderItem::factory()->for($order)->create();
 
     $uploadResponse = $this->post('/api/v1/admin/orders/'.$order->getKey().'/items/'.$orderItem->getKey().'/attachments', [
-        'files' => [
+        'attachments' => [
             UploadedFile::fake()->create('brief.pdf', 100, 'application/pdf'),
         ],
     ], [

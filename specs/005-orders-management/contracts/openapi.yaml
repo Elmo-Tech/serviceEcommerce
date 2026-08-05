@@ -1236,9 +1236,9 @@ components:
       type: object
       description: Standalone Admin attachment upload. Maximum three files and 30 MB combined.
       required:
-      - files
+      - attachments
       properties:
-        files:
+        attachments:
           type: array
           description: One to three protected item attachments.
           items: *id001

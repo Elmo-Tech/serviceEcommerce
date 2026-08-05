@@ -1361,9 +1361,9 @@ Content-Type: multipart/form-data
 ```
 
 ```text
-files[0]
-files[1]
-files[2]
+attachments[0]
+attachments[1]
+attachments[2]
 ```
 
 Standalone Admin upload limit:

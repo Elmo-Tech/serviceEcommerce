@@ -390,7 +390,8 @@ nested-resource disclosure behavior.
 - **FR-033**: Public/Admin order-create requests MUST support at most 30 total
   attachment files and 100 MB combined attachment bytes. Admin add-item and
   standalone Admin attachment-upload requests MUST support at most 3 files and
-  30 MB combined.
+  30 MB combined. The standalone multipart field is `attachments[]`, matching
+  the attachment key used by order creation and Admin add-item requests.
 - **FR-034**: Order-item attachments MUST use protected storage, MUST never
   expose raw paths or public URLs, and MUST be downloaded only through an
   authenticated nested Admin endpoint with `orders.view` and strict ownership

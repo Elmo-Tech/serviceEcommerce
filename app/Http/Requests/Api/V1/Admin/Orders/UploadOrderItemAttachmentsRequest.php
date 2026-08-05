@@ -20,8 +20,8 @@ class UploadOrderItemAttachmentsRequest extends FormRequest
     {
         return [
             'completedAt' => ['prohibited'],
-            'files' => ['required', 'array', 'min:1', 'max:3'],
-            'files.*' => [
+            'attachments' => ['required', 'array', 'min:1', 'max:3'],
+            'attachments.*' => [
                 'file',
                 'max:10240',
                 'mimetypes:image/png,image/jpeg,image/webp,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document',
@@ -51,7 +51,7 @@ class UploadOrderItemAttachmentsRequest extends FormRequest
     public function uploadedFiles(): array
     {
         return array_values(array_filter(
-            (array) $this->file('files', []),
+            (array) $this->file('attachments', []),
             static fn ($file) => $file instanceof UploadedFile,
         ));
     }

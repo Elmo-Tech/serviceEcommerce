@@ -1,5 +1,9 @@
 # Tasks: Orders Management
 
+- [x] T076 Align the standalone Admin item-attachment upload contract with
+  Postman and the other order mutations by accepting `attachments[]` instead
+  of the undocumented `files[]` field.
+
 **Input**: Design documents from `/specs/005-orders-management/`
 
 **Approved source**: `docs/features/005-orders-management.md`
