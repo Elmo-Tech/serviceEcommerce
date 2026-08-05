@@ -21,8 +21,6 @@ beforeEach(function (): void {
 it('returns the complete admin settings resource with ordered children and available social platforms', function () {
     $setting = Setting::factory()->create([
         'id' => 1,
-        'site_name_ar' => 'اسم الموقع',
-        'site_name_en' => 'Website Name',
         'google_maps_url' => 'https://maps.google.com/?q=30.0444,31.2357',
     ]);
 
@@ -41,8 +39,12 @@ it('returns the complete admin settings resource with ordered children and avail
     $response->assertOk()
         ->assertHeader('Content-Language', 'en')
         ->assertJsonPath('success', true)
-        ->assertJsonPath('data.siteNameAr', 'اسم الموقع')
-        ->assertJsonPath('data.siteNameEn', 'Website Name')
+        ->assertJsonMissingPath('data.siteNameAr')
+        ->assertJsonMissingPath('data.siteNameEn')
+        ->assertJsonMissingPath('data.siteDescriptionAr')
+        ->assertJsonMissingPath('data.siteDescriptionEn')
+        ->assertJsonMissingPath('data.sloganAr')
+        ->assertJsonMissingPath('data.sloganEn')
         ->assertJsonPath('data.publicEmail', 'info@example.com')
         ->assertJsonPath('data.phones.0.number', '01012345678')
         ->assertJsonPath('data.phones.0.hasWhats', 1)
@@ -66,7 +68,7 @@ it('recovers the missing singleton row on admin read without creating duplicates
     $secondResponse = $this->getJson('/api/v1/admin/settings', settingsAdminHeaders(settingsAdminToken()));
 
     $firstResponse->assertOk()
-        ->assertJsonPath('data.siteNameEn', 'Website Name');
+        ->assertJsonPath('data.publicEmail', 'info@example.com');
 
     $secondResponse->assertOk();
 

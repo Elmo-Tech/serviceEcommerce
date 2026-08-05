@@ -22,8 +22,6 @@ it('updates admin settings with normalized phones and ordered social links', fun
     Setting::factory()->create(['id' => 1]);
 
     $response = $this->patchJson('/api/v1/admin/settings', [
-        'siteNameAr' => '  الموقع الرسمي  ',
-        'siteDescriptionAr' => '',
         'publicEmail' => ' INFO@example.com ',
         'googleMapsUrl' => ' https://maps.google.com/?q=30.0444,31.2357 ',
         'phones' => [
@@ -37,8 +35,6 @@ it('updates admin settings with normalized phones and ordered social links', fun
     ], settingsAdminHeaders(settingsAdminToken()));
 
     $response->assertOk()
-        ->assertJsonPath('data.siteNameAr', 'الموقع الرسمي')
-        ->assertJsonPath('data.siteDescriptionAr', null)
         ->assertJsonPath('data.publicEmail', 'info@example.com')
         ->assertJsonPath('data.googleMapsUrl', 'https://maps.google.com/?q=30.0444,31.2357')
         ->assertJsonPath('data.phones.0.number', '01012345678')
@@ -104,7 +100,7 @@ it('accepts the real multipart patch shape sent by Postman', function () {
     Setting::factory()->create(['id' => 1]);
     $boundary = '----SettingsPostmanBoundary7MA4YWxk';
     $parts = [
-        ['siteNameEn', 'Service Commerce'],
+        ['addressEn', 'Cairo, Egypt'],
         ['publicEmail', 'info@example.com'],
         ['googleMapsUrl', 'https://maps.google.com/location'],
         ['phones[0][number]', '+20 101 234 5678'],
@@ -135,7 +131,7 @@ it('accepts the real multipart patch shape sent by Postman', function () {
     );
 
     $response->assertOk()
-        ->assertJsonPath('data.siteNameEn', 'Service Commerce')
+        ->assertJsonPath('data.addressEn', 'Cairo, Egypt')
         ->assertJsonPath('data.publicEmail', 'info@example.com')
         ->assertJsonPath('data.googleMapsUrl', 'https://maps.google.com/location')
         ->assertJsonPath('data.phones.0.number', '01012345678')
@@ -145,20 +141,16 @@ it('accepts the real multipart patch shape sent by Postman', function () {
 it('preserves omitted fields and explicitly clears optional scalar fields', function () {
     Setting::factory()->create([
         'id' => 1,
-        'site_name_en' => 'Preserved Name',
-        'site_description_en' => 'Clear me',
         'address_en' => 'Preserved Address',
+        'address_ar' => 'Clear me',
         'google_maps_url' => 'https://maps.google.com/preserved',
     ]);
 
     $this->patchJson('/api/v1/admin/settings', [
-        'siteDescriptionEn' => '   ',
-        'sloganEn' => ' Updated slogan ',
+        'addressAr' => '   ',
     ], settingsAdminHeaders(settingsAdminToken()))
         ->assertOk()
-        ->assertJsonPath('data.siteNameEn', 'Preserved Name')
-        ->assertJsonPath('data.siteDescriptionEn', null)
-        ->assertJsonPath('data.sloganEn', 'Updated slogan')
+        ->assertJsonPath('data.addressAr', null)
         ->assertJsonPath('data.googleMapsUrl', 'https://maps.google.com/preserved')
         ->assertJsonPath('data.addressEn', 'Preserved Address');
 });
@@ -196,8 +188,6 @@ it('rejects empty required settings fields without changing persisted values', f
 
     expect($setting->fresh()->getAttributes())->toBe($before);
 })->with([
-    'Arabic site name empty' => ['siteNameAr', ''],
-    'English site name null' => ['siteNameEn', null],
     'public email empty' => ['publicEmail', ''],
 ]);
 
@@ -278,14 +268,14 @@ it('ignores removed settings keys during update requests', function () {
     $headers = settingsAdminHeaders(settingsAdminToken());
 
     $this->patchJson('/api/v1/admin/settings', [
-        'siteNameEn' => 'Updated Settings Name',
+        'siteNameEn' => 'Removed setting',
         'latitude' => '30.0444000',
         'longitude' => '31.2357000',
         'defaultSeoTitleEn' => 'Ignored SEO title',
         'defaultSeoKeywordsEn' => ['Service Commerce', 'Web Design'],
     ], $headers)->assertOk()
-        ->assertJsonPath('data.siteNameEn', 'Updated Settings Name')
         ->assertJsonPath('data.googleMapsUrl', 'https://maps.google.com/example')
+        ->assertJsonMissingPath('data.siteNameEn')
         ->assertJsonMissingPath('data.latitude')
         ->assertJsonMissingPath('data.longitude')
         ->assertJsonMissingPath('data.defaultSeoTitleEn')
@@ -293,11 +283,11 @@ it('ignores removed settings keys during update requests', function () {
 });
 
 it('enforces authentication authorization and localized validation for settings update', function () {
-    $this->patchJson('/api/v1/admin/settings', ['siteNameEn' => 'Updated'], [
+    $this->patchJson('/api/v1/admin/settings', ['addressEn' => 'Updated'], [
         'Accept-Language' => 'en',
     ])->assertUnauthorized()->assertJsonPath('code', 'UNAUTHENTICATED');
 
-    $arabicResponse = $this->patchJson('/api/v1/admin/settings', ['siteNameAr' => ''],
+    $arabicResponse = $this->patchJson('/api/v1/admin/settings', ['publicEmail' => ''],
         settingsAdminHeaders(settingsAdminToken(), 'ar'));
 
     $arabicResponse->assertUnprocessable()
@@ -313,7 +303,7 @@ it('enforces authentication authorization and localized validation for settings 
     ]);
     Sanctum::actingAs($forbiddenAdmin);
 
-    $this->patchJson('/api/v1/admin/settings', ['siteNameEn' => 'Updated'], [
+    $this->patchJson('/api/v1/admin/settings', ['addressEn' => 'Updated'], [
         'Accept-Language' => 'en',
     ])->assertForbidden()->assertJsonPath('code', 'FORBIDDEN');
 });

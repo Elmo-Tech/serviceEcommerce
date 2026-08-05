@@ -17,12 +17,6 @@ class AdminSettingsResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'siteNameAr' => $this->site_name_ar,
-            'siteNameEn' => $this->site_name_en,
-            'siteDescriptionAr' => $this->site_description_ar,
-            'siteDescriptionEn' => $this->site_description_en,
-            'sloganAr' => $this->slogan_ar,
-            'sloganEn' => $this->slogan_en,
             'logo' => $this->logoUrl(),
             'footerLogo' => $this->footerLogoUrl(),
             'favicon' => $this->faviconUrl(),

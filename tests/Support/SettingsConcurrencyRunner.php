@@ -38,7 +38,7 @@ try {
             echo json_encode([
                 'status' => 'success',
                 'settingId' => $setting->getKey(),
-                'siteNameEn' => $setting->site_name_en,
+                'addressEn' => $setting->address_en,
             ], JSON_THROW_ON_ERROR);
 
             exit(0);

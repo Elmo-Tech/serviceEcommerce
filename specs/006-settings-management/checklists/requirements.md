@@ -29,13 +29,11 @@
 
 ## Required and Nullable Semantics
 
-- [x] `siteNameAr`, `siteNameEn`, and `publicEmail` are fixed as persistent
-  required fields.
+- [x] `publicEmail` is fixed as a persistent required field.
 - [x] Required fields are not required in every PATCH request.
 - [x] Omitted PATCH fields are defined as unchanged.
 - [x] Required submitted fields cannot be empty or null.
 - [x] Optional fields may be cleared.
-- [x] Site-description maximum length is fixed at 500 characters.
 - [x] Empty optional scalar text submitted through multipart is explicitly
   normalized to `null`.
 - [x] Omitted optional scalar text remains unchanged.

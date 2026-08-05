@@ -68,8 +68,8 @@ non-HTTP/HTTPS values must return `422 VALIDATION_ERROR`. `latitude` and
 Send multipart PATCH updating only:
 
 ```text
-siteNameAr
-siteNameEn
+addressAr
+addressEn
 publicEmail
 ```
 
@@ -84,7 +84,7 @@ Validate:
 Submit one optional scalar text field as an explicit empty string, for example:
 
 ```text
-sloganAr=
+addressAr=
 ```
 
 Validate:

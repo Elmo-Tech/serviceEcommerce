@@ -1468,12 +1468,6 @@
             "body": {
               "mode": "formdata",
               "formdata": [
-                { "key": "siteNameAr", "value": "اسم الموقع", "type": "text", "description": "Required Arabic site name; empty/null is rejected." },
-                { "key": "siteNameEn", "value": "Service Commerce", "type": "text", "description": "Required English site name; empty/null is rejected." },
-                { "key": "siteDescriptionAr", "value": "وصف الموقع", "type": "text", "description": "Optional Arabic description; empty string clears it.", "disabled": true },
-                { "key": "siteDescriptionEn", "value": "Service commerce website", "type": "text", "description": "Optional English description; empty string clears it.", "disabled": true },
-                { "key": "sloganAr", "value": "خدماتك في مكان واحد", "type": "text", "description": "Optional Arabic slogan; empty string clears it.", "disabled": true },
-                { "key": "sloganEn", "value": "Services in one place", "type": "text", "description": "Optional English slogan; empty string clears it.", "disabled": true },
                 { "key": "publicEmail", "value": "info@example.com", "type": "text", "description": "Required contact email; normalized to lowercase." },
                 { "key": "phones[0][number]", "value": "0501234567", "type": "text", "description": "Phone number with exactly 10 or 11 digits after formatting and +20/0020 normalization." },
                 { "key": "phones[0][hasWhats]", "value": "1", "type": "text", "description": "1 = WhatsApp enabled, 0 = not enabled; at most one item may be 1." },

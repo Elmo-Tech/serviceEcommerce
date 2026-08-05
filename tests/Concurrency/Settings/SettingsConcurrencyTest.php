@@ -62,7 +62,7 @@ it('serializes concurrent full replacements without partial child collections', 
     Setting::factory()->create(['id' => 1]);
 
     $firstPayload = json_encode([
-        'siteNameEn' => 'First concurrent update',
+        'addressEn' => 'First concurrent update',
         'phones' => [
             ['number' => '01011111111', 'hasWhats' => 1],
             ['number' => '01111111111', 'hasWhats' => 0],
@@ -75,7 +75,7 @@ it('serializes concurrent full replacements without partial child collections', 
     ], JSON_THROW_ON_ERROR);
 
     $secondPayload = json_encode([
-        'siteNameEn' => 'Second concurrent update',
+        'addressEn' => 'Second concurrent update',
         'phones' => [
             ['number' => '01522222222', 'hasWhats' => 0],
             ['number' => '01022222222', 'hasWhats' => 1],

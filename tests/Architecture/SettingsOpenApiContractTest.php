@@ -82,12 +82,11 @@ it('freezes exact request and response settings objects', function () {
         'PhoneOutput' => ['number', 'hasWhats'],
         'SocialLinkItem' => ['platform', 'url'],
         'AdminSettingsData' => [
-            'siteNameAr', 'siteNameEn', 'siteDescriptionAr', 'siteDescriptionEn',
-            'sloganAr', 'sloganEn', 'logo', 'footerLogo', 'favicon', 'publicEmail',
+            'logo', 'footerLogo', 'favicon', 'publicEmail',
             'phones', 'addressAr', 'addressEn', 'googleMapsUrl', 'socialLinks', 'availableSocialPlatforms',
         ],
         'PublicSettingsData' => [
-            'siteName', 'siteDescription', 'slogan', 'logo', 'footerLogo', 'favicon',
+            'logo', 'footerLogo', 'favicon',
             'email', 'phones', 'address', 'googleMapsUrl', 'socialLinks',
         ],
         'AdminSettingsSuccessResponse' => ['success', 'message', 'data'],
@@ -95,8 +94,7 @@ it('freezes exact request and response settings objects', function () {
         'ErrorResponse' => ['success', 'message', 'code', 'errors'],
         'ValidationErrorResponse' => ['success', 'message', 'code', 'errors'],
         'AdminSettingsUpdateRequest' => [
-            'siteNameAr', 'siteNameEn', 'siteDescriptionAr', 'siteDescriptionEn',
-            'sloganAr', 'sloganEn', 'publicEmail', 'addressAr', 'addressEn', 'googleMapsUrl',
+            'publicEmail', 'addressAr', 'addressEn', 'googleMapsUrl',
             'phones', 'socialLinks', 'logo', 'footerLogo', 'favicon',
         ],
     ];

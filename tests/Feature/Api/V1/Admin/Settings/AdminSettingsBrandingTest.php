@@ -108,17 +108,19 @@ it('rejects invalid file extensions and exact size boundaries', function () {
     ])->assertUnprocessable()->assertJsonStructure(['errors' => ['logo']]);
 });
 
-it('rejects client-controlled paths and removed branding keys', function () {
-    Setting::factory()->create(['id' => 1]);
+it('ignores client-controlled paths and removed branding keys', function () {
+    $setting = Setting::factory()->create(['id' => 1]);
     $headers = settingsAdminHeaders(settingsAdminToken());
+    $before = $setting->fresh()->getAttributes();
 
     $this->patchJson('/api/v1/admin/settings', [
         'logoPath' => 'settings/logo/client-controlled.svg',
-    ], $headers)->assertUnprocessable()
-        ->assertJsonStructure(['errors' => ['payload']]);
+    ], $headers)->assertOk();
 
     $this->patchJson('/api/v1/admin/settings', ['removeLogo' => 1], $headers)
-        ->assertUnprocessable()->assertJsonStructure(['errors' => ['payload']]);
+        ->assertOk();
+
+    expect($setting->fresh()->getAttributes())->toBe($before);
 });
 
 it('replaces and removes branding only after valid state is committed', function () {

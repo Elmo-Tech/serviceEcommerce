@@ -9,12 +9,6 @@ Represents the canonical singleton site configuration row.
 | Field | Database type | Required | Notes |
 |---|---|---:|---|
 | `id` | unsigned big integer | yes | Canonical singleton identity is always `1` |
-| `site_name_ar` | varchar | yes | Persistent required field |
-| `site_name_en` | varchar | yes | Persistent required field |
-| `site_description_ar` | varchar(500) nullable | no | Empty submitted string normalizes to `null` |
-| `site_description_en` | varchar(500) nullable | no | Empty submitted string normalizes to `null` |
-| `slogan_ar` | varchar nullable | no | Empty submitted string normalizes to `null` |
-| `slogan_en` | varchar nullable | no | Empty submitted string normalizes to `null` |
 | `address_ar` | text nullable | no | Localized plain-text address |
 | `address_en` | text nullable | no | Localized plain-text address |
 | `public_email` | varchar | yes | Valid email; never `null` |

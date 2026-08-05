@@ -11,8 +11,6 @@ uses(RefreshDatabase::class);
 it('returns localized public settings without admin-only fields', function () {
     $setting = Setting::factory()->create([
         'id' => 1,
-        'site_name_ar' => 'اسم عربي',
-        'site_name_en' => 'English Name',
         'address_ar' => 'القاهرة، مصر',
         'address_en' => 'Cairo, Egypt',
         'google_maps_url' => 'https://maps.google.com/?q=30.0444,31.2357',
@@ -29,7 +27,6 @@ it('returns localized public settings without admin-only fields', function () {
         ->assertHeader('Content-Language', 'ar')
         ->assertHeader('Vary', 'Accept-Language')
         ->assertJsonPath('success', true)
-        ->assertJsonPath('data.siteName', 'اسم عربي')
         ->assertJsonPath('data.address', 'القاهرة، مصر')
         ->assertJsonPath('data.phones.0.number', '01012345678')
         ->assertJsonPath('data.socialLinks.0.platform', 'facebook')
@@ -39,6 +36,9 @@ it('returns localized public settings without admin-only fields', function () {
         ->assertJsonMissingPath('data.defaultSeo')
         ->assertJsonMissingPath('data.siteNameAr')
         ->assertJsonMissingPath('data.siteNameEn')
+        ->assertJsonMissingPath('data.siteName')
+        ->assertJsonMissingPath('data.siteDescription')
+        ->assertJsonMissingPath('data.slogan')
         ->assertJsonMissingPath('data.availableSocialPlatforms');
 
     $englishResponse = $this->getJson('/api/v1/public/settings', [
@@ -47,7 +47,6 @@ it('returns localized public settings without admin-only fields', function () {
 
     $englishResponse->assertOk()
         ->assertHeader('Content-Language', 'en')
-        ->assertJsonPath('data.siteName', 'English Name')
         ->assertJsonPath('data.address', 'Cairo, Egypt');
 });
 
@@ -59,7 +58,9 @@ it('returns approved safe defaults for public settings without persisting a row'
     ]);
 
     $response->assertOk()
-        ->assertJsonPath('data.siteName', 'Website Name')
+        ->assertJsonMissingPath('data.siteName')
+        ->assertJsonMissingPath('data.siteDescription')
+        ->assertJsonMissingPath('data.slogan')
         ->assertJsonPath('data.email', 'info@example.com')
         ->assertJsonPath('data.phones', [])
         ->assertJsonPath('data.googleMapsUrl', null)

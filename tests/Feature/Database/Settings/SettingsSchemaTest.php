@@ -13,13 +13,18 @@ uses(RefreshDatabase::class);
 
 it('provides the exact settings schema and model casts', function () {
     expect(Schema::hasColumns('settings', [
-        'id', 'site_name_ar', 'site_name_en', 'site_description_ar', 'site_description_en',
-        'slogan_ar', 'slogan_en', 'address_ar', 'address_en', 'public_email',
+        'id', 'address_ar', 'address_en', 'public_email',
         'logo_path', 'footer_logo_path', 'favicon_path', 'google_maps_url',
         'latitude', 'longitude', 'default_seo_title_ar', 'default_seo_title_en',
         'default_seo_description_ar', 'default_seo_description_en',
         'default_seo_keywords_ar', 'default_seo_keywords_en', 'created_at', 'updated_at',
     ]))->toBeTrue()
+        ->and(Schema::hasColumn('settings', 'site_name_ar'))->toBeFalse()
+        ->and(Schema::hasColumn('settings', 'site_name_en'))->toBeFalse()
+        ->and(Schema::hasColumn('settings', 'site_description_ar'))->toBeFalse()
+        ->and(Schema::hasColumn('settings', 'site_description_en'))->toBeFalse()
+        ->and(Schema::hasColumn('settings', 'slogan_ar'))->toBeFalse()
+        ->and(Schema::hasColumn('settings', 'slogan_en'))->toBeFalse()
         ->and(Schema::hasColumn('settings', 'logo_disk'))->toBeFalse()
         ->and(Schema::hasColumn('settings', 'footer_logo_disk'))->toBeFalse()
         ->and(Schema::hasColumn('settings', 'favicon_disk'))->toBeFalse();

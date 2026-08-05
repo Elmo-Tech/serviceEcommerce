@@ -45,12 +45,6 @@ class UpdateSettingsAction
                 $setting = $this->settingsResolver->resolveForAdmin(lockForUpdate: true);
 
                 $fieldMap = [
-                    'siteNameAr' => 'site_name_ar',
-                    'siteNameEn' => 'site_name_en',
-                    'siteDescriptionAr' => 'site_description_ar',
-                    'siteDescriptionEn' => 'site_description_en',
-                    'sloganAr' => 'slogan_ar',
-                    'sloganEn' => 'slogan_en',
                     'publicEmail' => 'public_email',
                     'addressAr' => 'address_ar',
                     'addressEn' => 'address_en',

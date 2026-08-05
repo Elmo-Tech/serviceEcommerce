@@ -13,7 +13,7 @@
 - Admin read access to the complete editable Settings resource.
 - Admin partial update through `multipart/form-data`.
 - Public localized read access.
-- Localized site identity, description, slogan, and address.
+- Localized address.
 - Public email.
 - Logo, footer logo, and favicon.
 - Up to three phone numbers normalized to exactly 10 or 11 digits.
@@ -190,12 +190,6 @@ boundaries.
 ### Localized General Fields
 
 ```text
-siteNameAr
-siteNameEn
-siteDescriptionAr
-siteDescriptionEn
-sloganAr
-sloganEn
 addressAr
 addressEn
 ```
@@ -235,8 +229,6 @@ Admin responses, or Public responses.
 ### Required at All Times
 
 ```text
-siteNameAr
-siteNameEn
 publicEmail
 ```
 
@@ -250,10 +242,6 @@ Rules:
 ### Optional
 
 ```text
-siteDescriptionAr
-siteDescriptionEn
-sloganAr
-sloganEn
 logo
 footerLogo
 favicon
@@ -272,8 +260,6 @@ Rules:
   value to `null`.
 - No additional clear flags may be introduced for optional scalar text fields.
 - Coordinates continue to follow their approved paired clear/update rules.
-- `siteDescriptionAr` and `siteDescriptionEn` have a maximum length of
-  `500` characters.
 
 ---
 
@@ -547,12 +533,6 @@ Successful Admin GET and PATCH `data` MUST have this shape:
 
 ```json
 {
-  "siteNameAr": "اسم الموقع",
-  "siteNameEn": "Website Name",
-  "siteDescriptionAr": "وصف الموقع باللغة العربية",
-  "siteDescriptionEn": "Website description in English",
-  "sloganAr": "الشعار النصي بالعربية",
-  "sloganEn": "English slogan",
   "logo": "https://api.example.com/storage/settings/logo/example.webp",
   "footerLogo": "https://api.example.com/storage/settings/footer-logo/example.webp",
   "favicon": "https://api.example.com/storage/settings/favicon/example.ico",
@@ -597,9 +577,6 @@ For Arabic, successful Public `data` MUST have this shape:
 
 ```json
 {
-  "siteName": "اسم الموقع",
-  "siteDescription": "وصف الموقع باللغة العربية",
-  "slogan": "الشعار النصي بالعربية",
   "logo": "https://api.example.com/storage/settings/logo/example.webp",
   "footerLogo": "https://api.example.com/storage/settings/footer-logo/example.webp",
   "favicon": "https://api.example.com/storage/settings/favicon/example.ico",

@@ -14,7 +14,7 @@ it('seeds the settings singleton idempotently without overwriting admin-managed 
 
     $setting = Setting::query()->sole();
     $setting->update([
-        'site_name_en' => 'Custom Website Name',
+        'address_en' => 'Custom Address',
         'public_email' => 'custom@example.com',
     ]);
 
@@ -23,7 +23,7 @@ it('seeds the settings singleton idempotently without overwriting admin-managed 
     $reloaded = Setting::query()->sole();
 
     expect(Setting::query()->count())->toBe(1)
-        ->and($reloaded->site_name_en)->toBe('Custom Website Name')
+        ->and($reloaded->address_en)->toBe('Custom Address')
         ->and($reloaded->public_email)->toBe('custom@example.com');
 });
 
@@ -42,6 +42,7 @@ it('resolves the admin singleton and public defaults according to the approved p
     $publicDefaults = $resolver->safePublicDefaults('en');
 
     expect($publicSetting)->toBeNull()
-        ->and($publicDefaults['siteName'])->toBe('Website Name')
+        ->and($publicDefaults)->not->toHaveKey('siteName')
+        ->and($publicDefaults['email'])->toBe('info@example.com')
         ->and(Setting::query()->count())->toBe(0);
 });

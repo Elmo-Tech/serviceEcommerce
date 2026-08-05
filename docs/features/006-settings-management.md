@@ -1,4 +1,12 @@
-# Feature 006 — Settings Management
+# Feature 006 - Settings Management
+
+## Approved amendment — 2026-08-05: remove site identity text fields
+
+Settings no longer stores, accepts, or returns `siteNameAr`, `siteNameEn`,
+`siteDescriptionAr`, `siteDescriptionEn`, `sloganAr`, or `sloganEn`. The six
+corresponding database columns are removed through a forward migration. Admin
+and Public Settings Resources omit these fields, and multipart parsing ignores
+them as unsupported keys.
 
 ## 1. Overview
 
@@ -127,12 +135,6 @@ Suggested columns:
 
 ```text
 id
-site_name_ar
-site_name_en
-site_description_ar nullable
-site_description_en nullable
-slogan_ar nullable
-slogan_en nullable
 logo_path nullable
 footer_logo_path nullable
 favicon_path nullable
@@ -146,12 +148,6 @@ updated_at
 Recommended types:
 
 ```text
-site_name_ar                    varchar
-site_name_en                    varchar
-site_description_ar             varchar(500) nullable
-site_description_en             varchar(500) nullable
-slogan_ar                       varchar nullable
-slogan_en                       varchar nullable
 logo_path                       varchar nullable
 footer_logo_path                varchar nullable
 favicon_path                    varchar nullable
@@ -212,12 +208,6 @@ Rules:
 Fields:
 
 ```text
-siteNameAr
-siteNameEn
-siteDescriptionAr
-siteDescriptionEn
-sloganAr
-sloganEn
 addressAr
 addressEn
 ```
@@ -225,25 +215,18 @@ addressEn
 Persistent required fields:
 
 ```text
-siteNameAr
-siteNameEn
 publicEmail
 ```
 
 Optional fields:
 
 ```text
-siteDescriptionAr
-siteDescriptionEn
-sloganAr
-sloganEn
 addressAr
 addressEn
 ```
 
 Rules:
 
-- Description maximum length is 500 characters.
 - Admin responses always return Arabic and English.
 - Public responses return one localized value based on `Accept-Language`.
 - Required fields cannot be cleared.
@@ -670,12 +653,6 @@ Example `data`:
 
 ```json
 {
-  "siteNameAr": "اسم الموقع",
-  "siteNameEn": "Website Name",
-  "siteDescriptionAr": "وصف الموقع باللغة العربية",
-  "siteDescriptionEn": "Website description in English",
-  "sloganAr": "الشعار النصي بالعربية",
-  "sloganEn": "English slogan",
   "logo": "https://api.example.com/storage/settings/logo/example.webp",
   "footerLogo": "https://api.example.com/storage/settings/footer-logo/example.webp",
   "favicon": "https://api.example.com/storage/settings/favicon/example.ico",
@@ -728,9 +705,6 @@ Example `data`:
 
 ```json
 {
-  "siteName": "اسم الموقع",
-  "siteDescription": "وصف الموقع باللغة العربية",
-  "slogan": "الشعار النصي بالعربية",
   "logo": "https://api.example.com/storage/settings/logo/example.webp",
   "footerLogo": "https://api.example.com/storage/settings/footer-logo/example.webp",
   "favicon": "https://api.example.com/storage/settings/favicon/example.ico",
@@ -759,9 +733,6 @@ Example `data`:
 
 ```json
 {
-  "siteName": "Website Name",
-  "siteDescription": "Website description in English",
-  "slogan": "English slogan",
   "logo": "https://api.example.com/storage/settings/logo/example.webp",
   "footerLogo": "https://api.example.com/storage/settings/footer-logo/example.webp",
   "favicon": "https://api.example.com/storage/settings/favicon/example.ico",
@@ -787,8 +758,6 @@ Example `data`:
 ## 21. Multipart Update Example
 
 ```text
-siteNameAr = اسم الموقع
-siteNameEn = Website Name
 publicEmail = info@example.com
 
 phones[0][number] = 01012345678
@@ -854,8 +823,6 @@ settings.id = 1
 Placeholder values:
 
 ```text
-site_name_ar = اسم الموقع
-site_name_en = Website Name
 public_email = info@example.com
 ```
 

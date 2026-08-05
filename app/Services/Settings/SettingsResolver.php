@@ -15,12 +15,6 @@ class SettingsResolver
     public function placeholderAttributes(): array
     {
         return [
-            'site_name_ar' => 'اسم الموقع',
-            'site_name_en' => 'Website Name',
-            'site_description_ar' => null,
-            'site_description_en' => null,
-            'slogan_ar' => null,
-            'slogan_en' => null,
             'address_ar' => null,
             'address_en' => null,
             'public_email' => 'info@example.com',
@@ -72,12 +66,7 @@ class SettingsResolver
      */
     public function safePublicDefaults(string $locale = 'ar'): array
     {
-        $isArabic = $locale !== 'en';
-
         return [
-            'siteName' => $isArabic ? 'اسم الموقع' : 'Website Name',
-            'siteDescription' => null,
-            'slogan' => null,
             'logo' => null,
             'footerLogo' => null,
             'favicon' => null,

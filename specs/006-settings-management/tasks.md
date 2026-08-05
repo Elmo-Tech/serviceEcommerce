@@ -1,5 +1,9 @@
 # Tasks: Settings Management
 
+- [x] T058 Remove site name, site description, and slogan fields from Settings
+  persistence, Admin/Public contracts, multipart parsing, Postman, seed data,
+  and automated tests.
+
 **Input**: Design documents from `/specs/006-settings-management/`
 
 **Approved source**: `docs/features/006-settings-management.md`

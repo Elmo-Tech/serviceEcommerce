@@ -18,12 +18,6 @@ class Setting extends Model
 
     protected $fillable = [
         'id',
-        'site_name_ar',
-        'site_name_en',
-        'site_description_ar',
-        'site_description_en',
-        'slogan_ar',
-        'slogan_en',
         'address_ar',
         'address_en',
         'public_email',

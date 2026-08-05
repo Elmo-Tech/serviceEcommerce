@@ -22,12 +22,6 @@ class UpdateSettingsRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'siteNameAr' => ['sometimes', 'string', 'min:1'],
-            'siteNameEn' => ['sometimes', 'string', 'min:1'],
-            'siteDescriptionAr' => ['sometimes', 'nullable', 'string', 'max:500'],
-            'siteDescriptionEn' => ['sometimes', 'nullable', 'string', 'max:500'],
-            'sloganAr' => ['sometimes', 'nullable', 'string'],
-            'sloganEn' => ['sometimes', 'nullable', 'string'],
             'publicEmail' => ['sometimes', 'string', 'email:rfc', 'min:1', 'max:255'],
             'addressAr' => ['sometimes', 'nullable', 'string'],
             'addressEn' => ['sometimes', 'nullable', 'string'],
@@ -78,12 +72,6 @@ class UpdateSettingsRequest extends FormRequest
         }
 
         foreach ([
-            'siteNameAr',
-            'siteNameEn',
-            'siteDescriptionAr',
-            'siteDescriptionEn',
-            'sloganAr',
-            'sloganEn',
             'addressAr',
             'addressEn',
             'googleMapsUrl',

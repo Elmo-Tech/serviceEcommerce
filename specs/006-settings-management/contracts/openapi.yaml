@@ -228,12 +228,6 @@ components:
       type: object
       additionalProperties: false
       required:
-      - siteNameAr
-      - siteNameEn
-      - siteDescriptionAr
-      - siteDescriptionEn
-      - sloganAr
-      - sloganEn
       - logo
       - footerLogo
       - favicon
@@ -245,30 +239,6 @@ components:
       - socialLinks
       - availableSocialPlatforms
       properties:
-        siteNameAr:
-          type: string
-          minLength: 1
-        siteNameEn:
-          type: string
-          minLength: 1
-        siteDescriptionAr:
-          type:
-          - string
-          - 'null'
-          maxLength: 500
-        siteDescriptionEn:
-          type:
-          - string
-          - 'null'
-          maxLength: 500
-        sloganAr:
-          type:
-          - string
-          - 'null'
-        sloganEn:
-          type:
-          - string
-          - 'null'
         logo:
           type:
           - string
@@ -322,9 +292,6 @@ components:
       type: object
       additionalProperties: false
       required:
-      - siteName
-      - siteDescription
-      - slogan
       - logo
       - footerLogo
       - favicon
@@ -334,18 +301,6 @@ components:
       - googleMapsUrl
       - socialLinks
       properties:
-        siteName:
-          type: string
-          minLength: 1
-        siteDescription:
-          type:
-          - string
-          - 'null'
-          maxLength: 500
-        slogan:
-          type:
-          - string
-          - 'null'
         logo:
           type:
           - string
@@ -465,26 +420,6 @@ components:
       type: object
       additionalProperties: false
       properties:
-        siteNameAr:
-          type: string
-          minLength: 1
-        siteNameEn:
-          type: string
-          minLength: 1
-        siteDescriptionAr:
-          type: string
-          maxLength: 500
-          description: Empty string explicitly clears the field to null.
-        siteDescriptionEn:
-          type: string
-          maxLength: 500
-          description: Empty string explicitly clears the field to null.
-        sloganAr:
-          type: string
-          description: Empty string explicitly clears the field to null.
-        sloganEn:
-          type: string
-          description: Empty string explicitly clears the field to null.
         publicEmail:
           type: string
           format: email

@@ -18,12 +18,6 @@ class SettingFactory extends Factory
     {
         return [
             'id' => 1,
-            'site_name_ar' => 'اسم الموقع',
-            'site_name_en' => 'Website Name',
-            'site_description_ar' => 'وصف الموقع باللغة العربية',
-            'site_description_en' => 'Website description in English',
-            'slogan_ar' => 'الشعار النصي بالعربية',
-            'slogan_en' => 'English slogan',
             'address_ar' => 'القاهرة، مصر',
             'address_en' => 'Cairo, Egypt',
             'public_email' => 'info@example.com',

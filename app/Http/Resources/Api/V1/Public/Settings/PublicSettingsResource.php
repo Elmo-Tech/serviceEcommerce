@@ -22,9 +22,6 @@ class PublicSettingsResource extends JsonResource
         $isArabic = app()->getLocale() !== 'en';
 
         return [
-            'siteName' => $isArabic ? $this->site_name_ar : $this->site_name_en,
-            'siteDescription' => $isArabic ? $this->site_description_ar : $this->site_description_en,
-            'slogan' => $isArabic ? $this->slogan_ar : $this->slogan_en,
             'logo' => $this->logoUrl(),
             'footerLogo' => $this->footerLogoUrl(),
             'favicon' => $this->faviconUrl(),
