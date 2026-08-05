@@ -11,6 +11,7 @@ use App\Models\Service;
 use App\Models\ServiceOrderField;
 use App\Models\ServicePricingOption;
 use App\Models\ServicePricingOptionValue;
+use App\Support\Customers\CustomerPhoneFormatter;
 
 class OrderSnapshotFactory
 {
@@ -20,10 +21,15 @@ class OrderSnapshotFactory
      */
     public function customerSnapshot(Customer $customer, ?array $submittedCustomer = null): array
     {
+        $customerPhone = CustomerPhoneFormatter::forResponse(
+            $customer->phone,
+            $customer->phone_normalized,
+        ) ?? $customer->phone;
+
         return [
             'customer_id' => $customer->getKey(),
             'customer_name' => $submittedCustomer['name'] ?? $customer->name,
-            'customer_phone' => $submittedCustomer['phone'] ?? $customer->phone_normalized,
+            'customer_phone' => $submittedCustomer['phone'] ?? $customerPhone,
             'customer_email' => $submittedCustomer['email'] ?? $customer->email,
         ];
     }

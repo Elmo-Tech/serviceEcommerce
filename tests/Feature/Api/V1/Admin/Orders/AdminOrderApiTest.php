@@ -105,6 +105,51 @@ it('creates an admin order for an existing customer and returns localized detail
     expect(Order::query()->count())->toBe(1);
 });
 
+it('creates an admin order with a new address that relies on the customer phone', function () {
+    $accessToken = orderAdminToken();
+    $customer = Customer::factory()->create();
+    $service = Service::factory()->fixed()->create([
+        'base_price' => '100.00',
+        'is_active' => true,
+        'is_available' => true,
+        'is_attachment_required' => false,
+    ]);
+
+    $response = $this->postJson('/api/v1/admin/orders', [
+        'customerId' => $customer->getKey(),
+        'address' => [
+            'province' => 'الدقهلية',
+            'city' => 'المنصورة',
+            'address' => 'شارع الإمام مالك',
+        ],
+        'orderPlace' => OrderPlace::WEBSITE->value,
+        'discountType' => 1,
+        'discountValue' => 2,
+        'discountReason' => 'any thing',
+        'items' => [
+            [
+                'serviceId' => $service->getKey(),
+                'quantity' => 22,
+            ],
+        ],
+    ], orderAdminHeaders($accessToken, 'ar'));
+
+    $response->assertCreated()
+        ->assertJsonPath('success', true)
+        ->assertJsonPath('data.customerId', $customer->getKey())
+        ->assertJsonPath('data.addressSnapshot.province', 'الدقهلية')
+        ->assertJsonPath('data.addressSnapshot.city', 'المنصورة')
+        ->assertJsonPath('data.addressSnapshot.address', 'شارع الإمام مالك')
+        ->assertJsonPath('data.discount.type', 1)
+        ->assertJsonPath('data.discount.value', '2.00')
+        ->assertJsonPath('data.total', '2156.00');
+
+    $savedAddress = $customer->addresses()->sole();
+
+    expect($savedAddress->province)->toBe('الدقهلية')
+        ->and($savedAddress->getAttributes())->not->toHaveKeys(['phone', 'phone_normalized']);
+});
+
 it('requires the order item attachments permission when admin create includes attachments', function () {
     $this->seed(RolesAndPermissionsSeeder::class);
     $this->seed(OrdersPermissionsSeeder::class);

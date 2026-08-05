@@ -17,8 +17,8 @@ uses(RefreshDatabase::class);
 it('builds customer and address snapshots from current records or submitted address data', function () {
     $customer = Customer::factory()->create([
         'name' => 'Saved Customer',
-        'phone' => '01012345678',
-        'phone_normalized' => '01012345678',
+        'phone' => '+20 101 234 5678',
+        'phone_normalized' => '+201012345678',
         'email' => 'saved@example.com',
     ]);
 
@@ -59,6 +59,9 @@ it('builds customer and address snapshots from current records or submitted addr
         'address_city' => 'Dokki',
         'address_text' => 'Street 9',
     ]);
+
+    expect($factory->customerSnapshot($customer))
+        ->toHaveKey('customer_phone', '01012345678');
 });
 
 it('builds service option and answer snapshots', function () {
