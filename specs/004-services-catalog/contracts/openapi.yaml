@@ -1526,9 +1526,13 @@ components:
         shortDescriptionEn:
           type: string
         descriptionAr:
-          type: string
+          type:
+          - string
+          - 'null'
         descriptionEn:
-          type: string
+          type:
+          - string
+          - 'null'
         slugAr:
           type: string
         slugEn:
@@ -1697,7 +1701,9 @@ components:
         shortDescription:
           type: string
         description:
-          type: string
+          type:
+          - string
+          - 'null'
         slug:
           type: string
         priceType:
@@ -1986,8 +1992,6 @@ components:
       - nameEn
       - shortDescriptionAr
       - shortDescriptionEn
-      - descriptionAr
-      - descriptionEn
       - priceType
       - basePrice
       properties:
@@ -2004,10 +2008,14 @@ components:
           type: string
           maxLength: 500
         descriptionAr: &id018
-          type: string
+          type:
+          - string
+          - 'null'
           maxLength: 5000
         descriptionEn: &id019
-          type: string
+          type:
+          - string
+          - 'null'
           maxLength: 5000
         slugAr: &id020
           type: string
@@ -2112,6 +2120,10 @@ components:
             $ref: '#/components/schemas/MediaUploadItem'
       description: multipart/form-data. Nested arrays use bracket notation; no JSON payload field.
       dependentRequired:
+        descriptionAr:
+        - descriptionEn
+        descriptionEn:
+        - descriptionAr
         subcategoryId:
         - categoryId
         productionTimeAr:
@@ -2172,6 +2184,10 @@ components:
         seoTagsEn: *id035
       description: Service-level fields only; nested resources and media are rejected.
       dependentRequired:
+        descriptionAr:
+        - descriptionEn
+        descriptionEn:
+        - descriptionAr
         subcategoryId:
         - categoryId
         productionTimeAr:

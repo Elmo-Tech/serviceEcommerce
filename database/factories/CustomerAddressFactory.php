@@ -17,15 +17,12 @@ class CustomerAddressFactory extends Factory
 
     public function definition(): array
     {
-        $phoneSeed = (string) fake()->numerify('100#######');
         $province = fake()->city();
         $city = fake()->city();
         $address = fake()->streetAddress();
 
         return [
             'customer_id' => Customer::factory(),
-            'phone' => '+20 '.$phoneSeed,
-            'phone_normalized' => '+20'.$phoneSeed,
             'province' => $province,
             'city' => $city,
             'address' => $address,

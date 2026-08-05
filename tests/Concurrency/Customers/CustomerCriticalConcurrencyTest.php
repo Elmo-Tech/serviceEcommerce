@@ -73,8 +73,6 @@ it('leaves exactly one active default address after concurrent default changes',
     ]);
 
     $customer->addresses()->create([
-        'phone' => '+20 100 333 4444',
-        'phone_normalized' => '+201003334444',
         'province' => 'Cairo',
         'city' => 'Nasr City',
         'address' => 'Nasr City | Street 1',
@@ -84,8 +82,6 @@ it('leaves exactly one active default address after concurrent default changes',
     ]);
 
     $firstCandidate = $customer->addresses()->create([
-        'phone' => '+20 100 333 4444',
-        'phone_normalized' => '+201003334444',
         'province' => 'Giza',
         'city' => 'Dokki',
         'address' => 'Street 2',
@@ -95,8 +91,6 @@ it('leaves exactly one active default address after concurrent default changes',
     ]);
 
     $secondCandidate = $customer->addresses()->create([
-        'phone' => '+20 100 333 4444',
-        'phone_normalized' => '+201003334444',
         'province' => 'Alexandria',
         'city' => 'Smouha',
         'address' => 'Street 3',

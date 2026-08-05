@@ -242,8 +242,10 @@ delete-versus-update, and restore races.
   inactive category, a deleted subcategory, an inactive subcategory, or a
   subcategory that belongs to a different root category.
 - **FR-003**: The system MUST require bilingual plain-text values for
-  `nameAr`, `nameEn`, `shortDescriptionAr`, `shortDescriptionEn`,
-  `descriptionAr`, and `descriptionEn` during service creation.
+  `nameAr`, `nameEn`, `shortDescriptionAr`, and `shortDescriptionEn` during
+  service creation. `descriptionAr` and `descriptionEn` MUST form an optional
+  nullable bilingual pair: both may be omitted or null, but when either is
+  supplied with content the matching locale is required.
 - **FR-004**: The system MUST support optional bilingual pairs for production
   time, SEO title, SEO description, and SEO tags, where one locale value cannot
   be stored without the matching other-locale value.
@@ -365,6 +367,9 @@ delete-versus-update, and restore races.
   newly created order item for that service MUST include at least one valid
   protected attachment in the same multipart request. The rule MUST NOT
   retroactively invalidate historical order items.
+- **FR-040**: Activating a service MUST NOT require `descriptionAr` or
+  `descriptionEn`; activation still requires bilingual names and short
+  descriptions plus the existing pricing and slug invariants.
 
 ### Actors and Authorization *(mandatory for protected behaviour)*
 

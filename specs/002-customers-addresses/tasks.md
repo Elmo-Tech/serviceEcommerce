@@ -1,5 +1,9 @@
 # Tasks: Customers and Addresses
 
+- [x] T066 Remove duplicated phone fields from customer-address persistence,
+  requests, Resources, tests, OpenAPI, Postman, and governing documentation;
+  preserve the customer's primary phone and historical order snapshots.
+
 **Input**: Design documents from `/specs/002-customers-addresses/`
 
 **Approved source**: `docs/features/002-customers-addresses.md`

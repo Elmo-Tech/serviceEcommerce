@@ -97,8 +97,6 @@ Represents a reusable service address belonging to one customer.
 |---|---|---:|---|
 | `id` | unsigned big integer | No | Primary key |
 | `customer_id` | unsigned big integer | No | FK to `customers.id` |
-| `phone` | string(30) | No | Display/international format |
-| `phone_normalized` | string(20) | No | E.164 format for the address phone |
 | `province` | string(150) | No | Plain text |
 | `city` | string(150) | No | Plain text |
 | `address` | string(500) | No | Plain text |
@@ -136,7 +134,6 @@ The backend-generated identity uses only:
 
 The backend-generated identity does not include:
 
-- phone
 - notes
 - customer-entered display formatting
 
@@ -320,7 +317,7 @@ Required sequence where applicable:
 1. inspect existing columns, types, indexes, foreign keys, and soft-delete state;
 2. map legacy fields to the approved target fields;
 3. add nullable/backfill-safe columns first;
-4. normalize and validate existing phone, email, and address identity values;
+4. normalize and validate existing customer phone, email, and address identity values;
 5. reconcile legacy duplicates before adding unique constraints;
 6. add or correct indexes and foreign keys;
 7. enforce non-null constraints only after successful backfill;
@@ -359,8 +356,8 @@ snapshot boundary:
 
 ### CustomerAddress
 
-- `phone`: required, valid libphonenumber-compatible parse, no extension
-- `phoneCountryCode`: optional parse hint when needed
+- customer phone is inherited through the required `customer_id` relation and
+  is not duplicated in the address payload or table
 - `province`: required, plain text, max 150
 - `city`: required, plain text, max 150
 - `address`: required, plain text, max 500

@@ -255,6 +255,8 @@ Task generation MUST place this audit before schema or source-code creation.
 - `customers` is the canonical guest-customer table.
 - `customer_addresses` is a nested table with soft deletes and one default
   invariant.
+- customer phone is owned only by `customers`; `customer_addresses` does not
+  persist or expose a second phone number.
 - customer identity is `phone_normalized` only.
 - address identity is a backend-generated deterministic hash from normalized
   `province`, `city`, and `address`.

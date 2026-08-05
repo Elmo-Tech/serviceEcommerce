@@ -55,8 +55,8 @@ class CreateServiceAction
                     'name_en' => trim((string) $payload['nameEn']),
                     'short_description_ar' => trim((string) $payload['shortDescriptionAr']),
                     'short_description_en' => trim((string) $payload['shortDescriptionEn']),
-                    'description_ar' => trim((string) $payload['descriptionAr']),
-                    'description_en' => trim((string) $payload['descriptionEn']),
+                    'description_ar' => $this->nullableTrimmedString($payload['descriptionAr'] ?? null),
+                    'description_en' => $this->nullableTrimmedString($payload['descriptionEn'] ?? null),
                     'slug_ar' => $this->resolveSlug($payload['slugAr'] ?? null, (string) $payload['nameAr']),
                     'slug_en' => $this->resolveSlug($payload['slugEn'] ?? null, (string) $payload['nameEn']),
                     'production_time_ar' => $payload['productionTimeAr'] ?? null,
@@ -166,5 +166,16 @@ class CreateServiceAction
         }
 
         return $this->localizedServiceSlugService->generateFromName($name);
+    }
+
+    private function nullableTrimmedString(mixed $value): ?string
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        $trimmed = trim((string) $value);
+
+        return $trimmed === '' ? null : $trimmed;
     }
 }

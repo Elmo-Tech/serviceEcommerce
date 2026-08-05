@@ -7,7 +7,7 @@
 ## Decision 1: Use a dedicated libphonenumber-compatible runtime dependency
 
 **Decision**: Use `giggsey/libphonenumber-for-php` behind a local
-`PhoneNumberService` for customer and address phone parsing, formatting, E.164
+`PhoneNumberService` for customer phone parsing, formatting, E.164
 normalization, and extension rejection.
 
 **Rationale**:

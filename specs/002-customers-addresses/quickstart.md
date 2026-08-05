@@ -184,7 +184,7 @@ Run focused domain tests proving:
 - deleted customer restore by normalized phone
 - active address reuse by canonical address identity
 - deleted address restore by canonical address identity
-- no auto-overwrite of saved customer name/email or address phone/notes
+- no auto-overwrite of saved customer name/email or address notes
 
 ## 7. Automated Verification Commands
 

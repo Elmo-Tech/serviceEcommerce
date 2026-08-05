@@ -19,8 +19,6 @@ class CustomerAddress extends Model
 
     protected $fillable = [
         'customer_id',
-        'phone',
-        'phone_normalized',
         'province',
         'city',
         'address',
@@ -29,10 +27,7 @@ class CustomerAddress extends Model
         'is_default',
     ];
 
-    protected $hidden = [
-        'phone_normalized',
-        'address_hash',
-    ];
+    protected $hidden = ['address_hash'];
 
     protected function casts(): array
     {

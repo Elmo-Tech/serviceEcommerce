@@ -59,8 +59,8 @@ class UpdateServiceAction
                 'name_en' => array_key_exists('nameEn', $payload) ? trim((string) $payload['nameEn']) : $lockedService->name_en,
                 'short_description_ar' => array_key_exists('shortDescriptionAr', $payload) ? trim((string) $payload['shortDescriptionAr']) : $lockedService->short_description_ar,
                 'short_description_en' => array_key_exists('shortDescriptionEn', $payload) ? trim((string) $payload['shortDescriptionEn']) : $lockedService->short_description_en,
-                'description_ar' => array_key_exists('descriptionAr', $payload) ? trim((string) $payload['descriptionAr']) : $lockedService->description_ar,
-                'description_en' => array_key_exists('descriptionEn', $payload) ? trim((string) $payload['descriptionEn']) : $lockedService->description_en,
+                'description_ar' => array_key_exists('descriptionAr', $payload) ? $this->nullableTrimmedString($payload['descriptionAr']) : $lockedService->description_ar,
+                'description_en' => array_key_exists('descriptionEn', $payload) ? $this->nullableTrimmedString($payload['descriptionEn']) : $lockedService->description_en,
                 'slug_ar' => array_key_exists('slugAr', $payload) ? $this->localizedServiceSlugService->normalize((string) $payload['slugAr']) : $lockedService->slug_ar,
                 'slug_en' => array_key_exists('slugEn', $payload) ? $this->localizedServiceSlugService->normalize((string) $payload['slugEn']) : $lockedService->slug_en,
                 'production_time_ar' => $payload['productionTimeAr'] ?? $lockedService->production_time_ar,
@@ -88,5 +88,16 @@ class UpdateServiceAction
 
             return $lockedService;
         }, 3);
+    }
+
+    private function nullableTrimmedString(mixed $value): ?string
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        $trimmed = trim((string) $value);
+
+        return $trimmed === '' ? null : $trimmed;
     }
 }

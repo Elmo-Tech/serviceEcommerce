@@ -13,7 +13,6 @@ use Illuminate\Database\Eloquent\Collection;
 class CustomerAddressService
 {
     public function __construct(
-        private readonly PhoneNumberService $phoneNumberService,
         private readonly AddressNormalizationService $addressNormalizationService,
     ) {}
 
@@ -116,20 +115,6 @@ class CustomerAddressService
 
     public function normalizeCreatePayload(array $payload): array
     {
-        $phone = $this->phoneNumberService->normalize(
-            (string) $payload['phone'],
-            is_string($payload['phoneCountryCode'] ?? null) ? $payload['phoneCountryCode'] : 'EG',
-        );
-
-        if ($phone === null) {
-            throw new ApiBusinessException(
-                'customers.errors.phone_invalid',
-                'CUSTOMER_PHONE_INVALID',
-                HttpStatusCode::UNPROCESSABLE_ENTITY,
-                ['phone' => [__('customers.errors.phone_invalid')]],
-            );
-        }
-
         $identity = $this->addressNormalizationService->normalizeIdentity(
             (string) $payload['province'],
             (string) $payload['city'],
@@ -137,8 +122,6 @@ class CustomerAddressService
         );
 
         return [
-            'phone' => $phone['display'],
-            'phone_normalized' => $phone['normalized'],
             'province' => $identity['province'],
             'city' => $identity['city'],
             'address' => $identity['address'],
@@ -156,25 +139,6 @@ class CustomerAddressService
             if (array_key_exists($optionalField, $payload)) {
                 $attributes[$optionalField] = $this->addressNormalizationService->normalizeOptionalText($payload[$optionalField]);
             }
-        }
-
-        if (array_key_exists('phone', $payload)) {
-            $phone = $this->phoneNumberService->normalize(
-                (string) $payload['phone'],
-                is_string($payload['phoneCountryCode'] ?? null) ? $payload['phoneCountryCode'] : 'EG',
-            );
-
-            if ($phone === null) {
-                throw new ApiBusinessException(
-                    'customers.errors.phone_invalid',
-                    'CUSTOMER_PHONE_INVALID',
-                    HttpStatusCode::UNPROCESSABLE_ENTITY,
-                    ['phone' => [__('customers.errors.phone_invalid')]],
-                );
-            }
-
-            $attributes['phone'] = $phone['display'];
-            $attributes['phone_normalized'] = $phone['normalized'];
         }
 
         $identityFieldsTouched = array_intersect(

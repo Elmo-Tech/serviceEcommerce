@@ -241,6 +241,49 @@ it('accepts boolean-like string values for service activation flags during creat
         ->assertJsonPath('data.isAttachmentRequired', true);
 });
 
+it('creates activates and updates services without full descriptions while preserving the bilingual pair rule', function () {
+    $accessToken = serviceAdminToken();
+
+    $payload = [
+        'nameAr' => 'خدمة بدون وصف كامل',
+        'nameEn' => 'Service Without Full Description',
+        'shortDescriptionAr' => 'وصف مختصر',
+        'shortDescriptionEn' => 'Short description',
+        'priceType' => 0,
+        'basePrice' => 500,
+        'isActive' => true,
+    ];
+
+    $created = $this->postJson('/api/v1/admin/services', $payload, serviceAdminHeaders($accessToken, 'en'));
+
+    $created->assertCreated()
+        ->assertJsonPath('data.descriptionAr', null)
+        ->assertJsonPath('data.descriptionEn', null)
+        ->assertJsonPath('data.isActive', true);
+
+    $serviceId = (int) $created->json('data.id');
+
+    $this->patchJson('/api/v1/admin/services/'.$serviceId, [
+        'descriptionAr' => 'وصف كامل',
+    ], serviceAdminHeaders($accessToken, 'en'))
+        ->assertUnprocessable()
+        ->assertJsonStructure(['errors' => ['descriptionEn']]);
+
+    $this->patchJson('/api/v1/admin/services/'.$serviceId, [
+        'descriptionAr' => 'وصف كامل',
+        'descriptionEn' => 'Full description',
+    ], serviceAdminHeaders($accessToken, 'en'))->assertOk();
+
+    $this->patchJson('/api/v1/admin/services/'.$serviceId, [
+        'descriptionAr' => null,
+        'descriptionEn' => null,
+    ], serviceAdminHeaders($accessToken, 'en'))
+        ->assertOk()
+        ->assertJsonPath('data.descriptionAr', null)
+        ->assertJsonPath('data.descriptionEn', null)
+        ->assertJsonPath('data.isActive', true);
+});
+
 it('returns the approved authentication and permission boundaries for admin service routes', function () {
     $this->getJson('/api/v1/admin/services', [
         'Accept-Language' => 'en',

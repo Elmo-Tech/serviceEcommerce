@@ -196,7 +196,7 @@ without requiring the Orders feature to exist yet.
   default country, accept valid international numbers, reject invalid numbers
   and extensions, and store one canonical E.164 normalized phone value.
 - **FR-006**: The system MUST return the approved invalid-phone validation
-  outcome for customer or address phone parsing failures using the stable code
+  outcome for customer phone parsing failures using the stable code
   `CUSTOMER_PHONE_INVALID` on the `phone` field.
 - **FR-006A**: Administrator customer create or update requests that resolve to
   an already-owned normalized phone MUST fail with HTTP `422`, use the stable
@@ -221,8 +221,8 @@ without requiring the Orders feature to exist yet.
   list, create, show, update, soft-delete, restore, and set-default customer
   addresses under a specific customer.
 - **FR-013**: The system MUST store addresses only with the approved fields:
-  `phone`, `phoneNormalized`, `province`, `city`, `address`, optional `notes`,
-  `addressHash`, default flag, timestamps, and soft deletion support.
+  `province`, `city`, `address`, optional `notes`, `addressHash`, default flag,
+  timestamps, and soft deletion support. Phone belongs only to the customer.
 - **FR-014**: The system MUST NOT add or persist address fields for recipient
   name, building, floor, apartment, or postal code in this feature.
 - **FR-015**: The system MUST enforce a maximum of 20 active addresses per
@@ -246,7 +246,7 @@ without requiring the Orders feature to exist yet.
   active addresses remain, the customer MUST have zero default addresses.
 - **FR-021**: When a soft-deleted address matches the future guest-order
   submitted address identity, the system MUST restore that address instead of
-  creating a duplicate and MUST NOT auto-update saved phone or notes.
+  creating a duplicate and MUST NOT auto-update saved notes.
 - **FR-022**: Customer soft deletion MUST soft-delete the customer and all
   active addresses inside the same database transaction. Customer restoration
   MUST restore the customer only and MUST NOT automatically restore deleted
@@ -337,10 +337,10 @@ without requiring the Orders feature to exist yet.
   keys, accept the approved customer fields only, and reject unsupported
   customer-auth, role, permission, or protected identity fields. Customer
   create MAY accept one optional nested `address` object containing only
-  `phone`, `province`, `city`, `address`, and optional `notes`.
+  `province`, `city`, `address`, and optional `notes`.
 - **API-003**: Address create and update requests MUST use `camelCase` request
-  keys and accept only `phone`, `phoneCountryCode`, `province`, `city`,
-  `address`, `notes`, and `isDefault` as applicable.
+  keys and accept only `province`, `city`, `address`, `notes`, and `isDefault`
+  as applicable. Address phone keys MUST be rejected as unsupported input.
 - **API-004**: Success responses MUST follow the shared API envelope and return
   only approved customer or address data. Error responses MUST use the shared
   localized envelope with stable English machine codes where applicable,
@@ -421,7 +421,7 @@ without requiring the Orders feature to exist yet.
   preserved after create, update, delete, restore, or set-default operations.
 - **SC-004**: Future guest-order resolution can reuse or restore matching
   customer and address records without automatically overwriting saved customer
-  name, saved customer email, saved address phone, or saved address notes.
+  name, saved customer email, or saved address notes.
 - **SC-005**: Customer and address management remains administrator-only, with
   no public customer CRUD routes, no customer authentication routes, and no
   Feature 002 token issuance or token acceptance added to the system.

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Http\Resources\Api\V1\Admin\Customers;
 
 use App\Models\CustomerAddress;
-use App\Support\Customers\CustomerPhoneFormatter;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -18,7 +17,6 @@ class CustomerAddressResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'phone' => CustomerPhoneFormatter::forResponse($this->phone, $this->phone_normalized),
             'province' => $this->province,
             'city' => $this->city,
             'address' => $this->address,

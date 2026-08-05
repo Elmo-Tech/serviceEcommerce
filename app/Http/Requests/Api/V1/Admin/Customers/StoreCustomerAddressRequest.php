@@ -21,17 +21,12 @@ class StoreCustomerAddressRequest extends FormRequest
             'city' => $this->normalizeOptional('city'),
             'address' => $this->normalizeOptional('address'),
             'notes' => $this->normalizeOptional('notes'),
-            'phoneCountryCode' => $this->filled('phoneCountryCode')
-                ? strtoupper(trim((string) $this->input('phoneCountryCode')))
-                : 'EG',
         ]);
     }
 
     public function rules(): array
     {
         return [
-            'phone' => ['required', 'string', 'min:1', 'max:30'],
-            'phoneCountryCode' => ['sometimes', 'string', 'size:2', 'alpha'],
             'province' => ['required', 'string', 'min:1', 'max:150'],
             'city' => ['required', 'string', 'min:1', 'max:150'],
             'address' => ['required', 'string', 'min:1', 'max:500'],
@@ -47,7 +42,7 @@ class StoreCustomerAddressRequest extends FormRequest
     {
         return [
             function (Validator $validator): void {
-                $allowedKeys = ['phone', 'phoneCountryCode', 'province', 'city', 'address', 'notes', 'isDefault'];
+                $allowedKeys = ['province', 'city', 'address', 'notes', 'isDefault'];
                 $unexpectedKeys = array_diff(array_keys($this->all()), $allowedKeys);
 
                 if ($unexpectedKeys !== []) {

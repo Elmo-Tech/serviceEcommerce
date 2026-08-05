@@ -227,8 +227,6 @@ class UpdateOrderAction
 
         if (is_array($payload['address'] ?? null)) {
             $savedAddress = $this->createCustomerAddressAction->execute($customer, [
-                'phone' => $customer->phone,
-                'phoneCountryCode' => 'EG',
                 'province' => $payload['address']['province'],
                 'city' => $payload['address']['city'],
                 'address' => $payload['address']['address'],

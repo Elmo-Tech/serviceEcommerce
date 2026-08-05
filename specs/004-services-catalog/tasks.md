@@ -563,7 +563,7 @@ After Setup and Foundational:
 
 ## Notes
 
-- Total tasks: **49**
+- Total tasks: **50**
 - User story task counts:
   - **US1**: 10
   - **US2**: 11
@@ -585,3 +585,6 @@ After Setup and Foundational:
   persistence, Admin create/update, Admin/Public resources, and service tests.
 - [x] T049 Enforce required attachments for every new Public/Admin order item
   and synchronize Feature 004/005 contracts and Postman examples.
+- [x] T050 Make the bilingual full-service description pair nullable and
+  optional in persistence, create/update validation, activation, resources,
+  OpenAPI, Postman, and regression tests.

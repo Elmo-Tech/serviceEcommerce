@@ -38,7 +38,6 @@ it('creates customers, lists them with filters, and returns only approved safe f
         'email' => '  MOHAMED@example.com ',
         'phone' => '01001234567',
         'address' => [
-            'phone' => '01001234567',
             'province' => 'Cairo',
             'city' => 'Nasr City',
             'address' => 'Nasr City | Street 10',
@@ -54,7 +53,7 @@ it('creates customers, lists them with filters, and returns only approved safe f
         ->assertJsonPath('data.isDeleted', false)
         ->assertJsonPath('data.deletedAt', null)
         ->assertJsonPath('data.addressesCount', 1)
-        ->assertJsonPath('data.addresses.0.phone', '01001234567')
+        ->assertJsonMissingPath('data.addresses.0.phone')
         ->assertJsonPath('data.addresses.0.province', 'Cairo')
         ->assertJsonPath('data.addresses.0.city', 'Nasr City')
         ->assertJsonPath('data.addresses.0.address', 'Nasr City | Street 10')
@@ -76,8 +75,6 @@ it('creates customers, lists them with filters, and returns only approved safe f
     ]);
 
     $withAddress->addresses()->create([
-        'phone' => '+20 100 555 6666',
-        'phone_normalized' => '+201005556666',
         'province' => 'Cairo',
         'city' => 'Nasr City',
         'address' => 'Nasr City | Street 10',
@@ -150,8 +147,6 @@ it('soft deletes customers with their active addresses and restores only the cus
     ]);
 
     $address = $customer->addresses()->create([
-        'phone' => '+20 100 111 2222',
-        'phone_normalized' => '+201001112222',
         'province' => 'Cairo',
         'city' => 'Heliopolis',
         'address' => 'Heliopolis | Street 1',

@@ -55,8 +55,6 @@ it('creates an admin order for an existing customer and returns localized detail
     ]);
 
     $customerAddress = $customer->addresses()->create([
-        'phone' => '+20 100 123 4567',
-        'phone_normalized' => '01001234567',
         'province' => 'Cairo',
         'city' => 'Heliopolis',
         'address' => 'Street 1',
@@ -205,8 +203,6 @@ it('updates an editable admin order and can delegate an allowed status change th
     ]);
 
     $replacementAddress = $replacementCustomer->addresses()->create([
-        'phone' => '01005554444',
-        'phone_normalized' => '01005554444',
         'province' => 'Giza',
         'city' => 'Dokki',
         'address' => 'Street 99',

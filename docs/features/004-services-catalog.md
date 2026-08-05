@@ -154,11 +154,19 @@ nameAr
 nameEn
 shortDescriptionAr
 shortDescriptionEn
+```
+
+These four fields are required for creation.
+
+The full-description pair is optional:
+
+```text
 descriptionAr
 descriptionEn
 ```
 
-All are required for creation.
+Both full descriptions may be omitted or `null`. When either full description
+is provided, the matching other-locale value is required.
 
 All content is plain text.
 
@@ -1735,7 +1743,7 @@ File handling rules:
 ```text
 nameAr/nameEn                           required
 shortDescriptionAr/shortDescriptionEn  required
-descriptionAr/descriptionEn             required
+descriptionAr/descriptionEn             optional nullable bilingual pair
 priceType                               required, 0|1
 basePrice                               required, numeric, >0
 isActive                                boolean

@@ -624,12 +624,8 @@ components:
         address:
           type: object
           additionalProperties: false
-          required: [phone, province, city, address]
+          required: [province, city, address]
           properties:
-            phone:
-              type: string
-              minLength: 1
-              maxLength: 30
             province:
               type: string
               minLength: 1
@@ -671,16 +667,8 @@ components:
     CreateCustomerAddressRequest:
       type: object
       additionalProperties: false
-      required: [phone, province, city, address]
+      required: [province, city, address]
       properties:
-        phone:
-          type: string
-          minLength: 1
-          maxLength: 30
-        phoneCountryCode:
-          type: string
-          pattern: '^[A-Za-z]{2}$'
-          example: EG
         province:
           type: string
           minLength: 1
@@ -705,14 +693,6 @@ components:
       additionalProperties: false
       minProperties: 1
       properties:
-        phone:
-          type: string
-          minLength: 1
-          maxLength: 30
-        phoneCountryCode:
-          type: string
-          pattern: '^[A-Za-z]{2}$'
-          example: EG
         province:
           type: string
           minLength: 1
@@ -805,7 +785,6 @@ components:
       additionalProperties: false
       required:
         - id
-        - phone
         - province
         - city
         - address
@@ -819,8 +798,6 @@ components:
         id:
           type: integer
           minimum: 1
-        phone:
-          type: string
         province:
           type: string
         city:

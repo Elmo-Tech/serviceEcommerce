@@ -201,7 +201,7 @@
     },
     {
       "name": "Admin Customers",
-      "description": "Customer and customer-address endpoints. Egyptian phone numbers in API responses are returned as local national digits like 01001234567 without country code or spaces. Customer query keys: filter[search] = text search across customer name, email, and phone; filter[status] = active, deleted, or all; filter[hasAddresses] = true customers with active addresses only / false customers without active addresses only; filter[createdFrom] and filter[createdTo] = date range filters; sort = createdAt, -createdAt, name, -name; page starts at 1; perPage max is 100. Address query keys: filter[status] = active, deleted, or all. Common customer body keys: name = customer display name; email = optional unique email; phone = customer phone number; phoneCountryCode = optional parsing hint, defaults to EG if omitted. Nested create address inside customer create accepts address.phone, address.province, address.city, address.address, and optional address.notes only.",
+      "description": "Customer and customer-address endpoints. The customer owns the only phone number; addresses do not accept or return a second phone. Egyptian customer phone numbers in API responses are returned as local national digits like 01001234567 without country code or spaces. Customer query keys: filter[search] = text search across customer name, email, and phone; filter[status] = active, deleted, or all; filter[hasAddresses] = true customers with active addresses only / false customers without active addresses only; filter[createdFrom] and filter[createdTo] = date range filters; sort = createdAt, -createdAt, name, -name; page starts at 1; perPage max is 100. Address query keys: filter[status] = active, deleted, or all. Common customer body keys: name = customer display name; email = optional unique email; phone = customer phone number; phoneCountryCode = optional parsing hint, defaults to EG if omitted. Nested create address accepts address.province, address.city, address.address, and optional address.notes only.",
       "item": [
         {
           "name": "List Customers",
@@ -217,7 +217,7 @@
         },
         {
           "name": "Create Customer",
-          "description": "Creates an admin-managed customer. Body keys: name = required customer name; email = optional unique email; phone = required customer phone; phoneCountryCode = optional parsing hint for phone, defaults to EG if omitted. Optional nested address keys: address.phone = first saved address phone; address.province = governorate/province; address.city = city/area name; address.address = free-text street/address line; address.notes = optional notes. When nested address is sent, it is created as the first default address automatically. Egyptian phone numbers in the response return as local digits like 01001234567.",
+          "description": "Creates an admin-managed customer. Body keys: name = required customer name; email = optional unique email; phone = required customer phone; phoneCountryCode = optional parsing hint for phone, defaults to EG if omitted. Optional nested address keys: address.province = governorate/province; address.city = city/area name; address.address = free-text street/address line; address.notes = optional notes. The address uses the customer's phone and does not accept a separate phone. When nested address is sent, it is created as the first default address automatically. Egyptian customer phone numbers in the response return as local digits like 01001234567.",
           "request": {
             "method": "POST",
             "header": [
@@ -226,7 +226,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Customer Example\",\n  \"email\": \"customer@example.test\",\n  \"phone\": \"01001234567\",\n  \"address\": {\n    \"phone\": \"01001234567\",\n    \"province\": \"Cairo\",\n    \"city\": \"Nasr City\",\n    \"address\": \"Nasr City | Street 10\",\n    \"notes\": \"Ring bell\"\n  }\n}",
+              "raw": "{\n  \"name\": \"Customer Example\",\n  \"email\": \"customer@example.test\",\n  \"phone\": \"01001234567\",\n  \"address\": {\n    \"province\": \"Cairo\",\n    \"city\": \"Nasr City\",\n    \"address\": \"Nasr City | Street 10\",\n    \"notes\": \"Ring bell\"\n  }\n}",
               "options": { "raw": { "language": "json" } }
             },
             "url": "{{baseUrl}}/admin/customers"
@@ -298,7 +298,7 @@
         },
         {
           "name": "Create Customer Address",
-          "description": "Creates a customer-owned address. Body keys: phone = required address phone; phoneCountryCode = optional parsing hint, defaults to EG if omitted; province = required governorate/province; city = required city/area name; address = required free-text street/address line; notes = optional notes; isDefault = true makes this address the default, false keeps existing default unless this is the first address. Egyptian phone numbers in the response return as local digits like 01001234567.",
+          "description": "Creates a customer-owned address. Body keys: province = required governorate/province; city = required city/area name; address = required free-text street/address line; notes = optional notes; isDefault = true makes this address the default, false keeps existing default unless this is the first address. The address uses the parent customer's phone and does not accept or return phone fields.",
           "request": {
             "method": "POST",
             "header": [
@@ -308,7 +308,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"phone\": \"01001234567\",\n  \"phoneCountryCode\": \"EG\",\n  \"province\": \"Cairo\",\n  \"city\": \"Maadi\",\n  \"address\": \"Maadi | Street 9\",\n  \"notes\": \"Near the club\",\n  \"isDefault\": true\n}",
+              "raw": "{\n  \"province\": \"Cairo\",\n  \"city\": \"Maadi\",\n  \"address\": \"Maadi | Street 9\",\n  \"notes\": \"Near the club\",\n  \"isDefault\": true\n}",
               "options": { "raw": { "language": "json" } }
             },
             "url": "{{baseUrl}}/admin/customers/1/addresses"
@@ -316,7 +316,7 @@
         },
         {
           "name": "Show Customer Address",
-          "description": "Returns one customer-owned address with safe fields only. Egyptian phone numbers are returned as local digits like 01001234567.",
+          "description": "Returns one customer-owned address with safe fields only. Phone is available on the parent customer resource and is not duplicated in the address response.",
           "request": {
             "method": "GET",
             "header": [
@@ -328,7 +328,7 @@
         },
         {
           "name": "Update Customer Address",
-          "description": "Updates mutable address fields. Supported keys: phone, phoneCountryCode, province, city, address, notes, isDefault. phoneCountryCode is only a parsing hint when phone is being changed. isDefault=true makes this address the active default. Egyptian phone numbers in the response return as local digits like 01001234567.",
+          "description": "Updates mutable address fields. Supported keys: province, city, address, notes, isDefault. isDefault=true makes this address the active default. Phone belongs to the parent customer and is not accepted here.",
           "request": {
             "method": "PATCH",
             "header": [
@@ -632,7 +632,7 @@
         },
         {
           "name": "Create Service",
-          "description": "Multipart bracket-notation request. Top-level keys: nameAr/nameEn = required Arabic/English names; shortDescriptionAr/shortDescriptionEn = required short localized summaries; descriptionAr/descriptionEn = required full localized descriptions; slugAr/slugEn = required localized slugs; categoryId = root category ID; subcategoryId = subcategory ID; priceType enum 0 = fixed, 1 = starting_from; basePrice = decimal string used with supported price types; isActive = true active/published, false inactive; isAvailable = true available for ordering, false unavailable; isAttachmentRequired = true requires at least one attachment for every new order item, false keeps attachments optional (default false); productionTimeAr/productionTimeEn = optional localized duration text; seoTitleAr/seoTitleEn and seoDescriptionAr/seoDescriptionEn = optional SEO text. Nested keys: specifications[*][labelAr|labelEn|valueAr|valueEn] = bilingual display specs; orderFields[*][labelAr|labelEn|isRequired] = bilingual order questions where isRequired true means mandatory answer; pricingOptions[*][nameAr|nameEn|inputType|isRequired] where inputType enum is 0 select, 1 multi_select, 2 radio, 3 checkbox; pricingOptions[*][values][*][labelAr|labelEn|priceAdjustment|isActive] where isActive true means selectable and false means disabled; media[*][file|type|isMain|altAr|altEn] where type enum is 0 image, 1 video and isMain=true marks the main media item. Sending nested specifications, orderFields, pricingOptions, or media also requires the matching nested-resource permission.",
+          "description": "Multipart bracket-notation request. Top-level keys: nameAr/nameEn = required Arabic/English names; shortDescriptionAr/shortDescriptionEn = required short localized summaries; descriptionAr/descriptionEn = optional nullable full-description pair—both may be omitted, but when one contains text the other locale is required; slugAr/slugEn = optional localized slugs generated from names when omitted; categoryId = root category ID; subcategoryId = subcategory ID; priceType enum 0 = fixed, 1 = starting_from; basePrice = decimal string used with supported price types; isActive = true active/published, false inactive; isAvailable = true available for ordering, false unavailable; isAttachmentRequired = true requires at least one attachment for every new order item, false keeps attachments optional (default false); productionTimeAr/productionTimeEn = optional localized duration text; seoTitleAr/seoTitleEn and seoDescriptionAr/seoDescriptionEn = optional SEO text. Nested keys: specifications[*][labelAr|labelEn|valueAr|valueEn] = bilingual display specs; orderFields[*][labelAr|labelEn|isRequired] = bilingual order questions where isRequired true means mandatory answer; pricingOptions[*][nameAr|nameEn|inputType|isRequired] where inputType enum is 0 select, 1 multi_select, 2 radio, 3 checkbox; pricingOptions[*][values][*][labelAr|labelEn|priceAdjustment|isActive] where isActive true means selectable and false means disabled; media[*][file|type|isMain|altAr|altEn] where type enum is 0 image, 1 video and isMain=true marks the main media item. Sending nested specifications, orderFields, pricingOptions, or media also requires the matching nested-resource permission.",
           "request": {
             "method": "POST",
             "header": [
@@ -647,8 +647,8 @@
                 { "key": "nameEn", "value": "Cleaning Service", "type": "text" },
                 { "key": "shortDescriptionAr", "value": "وصف مختصر للخدمة", "type": "text" },
                 { "key": "shortDescriptionEn", "value": "Short service description", "type": "text" },
-                { "key": "descriptionAr", "value": "وصف كامل للخدمة", "type": "text" },
-                { "key": "descriptionEn", "value": "Full service description", "type": "text" },
+                { "key": "descriptionAr", "value": "وصف كامل للخدمة", "type": "text", "description": "Optional Arabic full description; enable together with descriptionEn.", "disabled": true },
+                { "key": "descriptionEn", "value": "Full service description", "type": "text", "description": "Optional English full description; enable together with descriptionAr.", "disabled": true },
                 { "key": "slugAr", "value": "خدمة-تنظيف", "type": "text" },
                 { "key": "slugEn", "value": "cleaning-service", "type": "text" },
                 { "key": "categoryId", "value": "1", "type": "text" },
@@ -704,7 +704,7 @@
         },
         {
           "name": "Update Service",
-          "description": "Updates mutable service fields. Common keys: categoryId and subcategoryId = classification IDs; priceType enum 0 fixed / 1 starting_from; basePrice = decimal string; isActive true = active/published, false = inactive; isAvailable true = available, false = unavailable; isAttachmentRequired true = attachments required for new order items, false = optional. Send only the fields you want to change.",
+          "description": "Updates mutable service fields. Common keys: categoryId and subcategoryId = classification IDs; priceType enum 0 fixed / 1 starting_from; basePrice = decimal string; isActive true = active/published, false = inactive; isAvailable true = available, false = unavailable; isAttachmentRequired true = attachments required for new order items, false = optional; descriptionAr/descriptionEn are optional nullable full descriptions and must be sent together when setting content. Sending both as null clears them. Send only the fields you want to change.",
           "request": {
             "method": "PATCH",
             "header": [

@@ -23,19 +23,11 @@ class UpdateCustomerAddressRequest extends FormRequest
             }
         }
 
-        if ($this->filled('phoneCountryCode')) {
-            $this->merge([
-                'phoneCountryCode' => strtoupper(trim((string) $this->input('phoneCountryCode'))),
-            ]);
-        }
-
     }
 
     public function rules(): array
     {
         return [
-            'phone' => ['sometimes', 'required', 'string', 'min:1', 'max:30'],
-            'phoneCountryCode' => ['sometimes', 'string', 'size:2', 'alpha'],
             'province' => ['sometimes', 'required', 'string', 'min:1', 'max:150'],
             'city' => ['sometimes', 'required', 'string', 'min:1', 'max:150'],
             'address' => ['sometimes', 'required', 'string', 'min:1', 'max:500'],
@@ -51,7 +43,7 @@ class UpdateCustomerAddressRequest extends FormRequest
     {
         return [
             function (Validator $validator): void {
-                $allowedKeys = ['phone', 'phoneCountryCode', 'province', 'city', 'address', 'notes', 'isDefault'];
+                $allowedKeys = ['province', 'city', 'address', 'notes', 'isDefault'];
                 $unexpectedKeys = array_diff(array_keys($this->all()), $allowedKeys);
 
                 if ($unexpectedKeys !== []) {
@@ -62,9 +54,6 @@ class UpdateCustomerAddressRequest extends FormRequest
                     $validator->errors()->add('payload', __('validation.invalid_payload'));
                 }
 
-                if ($this->filled('phoneCountryCode') && ! $this->has('phone')) {
-                    $validator->errors()->add('phone', __('validation.invalid_payload'));
-                }
             },
         ];
     }

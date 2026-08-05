@@ -1,4 +1,15 @@
-# Feature 002 — Customers and Addresses
+# Feature 002 - Customers and Addresses
+
+## Approved amendment — 2026-08-05: customer phone is not duplicated on addresses
+
+The customer record owns the only operational phone number. Customer addresses
+store only `province`, `city`, `address`, optional `notes`, their backend
+identity hash, default state, timestamps, and soft-delete state. Address create
+and update contracts do not accept `phone`, `phoneCountryCode`, or
+`phoneNormalized`, and address Resources do not return a phone field. Existing
+`customer_addresses.phone` and `customer_addresses.phone_normalized` columns
+must be removed through a forward migration. Historical order customer-phone
+snapshots remain unchanged.
 
 > **Project:** Service Commerce Backend
 >
@@ -773,8 +784,6 @@ customer_addresses
 ```text
 id
 customer_id
-phone
-phone_normalized
 province
 city
 address
@@ -808,12 +817,6 @@ BIGINT UNSIGNED primary key
 
 customer_id:
 BIGINT UNSIGNED
-
-phone:
-VARCHAR(30)
-
-phone_normalized:
-VARCHAR(20)
 
 province:
 VARCHAR(150)
@@ -884,25 +887,11 @@ The implementation must not depend on an unsafe pre-check alone.
 
 ## 18. Address Fields
 
-### 18.1 Phone
+### 18.1 Customer Phone Ownership
 
-Address phone is required.
-
-It may differ from the customer's primary phone.
-
-Store:
-
-```text
-phone
-phone_normalized
-```
-
-Use the same phone parsing rules as the customer phone.
-
-Address phone is not part of the address hash.
-
-A submitted guest-order phone may be preserved in the order snapshot even when
-it differs from the saved address phone.
+An address does not store a second phone. Consumers use the parent customer's
+primary phone, while orders preserve the submitted customer phone in their
+customer snapshot.
 
 ### 18.2 Province
 
@@ -1102,8 +1091,6 @@ Do not include:
 
 ```text
 notes
-phone
-phone_normalized
 ```
 
 in address identity.
@@ -1140,7 +1127,7 @@ Rules:
 - indexed with `customer_id`
 - not returned in API Resources
 - recalculated whenever identity fields change
-- notes and phone changes do not change address identity
+- notes changes do not change address identity
 
 ---
 
@@ -1160,7 +1147,6 @@ When a matching active address exists:
 
 - reuse it
 - do not create a duplicate
-- do not automatically overwrite phone
 - do not automatically overwrite notes
 - preserve the latest submitted values in the future order snapshot
 
@@ -1333,7 +1319,6 @@ CustomerAddressService
 Responsibilities:
 
 - normalize address fields
-- normalize address phone
 - calculate address hash
 - find matching active address
 - find matching deleted address
@@ -1397,8 +1382,6 @@ When the saved customer exists with different name or email:
 The future order stores:
 
 ```text
-address_phone
-address_phone_normalized
 address_province
 address_city
 address
@@ -1615,7 +1598,6 @@ All route paths are prefixed by:
   "email": "customer@example.com",
   "phone": "01001234567",
   "address": {
-    "phone": "01001234567",
     "province": "Cairo",
     "city": "Nasr City",
     "address": "Nasr City | Street 10",
@@ -1655,11 +1637,6 @@ address:
 nullable object
 accepted only on customer create
 
-address.phone:
-required with address
-string
-maximum 30
-
 address.province:
 required with address
 string
@@ -1692,7 +1669,7 @@ Rules:
 - when `address` is submitted, it creates the customer's first saved address
 - the created address becomes default automatically
 - address create follows the same backend normalization and duplicate rules
-- `address.phoneCountryCode` is not accepted in this nested create payload
+- address phone fields are not accepted; the customer phone remains canonical
 
 ---
 
@@ -1766,8 +1743,6 @@ email
 
 ```json
 {
-  "phone": "01001234567",
-  "phoneCountryCode": "EG",
   "province": "Cairo",
   "city": "Nasr City",
   "address": "Nasr City | Example Street",
@@ -1779,17 +1754,6 @@ email
 Validation:
 
 ```text
-phone:
-required
-string
-maximum 30
-
-phoneCountryCode:
-nullable
-string
-size 2
-default to EG
-
 province:
 required
 string
@@ -1827,8 +1791,6 @@ Status:
 
 ```json
 {
-  "phone": "+201001234567",
-  "phoneCountryCode": "EG",
   "province": "Giza",
   "city": "Dokki",
   "address": "Updated Street",
@@ -1919,7 +1881,6 @@ Example:
   "addresses": [
     {
       "id": 30,
-      "phone": "01001234567",
       "province": "Cairo",
       "city": "Nasr City",
       "address": "Nasr City | Example Street",
@@ -1940,7 +1901,7 @@ Rules:
 - details may include active addresses
 - deleted-address inclusion requires an explicit query filter
 - no address hash
-- no normalized phone
+- no address phone or normalized phone
 - no order list in this Feature
 
 ---
@@ -2845,7 +2806,7 @@ Focused domain tests must cover:
 ### Address matching
 
 - active matching address is reused
-- saved phone and notes are not overwritten
+- saved notes are not overwritten
 - matching deleted address is restored
 - first active restored/created address becomes default when appropriate
 - active-address limit remains enforced
@@ -3342,7 +3303,7 @@ The Feature is complete only when:
 - Do not add floor.
 - Do not add apartment.
 - Do not add postal code.
-- Address phone is required.
+- Address phone is not stored; use the parent customer phone.
 - Address province is required.
 - Address city is required.
 - Address field is required.

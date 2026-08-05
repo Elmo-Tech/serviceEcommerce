@@ -54,6 +54,8 @@ The plan implements exactly:
 - Optional-by-default `isAttachmentRequired` is persisted per service,
   accepted by Admin create/update, exposed by Admin/Public resources, and
   enforced by Feature 005 whenever a new order item is created.
+- Full Arabic/English descriptions are nullable and optional as a pair; active
+  services require bilingual names and short descriptions but not full descriptions.
 - No quote-required pricing, negative adjustments, replacement pricing, media reorder, child restore, public sorting, order submission, or customer-answer storage.
 
 The OpenAPI contract in [contracts/openapi.yaml](./contracts/openapi.yaml) is the implementation source for paths, request shapes, response schemas, security, permissions, headers, filters, and errors.

@@ -84,6 +84,8 @@ On category change, verify the old subcategory is cleared atomically.
 - Reject `basePrice = 0` and negative adjustments.
 - Verify `isAttachmentRequired` defaults to false, accepts boolean-like
   multipart strings, and is returned by Admin/Public list and detail resources.
+- Create and activate a service without `descriptionAr`/`descriptionEn`, verify
+  both response keys are null, and reject submitting only one locale.
 - Verify response money values are strings such as `"1000.00"`.
 
 ### C. Multipart atomic create

@@ -16,8 +16,6 @@ it('reuses an active matching address and does not create a duplicate record', f
     ]);
 
     $address = $customer->addresses()->create([
-        'phone' => '+20 100 888 1111',
-        'phone_normalized' => '+201008881111',
         'province' => 'Cairo',
         'city' => 'Maadi',
         'address' => 'Maadi | Street 9',
@@ -27,8 +25,6 @@ it('reuses an active matching address and does not create a duplicate record', f
     ]);
 
     $result = app(ResolveGuestCustomerAddressAction::class)->execute($customer, [
-        'phone' => '01008881111',
-        'phoneCountryCode' => 'EG',
         'province' => 'Cairo',
         'city' => 'Maadi',
         'address' => 'Maadi | Street 9',
@@ -48,8 +44,6 @@ it('restores a soft-deleted matching address and rejects new unmatched addresses
     ]);
 
     $deletedAddress = $customer->addresses()->create([
-        'phone' => '+20 100 888 2222',
-        'phone_normalized' => '+201008882222',
         'province' => 'Giza',
         'city' => 'Dokki',
         'address' => 'Restore Street',
@@ -60,8 +54,6 @@ it('restores a soft-deleted matching address and rejects new unmatched addresses
     $deletedAddress->delete();
 
     $restoreResult = app(ResolveGuestCustomerAddressAction::class)->execute($customer, [
-        'phone' => '01008882222',
-        'phoneCountryCode' => 'EG',
         'province' => 'Giza',
         'city' => 'Dokki',
         'address' => 'Restore Street',
@@ -74,8 +66,6 @@ it('restores a soft-deleted matching address and rejects new unmatched addresses
 
     foreach (range(1, 19) as $index) {
         $customer->addresses()->create([
-            'phone' => '+20 100 888 2222',
-            'phone_normalized' => '+201008882222',
             'province' => 'Province '.$index,
             'city' => 'City '.$index,
             'address' => 'Address '.$index,
@@ -86,8 +76,6 @@ it('restores a soft-deleted matching address and rejects new unmatched addresses
     }
 
     app(ResolveGuestCustomerAddressAction::class)->execute($customer, [
-        'phone' => '01008882222',
-        'phoneCountryCode' => 'EG',
         'province' => 'Overflow',
         'city' => 'Overflow City',
         'address' => 'Overflow Street',

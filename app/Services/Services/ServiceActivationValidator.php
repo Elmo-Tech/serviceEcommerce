@@ -18,8 +18,6 @@ class ServiceActivationValidator
             $service->name_en,
             $service->short_description_ar,
             $service->short_description_en,
-            $service->description_ar,
-            $service->description_en,
         ];
 
         foreach ($requiredFields as $value) {

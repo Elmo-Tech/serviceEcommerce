@@ -26,9 +26,6 @@ class StoreCustomerRequest extends FormRequest
 
         if (is_array($address)) {
             $payload['address'] = [
-                'phone' => array_key_exists('phone', $address)
-                    ? trim((string) $address['phone'])
-                    : null,
                 'province' => array_key_exists('province', $address)
                     ? trim((string) $address['province'])
                     : null,
@@ -55,7 +52,6 @@ class StoreCustomerRequest extends FormRequest
             'phone' => ['required', 'string', 'min:1', 'max:30'],
             'phoneCountryCode' => ['sometimes', 'string', 'size:2', 'alpha'],
             'address' => ['sometimes', 'array'],
-            'address.phone' => ['required_with:address', 'string', 'min:1', 'max:30'],
             'address.province' => ['required_with:address', 'string', 'min:1', 'max:150'],
             'address.city' => ['required_with:address', 'string', 'min:1', 'max:150'],
             'address.address' => ['required_with:address', 'string', 'min:1', 'max:500'],
@@ -80,7 +76,7 @@ class StoreCustomerRequest extends FormRequest
                 $address = $this->input('address');
 
                 if (is_array($address)) {
-                    $allowedAddressKeys = ['phone', 'province', 'city', 'address', 'notes'];
+                    $allowedAddressKeys = ['province', 'city', 'address', 'notes'];
                     $unexpectedAddressKeys = array_diff(array_keys($address), $allowedAddressKeys);
 
                     if ($unexpectedAddressKeys !== []) {

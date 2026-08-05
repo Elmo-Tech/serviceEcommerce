@@ -37,8 +37,6 @@ it('creates customer addresses, enforces one default, and supports localized nes
     ]);
 
     $firstAddressResponse = $this->postJson('/api/v1/admin/customers/'.$customer->getKey().'/addresses', [
-        'phone' => '01003334444',
-        'phoneCountryCode' => 'EG',
         'province' => 'Cairo',
         'city' => 'Nasr City',
         'address' => 'Nasr City | Street 10',
@@ -46,16 +44,13 @@ it('creates customer addresses, enforces one default, and supports localized nes
     ], customerAddressAdminHeaders($accessToken));
 
     $firstAddressResponse->assertCreated()
-        ->assertJsonPath('data.phone', '01003334444')
         ->assertJsonPath('data.isDefault', true)
         ->assertJsonMissingPath('data.addressHash')
-        ->assertJsonMissingPath('data.phoneNormalized');
+        ->assertJsonMissingPath('data.phone');
 
     $firstAddressId = (int) $firstAddressResponse->json('data.id');
 
     $secondAddressResponse = $this->postJson('/api/v1/admin/customers/'.$customer->getKey().'/addresses', [
-        'phone' => '01003334444',
-        'phoneCountryCode' => 'EG',
         'province' => 'Giza',
         'city' => 'Dokki',
         'address' => 'Office Street',
@@ -75,7 +70,7 @@ it('creates customer addresses, enforces one default, and supports localized nes
         ->assertJsonCount(2, 'data')
         ->assertJsonPath('data.0.province', 'Giza')
         ->assertJsonPath('data.0.city', 'Dokki')
-        ->assertJsonPath('data.0.phone', '01003334444');
+        ->assertJsonMissingPath('data.0.phone');
 });
 
 it('rejects duplicate active addresses and enforces the 20 active-address limit', function () {
@@ -86,8 +81,6 @@ it('rejects duplicate active addresses and enforces the 20 active-address limit'
     ]);
 
     $payload = [
-        'phone' => '01004445555',
-        'phoneCountryCode' => 'EG',
         'province' => 'Cairo',
         'city' => 'Maadi',
         'address' => 'Maadi | Street 5',
@@ -108,8 +101,6 @@ it('rejects duplicate active addresses and enforces the 20 active-address limit'
 
     foreach (range(1, 20) as $index) {
         $customer->addresses()->create([
-            'phone' => '+20 100 444 6666',
-            'phone_normalized' => '+201004446666',
             'province' => 'Province '.$index,
             'city' => 'City '.$index,
             'address' => 'Address '.$index,
@@ -128,6 +119,23 @@ it('rejects duplicate active addresses and enforces the 20 active-address limit'
         ->assertJsonPath('code', 'CUSTOMER_ADDRESS_LIMIT_EXCEEDED');
 });
 
+it('rejects duplicated phone fields in customer address payloads', function () {
+    $accessToken = customerAddressAdminToken();
+    $customer = Customer::factory()->create();
+
+    $this->postJson('/api/v1/admin/customers/'.$customer->getKey().'/addresses', [
+        'phone' => '01001234567',
+        'province' => 'Cairo',
+        'city' => 'Maadi',
+        'address' => 'Street 9',
+    ], customerAddressAdminHeaders($accessToken))
+        ->assertUnprocessable()
+        ->assertJsonPath('code', 'VALIDATION_ERROR')
+        ->assertJsonStructure(['errors' => ['payload']]);
+
+    expect($customer->addresses()->count())->toBe(0);
+});
+
 it('reassigns the default to the newest remaining active address when deleting the current default', function () {
     $accessToken = customerAddressAdminToken();
     $customer = Customer::factory()->create([
@@ -136,8 +144,6 @@ it('reassigns the default to the newest remaining active address when deleting t
     ]);
 
     $oldDefault = $customer->addresses()->create([
-        'phone' => '+20 100 555 1111',
-        'phone_normalized' => '+201005551111',
         'province' => 'Cairo',
         'city' => 'Nasr City',
         'address' => 'Old Street',
@@ -147,8 +153,6 @@ it('reassigns the default to the newest remaining active address when deleting t
     ]);
 
     $newest = $customer->addresses()->create([
-        'phone' => '+20 100 555 1111',
-        'phone_normalized' => '+201005551111',
         'province' => 'Giza',
         'city' => 'Dokki',
         'address' => 'Newest Street',
@@ -176,8 +180,6 @@ it('returns scoped 404s for nested address routes outside the customer scope', f
     ]);
 
     $address = $otherCustomer->addresses()->create([
-        'phone' => '+20 100 666 2222',
-        'phone_normalized' => '+201006662222',
         'province' => 'Alex',
         'city' => 'Smouha',
         'address' => 'Street 1',
@@ -222,8 +224,6 @@ it('returns restore conflicts when a deleted address collides with an active dup
     ]);
 
     $deletedAddress = $customer->addresses()->create([
-        'phone' => '+20 100 666 1111',
-        'phone_normalized' => '+201006661111',
         'province' => 'Cairo',
         'city' => 'Helwan',
         'address' => 'Conflict Street',
@@ -234,8 +234,6 @@ it('returns restore conflicts when a deleted address collides with an active dup
     $deletedAddress->delete();
 
     $customer->addresses()->create([
-        'phone' => '+20 100 666 1111',
-        'phone_normalized' => '+201006661111',
         'province' => 'Cairo',
         'city' => 'Helwan',
         'address' => 'Conflict Street',

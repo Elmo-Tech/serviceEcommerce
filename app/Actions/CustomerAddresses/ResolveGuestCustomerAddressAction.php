@@ -75,8 +75,6 @@ class ResolveGuestCustomerAddressAction
             'wasCreated' => $wasCreated,
             'wasRestored' => $wasRestored,
             'submittedAddress' => [
-                'phone' => $submittedAddress['phone'],
-                'phoneNormalized' => $submittedAddress['phone_normalized'],
                 'province' => $submittedAddress['province'],
                 'city' => $submittedAddress['city'],
                 'address' => $submittedAddress['address'],

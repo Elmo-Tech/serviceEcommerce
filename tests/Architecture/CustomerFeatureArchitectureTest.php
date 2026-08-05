@@ -103,8 +103,6 @@ it('returns safe customer and address resources and localizes customer feature r
     ]);
 
     $customer->addresses()->create([
-        'phone' => '+20 100 999 1111',
-        'phone_normalized' => '+201009991111',
         'province' => 'Cairo',
         'city' => 'Maadi',
         'address' => 'Maadi | Street 9',
@@ -125,6 +123,7 @@ it('returns safe customer and address resources and localizes customer feature r
         ->assertJsonMissingPath('data.accessToken')
         ->assertJsonMissingPath('data.refreshToken')
         ->assertJsonMissingPath('data.password')
+        ->assertJsonMissingPath('data.addresses.0.phone')
         ->assertJsonMissingPath('data.addresses.0.phoneNormalized')
         ->assertJsonMissingPath('data.addresses.0.addressHash');
 
@@ -141,6 +140,7 @@ it('returns safe customer and address resources and localizes customer feature r
     $englishAddressResponse->assertOk()
         ->assertHeader('Content-Language', 'en')
         ->assertJsonPath('message', 'Customer addresses retrieved successfully.')
+        ->assertJsonMissingPath('data.0.phone')
         ->assertJsonMissingPath('data.0.phoneNormalized')
         ->assertJsonMissingPath('data.0.addressHash');
 

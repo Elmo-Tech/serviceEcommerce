@@ -26,8 +26,8 @@ All use unsigned TINYINT columns and PHP integer-backed enums. Native MySQL ENUM
 | `name_en` | VARCHAR(150) | no | — | Plain text |
 | `short_description_ar` | VARCHAR(500) | no | — | Plain text |
 | `short_description_en` | VARCHAR(500) | no | — | Plain text |
-| `description_ar` | TEXT | no | — | Application max 5000 |
-| `description_en` | TEXT | no | — | Application max 5000 |
+| `description_ar` | TEXT | yes | null | Optional bilingual pair; application max 5000 |
+| `description_en` | TEXT | yes | null | Optional bilingual pair; application max 5000 |
 | `slug_ar` | VARCHAR(180) | no | — | Normalized, stable |
 | `slug_en` | VARCHAR(180) | no | — | Normalized, stable |
 | `production_time_ar` | VARCHAR(255) | yes | null | Optional complete pair |
