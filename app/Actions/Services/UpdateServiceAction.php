@@ -128,7 +128,7 @@ class UpdateServiceAction
             'VALIDATION_ERROR',
             HttpStatusCode::UNPROCESSABLE_ENTITY,
             [
-                $field => [__('validation.unique', ['attribute' => $field])],
+                $field => [__('validation.unique', ['attribute' => __('validation.attributes.'.$field)])],
             ],
         );
     }

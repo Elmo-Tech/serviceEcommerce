@@ -273,22 +273,24 @@ it('preserves Arabic service slugs and rejects duplicate service names', functio
     $this->postJson('/api/v1/admin/services', [
         ...$payload,
         'nameEn' => 'Another Printed Polo Shirt',
-        'slugAr' => 'تيشرت-بولو-آخر',
+        'slugAr' => 'تيشرت-بولو',
         'slugEn' => 'another-printed-polo-shirt',
-    ], serviceAdminHeaders($accessToken, 'en'))
+    ], serviceAdminHeaders($accessToken, 'ar'))
         ->assertUnprocessable()
         ->assertJsonPath('code', 'VALIDATION_ERROR')
-        ->assertJsonStructure(['errors' => ['nameAr']]);
+        ->assertJsonPath('errors.nameAr.0', 'الاسم بالعربية موجود بالفعل.')
+        ->assertJsonPath('errors.slugAr.0', 'الرابط بالعربية موجود بالفعل.');
 
     $this->postJson('/api/v1/admin/services', [
         ...$payload,
         'nameAr' => 'تيشرت مختلف',
         'slugAr' => 'تيشرت-مختلف',
-        'slugEn' => 'different-shirt',
+        'slugEn' => 'printed-polo-shirt',
     ], serviceAdminHeaders($accessToken, 'en'))
         ->assertUnprocessable()
         ->assertJsonPath('code', 'VALIDATION_ERROR')
-        ->assertJsonStructure(['errors' => ['nameEn']]);
+        ->assertJsonPath('errors.nameEn.0', 'The english name has already been taken.')
+        ->assertJsonPath('errors.slugEn.0', 'The english slug has already been taken.');
 });
 
 it('creates activates and updates services without full descriptions while preserving the bilingual pair rule', function () {
