@@ -292,7 +292,8 @@ it('enforces authentication authorization and localized validation for settings 
 
     $arabicResponse->assertUnprocessable()
         ->assertHeader('Content-Language', 'ar')
-        ->assertJsonPath('code', 'VALIDATION_ERROR');
+        ->assertJsonPath('code', 'VALIDATION_ERROR')
+        ->assertJsonPath('errors.publicEmail.0', trans('settings.validation.public_email_required', [], 'ar'));
 
     expect((string) $arabicResponse->json('message'))->not->toBe('The submitted data is invalid.');
 
@@ -306,4 +307,35 @@ it('enforces authentication authorization and localized validation for settings 
     $this->patchJson('/api/v1/admin/settings', ['addressEn' => 'Updated'], [
         'Accept-Language' => 'en',
     ])->assertForbidden()->assertJsonPath('code', 'FORBIDDEN');
+});
+
+it('returns clear localized validation messages for settings fields', function () {
+    Setting::factory()->create(['id' => 1]);
+
+    $arabicResponse = $this->patchJson('/api/v1/admin/settings', [
+        'googleMapsUrl' => 'javascript:alert(1)',
+        'phones' => [
+            ['number' => '123', 'hasWhats' => 2],
+        ],
+        'socialLinks' => [
+            ['platform' => 'unknown', 'url' => 'not-a-url'],
+        ],
+    ], settingsAdminHeaders(settingsAdminToken(), 'ar'));
+
+    $arabicResponse->assertUnprocessable()
+        ->assertJsonPath('errors.googleMapsUrl.0', trans('settings.validation.google_maps_url_url', [], 'ar'));
+
+    expect($arabicResponse->json('errors'))->toMatchArray([
+        'phones.0.number' => [trans('settings.validation.phone_number_regex', [], 'ar')],
+        'phones.0.hasWhats' => [trans('settings.validation.phone_has_whats_in', [], 'ar')],
+        'socialLinks.0.platform' => [trans('settings.validation.social_platform_in', [], 'ar')],
+        'socialLinks.0.url' => [trans('settings.validation.social_url_url', [], 'ar')],
+    ]);
+
+    $englishResponse = $this->patchJson('/api/v1/admin/settings', [
+        'phones' => range(1, 4),
+    ], settingsAdminHeaders(settingsAdminToken(), 'en'));
+
+    $englishResponse->assertUnprocessable()
+        ->assertJsonPath('errors.phones.0', trans('settings.validation.phones_max', [], 'en'));
 });

@@ -108,6 +108,17 @@ it('rejects invalid file extensions and exact size boundaries', function () {
     ])->assertUnprocessable()->assertJsonStructure(['errors' => ['logo']]);
 });
 
+it('returns localized Arabic validation when favicon type is invalid', function () {
+    Setting::factory()->create(['id' => 1]);
+
+    $this->withHeaders(settingsAdminHeaders(settingsAdminToken(), 'ar'))
+        ->patch('/api/v1/admin/settings', [
+            'favicon' => UploadedFile::fake()->create('favicon.jpg', 10, 'image/jpeg'),
+        ])
+        ->assertUnprocessable()
+        ->assertJsonPath('errors.favicon.0', trans('settings.validation.favicon_mimes', [], 'ar'));
+});
+
 it('ignores client-controlled paths and removed branding keys', function () {
     $setting = Setting::factory()->create(['id' => 1]);
     $headers = settingsAdminHeaders(settingsAdminToken());

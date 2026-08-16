@@ -22,7 +22,7 @@ class UpdateSettingsRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'publicEmail' => ['sometimes', 'string', 'email:rfc', 'min:1', 'max:255'],
+            'publicEmail' => ['sometimes', 'required', 'string', 'email:rfc', 'max:255'],
             'addressAr' => ['sometimes', 'nullable', 'string'],
             'addressEn' => ['sometimes', 'nullable', 'string'],
             'googleMapsUrl' => ['sometimes', 'nullable', 'string', 'url:http,https', 'max:2048'],
@@ -35,6 +35,49 @@ class UpdateSettingsRequest extends FormRequest
             'logo' => ['sometimes', 'nullable', 'file', 'max:5120', 'mimes:jpg,jpeg,png,webp,svg'],
             'footerLogo' => ['sometimes', 'nullable', 'file', 'max:5120', 'mimes:jpg,jpeg,png,webp,svg'],
             'favicon' => ['sometimes', 'nullable', 'file', 'max:1024', 'mimes:png,ico,svg'],
+        ];
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    public function messages(): array
+    {
+        return [
+            'publicEmail.string' => __('settings.validation.public_email_string'),
+            'publicEmail.required' => __('settings.validation.public_email_required'),
+            'publicEmail.email' => __('settings.validation.public_email_email'),
+            'publicEmail.max' => __('settings.validation.public_email_max'),
+            'addressAr.string' => __('settings.validation.address_ar_string'),
+            'addressEn.string' => __('settings.validation.address_en_string'),
+            'googleMapsUrl.string' => __('settings.validation.google_maps_url_string'),
+            'googleMapsUrl.url' => __('settings.validation.google_maps_url_url'),
+            'googleMapsUrl.max' => __('settings.validation.google_maps_url_max'),
+            'phones.array' => __('settings.validation.phones_array'),
+            'phones.max' => __('settings.validation.phones_max'),
+            'phones.*.number.required_with' => __('settings.validation.phone_number_required'),
+            'phones.*.number.string' => __('settings.validation.phone_number_string'),
+            'phones.*.number.regex' => __('settings.validation.phone_number_regex'),
+            'phones.*.hasWhats.required_with' => __('settings.validation.phone_has_whats_required'),
+            'phones.*.hasWhats.integer' => __('settings.validation.phone_has_whats_integer'),
+            'phones.*.hasWhats.in' => __('settings.validation.phone_has_whats_in'),
+            'socialLinks.array' => __('settings.validation.social_links_array'),
+            'socialLinks.max' => __('settings.validation.social_links_max'),
+            'socialLinks.*.platform.required_with' => __('settings.validation.social_platform_required'),
+            'socialLinks.*.platform.string' => __('settings.validation.social_platform_string'),
+            'socialLinks.*.platform.in' => __('settings.validation.social_platform_in'),
+            'socialLinks.*.url.required_with' => __('settings.validation.social_url_required'),
+            'socialLinks.*.url.string' => __('settings.validation.social_url_string'),
+            'socialLinks.*.url.url' => __('settings.validation.social_url_url'),
+            'logo.file' => __('settings.validation.logo_file'),
+            'logo.max' => __('settings.validation.logo_max'),
+            'logo.mimes' => __('settings.validation.logo_mimes'),
+            'footerLogo.file' => __('settings.validation.footer_logo_file'),
+            'footerLogo.max' => __('settings.validation.footer_logo_max'),
+            'footerLogo.mimes' => __('settings.validation.footer_logo_mimes'),
+            'favicon.file' => __('settings.validation.favicon_file'),
+            'favicon.max' => __('settings.validation.favicon_max'),
+            'favicon.mimes' => __('settings.validation.favicon_mimes'),
         ];
     }
 
@@ -259,12 +302,17 @@ class UpdateSettingsRequest extends FormRequest
             $extension = mb_strtolower($file->getClientOriginalExtension());
 
             if (! in_array($extension, $allowedExtensions, true)) {
-                $validator->errors()->add($field, __('validation.mimes', [
-                    'attribute' => $field,
-                    'values' => implode(', ', $allowedExtensions),
-                ]));
+                $validator->errors()->add($field, __("settings.validation.{$this->fileTranslationPrefix($field)}_mimes"));
             }
         }
+    }
+
+    private function fileTranslationPrefix(string $field): string
+    {
+        return match ($field) {
+            'footerLogo' => 'footer_logo',
+            default => $field,
+        };
     }
 
     private function ensureSafeSvgFiles(Validator $validator): void

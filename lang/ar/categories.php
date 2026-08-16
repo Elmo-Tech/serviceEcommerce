@@ -18,8 +18,8 @@ return [
     'subcategory_restored' => 'تمت استعادة التصنيف الفرعي بنجاح.',
     'subcategories_reordered' => 'تمت إعادة ترتيب التصنيفات الفرعية بنجاح.',
     'validation' => [
-        'name_ar_unique' => 'الاسم المُدخل في nameAr مستخدم بالفعل.',
-        'name_en_unique' => 'الاسم المُدخل في nameEn مستخدم بالفعل.',
+        'name_ar_unique' => 'الاسم العربى مستخدم بالفعل',
+        'name_en_unique' => 'الاسم الانجليزى مستخدم بالفعل',
     ],
     'errors' => [
         'category_not_found' => 'التصنيف المطلوب غير موجود.',
