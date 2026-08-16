@@ -110,6 +110,18 @@ Verify:
 
 ### D. Cross-locale slug uniqueness
 
+Arabic slugs must stay Arabic after normalization. For example:
+
+```text
+slugAr = تيشرت-بولو
+```
+
+must be persisted and returned as:
+
+```text
+تيشرت-بولو
+```
+
 Create service A with:
 
 ```text
@@ -127,6 +139,9 @@ Expect `422 VALIDATION_ERROR` backed by the reservation unique index.
 Soft-delete service A and retry; it must still fail because deleted services retain slug reservations.
 
 Run a real MySQL race with two requests claiming the same slug; exactly one may commit.
+
+Also verify duplicate `nameAr` and duplicate `nameEn` return `422 VALIDATION_ERROR`
+on the matching request key.
 
 ### E. Specifications and order fields
 

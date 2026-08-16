@@ -4,23 +4,26 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Api\V1\Admin\Services;
 
+use App\Models\Service;
 use Illuminate\Validation\Rule;
 
 class UpdateServiceRequest extends StoreServiceRequest
 {
     public function rules(): array
     {
+        $serviceId = $this->routeServiceId();
+
         return [
             'categoryId' => ['sometimes', 'nullable', 'integer', 'min:1'],
             'subcategoryId' => ['sometimes', 'nullable', 'integer', 'min:1'],
-            'nameAr' => ['sometimes', 'string', 'max:150'],
-            'nameEn' => ['sometimes', 'string', 'max:150'],
+            'nameAr' => ['sometimes', 'string', 'max:150', Rule::unique('services', 'name_ar')->ignore($serviceId)],
+            'nameEn' => ['sometimes', 'string', 'max:150', Rule::unique('services', 'name_en')->ignore($serviceId)],
             'shortDescriptionAr' => ['sometimes', 'string', 'max:500'],
             'shortDescriptionEn' => ['sometimes', 'string', 'max:500'],
             'descriptionAr' => ['nullable', 'string', 'max:5000', 'required_with:descriptionEn'],
             'descriptionEn' => ['nullable', 'string', 'max:5000', 'required_with:descriptionAr'],
-            'slugAr' => ['sometimes', 'nullable', 'string', 'max:180'],
-            'slugEn' => ['sometimes', 'nullable', 'string', 'max:180'],
+            'slugAr' => ['sometimes', 'nullable', 'string', 'max:180', Rule::unique('services', 'slug_ar')->ignore($serviceId)],
+            'slugEn' => ['sometimes', 'nullable', 'string', 'max:180', Rule::unique('services', 'slug_en')->ignore($serviceId)],
             'productionTimeAr' => ['sometimes', 'nullable', 'string', 'max:255', 'required_with:productionTimeEn'],
             'productionTimeEn' => ['sometimes', 'nullable', 'string', 'max:255', 'required_with:productionTimeAr'],
             'priceType' => ['sometimes', 'integer', Rule::in([0, 1])],
@@ -37,5 +40,16 @@ class UpdateServiceRequest extends StoreServiceRequest
             'seoTagsEn' => ['sometimes', 'nullable', 'array', 'max:20'],
             'seoTagsEn.*' => ['string', 'max:70'],
         ];
+    }
+
+    private function routeServiceId(): int|string|null
+    {
+        $service = $this->route('service');
+
+        if ($service instanceof Service) {
+            return $service->getKey();
+        }
+
+        return $service;
     }
 }

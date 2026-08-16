@@ -171,7 +171,7 @@ service_pricing_option_values
 service_media
 ```
 
-`service_slug_reservations` is an internal integrity table. It is not an API resource. It provides race-safe cross-locale global uniqueness because independent unique indexes on `slug_ar` and `slug_en` cannot prevent `service A.slug_ar = service B.slug_en`.
+`services.name_ar` and `services.name_en` have direct unique indexes so Arabic and English service names cannot be reused, including by soft-deleted services. `service_slug_reservations` is an internal integrity table. It is not an API resource. It provides race-safe cross-locale global slug uniqueness because independent unique indexes on `slug_ar` and `slug_en` cannot prevent `service A.slug_ar = service B.slug_en`. Arabic slug normalization preserves Arabic/Unicode letters and only normalizes separators.
 
 ### 6.2 Foreign-key behavior
 

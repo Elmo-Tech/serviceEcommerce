@@ -158,6 +158,10 @@ shortDescriptionEn
 
 These four fields are required for creation.
 
+`nameAr` and `nameEn` are each globally unique across services, including
+soft-deleted services. Duplicate names must be rejected with
+`422 VALIDATION_ERROR` on the matching request key.
+
 The full-description pair is optional:
 
 ```text
@@ -195,6 +199,8 @@ Rules:
 - A slug changes only when explicitly submitted by an authorized Admin update.
 - `slugAr` and `slugEn` are globally unique across services.
 - A slug value may not collide with either locale slug of another service.
+- `slugAr` preserves Arabic/Unicode letters and normalizes separators without
+  transliterating Arabic text into Latin characters.
 - Soft-deleted services continue reserving their slugs.
 - Slug normalization must occur before uniqueness validation.
 

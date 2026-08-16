@@ -241,6 +241,56 @@ it('accepts boolean-like string values for service activation flags during creat
         ->assertJsonPath('data.isAttachmentRequired', true);
 });
 
+it('preserves Arabic service slugs and rejects duplicate service names', function () {
+    $accessToken = serviceAdminToken();
+
+    $payload = [
+        'nameAr' => 'تيشرت بولو مطبوع',
+        'nameEn' => 'Printed Polo Shirt',
+        'shortDescriptionAr' => 'طباعة تيشرت بولو',
+        'shortDescriptionEn' => 'Printed polo shirt',
+        'slugAr' => 'تيشرت-بولو',
+        'slugEn' => 'printed-polo-shirt',
+        'priceType' => 0,
+        'basePrice' => 500,
+    ];
+
+    $created = $this->postJson('/api/v1/admin/services', $payload, serviceAdminHeaders($accessToken, 'en'));
+
+    $created->assertCreated()
+        ->assertJsonPath('data.nameAr', 'تيشرت بولو مطبوع')
+        ->assertJsonPath('data.nameEn', 'Printed Polo Shirt')
+        ->assertJsonPath('data.slugAr', 'تيشرت-بولو')
+        ->assertJsonPath('data.slugEn', 'printed-polo-shirt');
+
+    $this->assertDatabaseHas('services', [
+        'name_ar' => 'تيشرت بولو مطبوع',
+        'name_en' => 'Printed Polo Shirt',
+        'slug_ar' => 'تيشرت-بولو',
+        'slug_en' => 'printed-polo-shirt',
+    ]);
+
+    $this->postJson('/api/v1/admin/services', [
+        ...$payload,
+        'nameEn' => 'Another Printed Polo Shirt',
+        'slugAr' => 'تيشرت-بولو-آخر',
+        'slugEn' => 'another-printed-polo-shirt',
+    ], serviceAdminHeaders($accessToken, 'en'))
+        ->assertUnprocessable()
+        ->assertJsonPath('code', 'VALIDATION_ERROR')
+        ->assertJsonStructure(['errors' => ['nameAr']]);
+
+    $this->postJson('/api/v1/admin/services', [
+        ...$payload,
+        'nameAr' => 'تيشرت مختلف',
+        'slugAr' => 'تيشرت-مختلف',
+        'slugEn' => 'different-shirt',
+    ], serviceAdminHeaders($accessToken, 'en'))
+        ->assertUnprocessable()
+        ->assertJsonPath('code', 'VALIDATION_ERROR')
+        ->assertJsonStructure(['errors' => ['nameEn']]);
+});
+
 it('creates activates and updates services without full descriptions while preserving the bilingual pair rule', function () {
     $accessToken = serviceAdminToken();
 

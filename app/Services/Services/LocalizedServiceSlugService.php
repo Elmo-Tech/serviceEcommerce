@@ -10,22 +10,41 @@ class LocalizedServiceSlugService
 {
     public function normalize(string $value): string
     {
-        $value = trim($value);
-        $asciiSlug = Str::slug($value, '-');
+        return $this->normalizeArabic($value);
+    }
 
-        if ($asciiSlug !== '') {
-            return Str::limit($asciiSlug, 180, '');
-        }
+    public function normalizeArabic(string $value): string
+    {
+        return $this->normalizeUnicodeSlug($value);
+    }
 
-        $slug = preg_replace('/[^\p{Arabic}\p{L}\p{N}]+/u', '-', $value) ?? '';
-        $slug = preg_replace('/-+/u', '-', $slug) ?? '';
-        $slug = trim($slug, '-');
-
-        return Str::limit(mb_strtolower($slug), 180, '');
+    public function normalizeEnglish(string $value): string
+    {
+        return $this->normalizeUnicodeSlug(Str::lower(trim($value)));
     }
 
     public function generateFromName(string $name): string
     {
-        return $this->normalize($name);
+        return $this->generateFromArabicName($name);
+    }
+
+    public function generateFromArabicName(string $name): string
+    {
+        return $this->normalizeArabic($name);
+    }
+
+    public function generateFromEnglishName(string $name): string
+    {
+        return $this->normalizeEnglish($name);
+    }
+
+    private function normalizeUnicodeSlug(string $value): string
+    {
+        $slug = trim($value);
+        $slug = preg_replace('/[^\p{L}\p{N}]+/u', '-', $slug) ?? '';
+        $slug = preg_replace('/-+/u', '-', $slug) ?? '';
+        $slug = trim($slug, '-');
+
+        return Str::limit(mb_strtolower($slug), 180, '');
     }
 }

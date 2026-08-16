@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Actions\Services;
 
+use App\Enums\HttpStatusCode;
+use App\Exceptions\ApiBusinessException;
 use App\Models\Service;
 use App\Services\Services\LocalizedServiceSlugService;
 use App\Services\Services\ServiceActivationValidator;
@@ -11,6 +13,7 @@ use App\Services\Services\ServiceClassificationValidator;
 use App\Services\Services\ServiceHierarchyLockCoordinator;
 use App\Services\Services\ServiceLookupService;
 use App\Services\Services\ServiceSlugReservationService;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 
 class UpdateServiceAction
@@ -61,8 +64,8 @@ class UpdateServiceAction
                 'short_description_en' => array_key_exists('shortDescriptionEn', $payload) ? trim((string) $payload['shortDescriptionEn']) : $lockedService->short_description_en,
                 'description_ar' => array_key_exists('descriptionAr', $payload) ? $this->nullableTrimmedString($payload['descriptionAr']) : $lockedService->description_ar,
                 'description_en' => array_key_exists('descriptionEn', $payload) ? $this->nullableTrimmedString($payload['descriptionEn']) : $lockedService->description_en,
-                'slug_ar' => array_key_exists('slugAr', $payload) ? $this->localizedServiceSlugService->normalize((string) $payload['slugAr']) : $lockedService->slug_ar,
-                'slug_en' => array_key_exists('slugEn', $payload) ? $this->localizedServiceSlugService->normalize((string) $payload['slugEn']) : $lockedService->slug_en,
+                'slug_ar' => array_key_exists('slugAr', $payload) ? $this->localizedServiceSlugService->normalizeArabic((string) $payload['slugAr']) : $lockedService->slug_ar,
+                'slug_en' => array_key_exists('slugEn', $payload) ? $this->localizedServiceSlugService->normalizeEnglish((string) $payload['slugEn']) : $lockedService->slug_en,
                 'production_time_ar' => $payload['productionTimeAr'] ?? $lockedService->production_time_ar,
                 'production_time_en' => $payload['productionTimeEn'] ?? $lockedService->production_time_en,
                 'price_type' => $payload['priceType'] ?? $lockedService->price_type,
@@ -78,7 +81,11 @@ class UpdateServiceAction
                 'seo_tags_en' => array_key_exists('seoTagsEn', $payload) ? $payload['seoTagsEn'] : $lockedService->seo_tags_en,
             ]);
 
-            $lockedService->save();
+            try {
+                $lockedService->save();
+            } catch (QueryException $exception) {
+                $this->throwValidationForUniqueServiceConstraint($exception);
+            }
 
             $this->serviceSlugReservationService->sync($lockedService, $lockedService->slug_ar, $lockedService->slug_en);
 
@@ -99,5 +106,30 @@ class UpdateServiceAction
         $trimmed = trim((string) $value);
 
         return $trimmed === '' ? null : $trimmed;
+    }
+
+    private function throwValidationForUniqueServiceConstraint(QueryException $exception): never
+    {
+        $message = $exception->getMessage();
+        $field = match (true) {
+            str_contains($message, 'uq_services_name_ar') => 'nameAr',
+            str_contains($message, 'uq_services_name_en') => 'nameEn',
+            str_contains($message, 'uq_services_slug_ar') => 'slugAr',
+            str_contains($message, 'uq_services_slug_en') => 'slugEn',
+            default => null,
+        };
+
+        if ($field === null) {
+            throw $exception;
+        }
+
+        throw new ApiBusinessException(
+            'validation.invalid_payload',
+            'VALIDATION_ERROR',
+            HttpStatusCode::UNPROCESSABLE_ENTITY,
+            [
+                $field => [__('validation.unique', ['attribute' => $field])],
+            ],
+        );
     }
 }

@@ -22,8 +22,8 @@ All use unsigned TINYINT columns and PHP integer-backed enums. Native MySQL ENUM
 | `id` | BIGINT UNSIGNED | no | auto | Primary key |
 | `category_id` | BIGINT UNSIGNED | yes | null | Root category |
 | `subcategory_id` | BIGINT UNSIGNED | yes | null | Child of `category_id` |
-| `name_ar` | VARCHAR(150) | no | — | Plain text |
-| `name_en` | VARCHAR(150) | no | — | Plain text |
+| `name_ar` | VARCHAR(150) | no | — | Plain text, globally unique |
+| `name_en` | VARCHAR(150) | no | — | Plain text, globally unique |
 | `short_description_ar` | VARCHAR(500) | no | — | Plain text |
 | `short_description_en` | VARCHAR(500) | no | — | Plain text |
 | `description_ar` | TEXT | yes | null | Optional bilingual pair; application max 5000 |
@@ -62,11 +62,13 @@ The application validates root/child type, active state, non-deleted state, and 
 ### Unique constraints
 
 ```text
+uq_services_name_ar (name_ar)
+uq_services_name_en (name_en)
 uq_services_slug_ar (slug_ar)
 uq_services_slug_en (slug_en)
 ```
 
-These support direct locale lookups. Cross-column uniqueness is enforced by `service_slug_reservations`.
+Name constraints reject duplicate Arabic or English service names, including soft-deleted services. Slug constraints support direct locale lookups. Cross-column slug uniqueness is enforced by `service_slug_reservations`.
 
 ### Query indexes
 

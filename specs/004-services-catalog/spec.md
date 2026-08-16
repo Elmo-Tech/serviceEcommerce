@@ -245,7 +245,10 @@ delete-versus-update, and restore races.
   `nameAr`, `nameEn`, `shortDescriptionAr`, and `shortDescriptionEn` during
   service creation. `descriptionAr` and `descriptionEn` MUST form an optional
   nullable bilingual pair: both may be omitted or null, but when either is
-  supplied with content the matching locale is required.
+  supplied with content the matching locale is required. `nameAr` and `nameEn`
+  MUST each be globally unique across services, including soft-deleted services,
+  and duplicate-name attempts MUST return `422 VALIDATION_ERROR` on the matching
+  request key.
 - **FR-004**: The system MUST support optional bilingual pairs for production
   time, SEO title, SEO description, and SEO tags, where one locale value cannot
   be stored without the matching other-locale value.
@@ -258,7 +261,9 @@ delete-versus-update, and restore races.
   amount.
 - **FR-008**: The system MUST generate localized slugs from the matching
   localized names on create when omitted and MUST keep slugs stable unless the
-  administrator explicitly submits new slugs.
+  administrator explicitly submits new slugs. Arabic slug generation and
+  normalization MUST preserve Arabic/Unicode letters rather than transliterating
+  them to Latin characters.
 - **FR-009**: The system MUST enforce global slug uniqueness across both locale
   slug columns, including soft-deleted services.
 - **FR-010**: The system MUST default new services to `isActive = false` and

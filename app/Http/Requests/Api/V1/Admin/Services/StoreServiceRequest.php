@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Api\V1\Admin\Services;
 
+use App\Services\Services\LocalizedServiceSlugService;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -11,7 +12,10 @@ class StoreServiceRequest extends FormRequest
 {
     protected function prepareForValidation(): void
     {
-        $this->merge($this->normalizeBooleanLikeValues($this->all()));
+        $payload = $this->normalizeBooleanLikeValues($this->all());
+        $payload = $this->normalizeUniqueTextValues($payload);
+
+        $this->merge($payload);
     }
 
     public function authorize(): bool
@@ -36,14 +40,14 @@ class StoreServiceRequest extends FormRequest
         return [
             'categoryId' => ['sometimes', 'nullable', 'integer', 'min:1'],
             'subcategoryId' => ['sometimes', 'nullable', 'integer', 'min:1'],
-            'nameAr' => [...$requiredRule, 'string', 'max:150'],
-            'nameEn' => [...$requiredRule, 'string', 'max:150'],
+            'nameAr' => [...$requiredRule, 'string', 'max:150', Rule::unique('services', 'name_ar')],
+            'nameEn' => [...$requiredRule, 'string', 'max:150', Rule::unique('services', 'name_en')],
             'shortDescriptionAr' => [...$requiredRule, 'string', 'max:500'],
             'shortDescriptionEn' => [...$requiredRule, 'string', 'max:500'],
             'descriptionAr' => ['nullable', 'string', 'max:5000', 'required_with:descriptionEn'],
             'descriptionEn' => ['nullable', 'string', 'max:5000', 'required_with:descriptionAr'],
-            'slugAr' => ['sometimes', 'nullable', 'string', 'max:180'],
-            'slugEn' => ['sometimes', 'nullable', 'string', 'max:180'],
+            'slugAr' => ['sometimes', 'nullable', 'string', 'max:180', Rule::unique('services', 'slug_ar')],
+            'slugEn' => ['sometimes', 'nullable', 'string', 'max:180', Rule::unique('services', 'slug_en')],
             'productionTimeAr' => ['sometimes', 'nullable', 'string', 'max:255', 'required_with:productionTimeEn'],
             'productionTimeEn' => ['sometimes', 'nullable', 'string', 'max:255', 'required_with:productionTimeAr'],
             'priceType' => [...$requiredRule, 'integer', Rule::in([0, 1])],
@@ -121,6 +125,31 @@ class StoreServiceRequest extends FormRequest
             if ($normalized !== null) {
                 $payload[$key] = $normalized;
             }
+        }
+
+        return $payload;
+    }
+
+    /**
+     * @param  array<string|int, mixed>  $payload
+     * @return array<string|int, mixed>
+     */
+    protected function normalizeUniqueTextValues(array $payload): array
+    {
+        $slugService = app(LocalizedServiceSlugService::class);
+
+        foreach (['nameAr', 'nameEn'] as $key) {
+            if (isset($payload[$key]) && is_string($payload[$key])) {
+                $payload[$key] = trim($payload[$key]);
+            }
+        }
+
+        if (isset($payload['slugAr']) && is_string($payload['slugAr']) && trim($payload['slugAr']) !== '') {
+            $payload['slugAr'] = $slugService->normalizeArabic($payload['slugAr']);
+        }
+
+        if (isset($payload['slugEn']) && is_string($payload['slugEn']) && trim($payload['slugEn']) !== '') {
+            $payload['slugEn'] = $slugService->normalizeEnglish($payload['slugEn']);
         }
 
         return $payload;

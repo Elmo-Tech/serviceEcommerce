@@ -57,6 +57,8 @@ it('creates the approved service tables and indexes', function () {
 
     expect($serviceIndexes)->toContain(
         'PRIMARY',
+        'uq_services_name_ar',
+        'uq_services_name_en',
         'uq_services_slug_ar',
         'uq_services_slug_en',
         'idx_services_public_created',

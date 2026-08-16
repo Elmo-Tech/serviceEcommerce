@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Actions\Services;
 
+use App\Enums\HttpStatusCode;
 use App\Enums\Services\ServiceOrderFieldType;
 use App\Enums\Services\ServicePricingOptionType;
+use App\Exceptions\ApiBusinessException;
 use App\Models\Service;
 use App\Services\Files\ServiceMediaStorageService;
 use App\Services\Services\LocalizedServiceSlugService;
@@ -14,6 +16,7 @@ use App\Services\Services\ServiceChildLimitGuard;
 use App\Services\Services\ServiceClassificationValidator;
 use App\Services\Services\ServiceHierarchyLockCoordinator;
 use App\Services\Services\ServiceSlugReservationService;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 
 class CreateServiceAction
@@ -48,31 +51,35 @@ class CreateServiceAction
                     $lockedSubcategories,
                 );
 
-                $service = Service::query()->create([
-                    'category_id' => $category?->getKey(),
-                    'subcategory_id' => $subcategory?->getKey(),
-                    'name_ar' => trim((string) $payload['nameAr']),
-                    'name_en' => trim((string) $payload['nameEn']),
-                    'short_description_ar' => trim((string) $payload['shortDescriptionAr']),
-                    'short_description_en' => trim((string) $payload['shortDescriptionEn']),
-                    'description_ar' => $this->nullableTrimmedString($payload['descriptionAr'] ?? null),
-                    'description_en' => $this->nullableTrimmedString($payload['descriptionEn'] ?? null),
-                    'slug_ar' => $this->resolveSlug($payload['slugAr'] ?? null, (string) $payload['nameAr']),
-                    'slug_en' => $this->resolveSlug($payload['slugEn'] ?? null, (string) $payload['nameEn']),
-                    'production_time_ar' => $payload['productionTimeAr'] ?? null,
-                    'production_time_en' => $payload['productionTimeEn'] ?? null,
-                    'price_type' => (int) $payload['priceType'],
-                    'base_price' => $payload['basePrice'],
-                    'is_active' => (bool) ($payload['isActive'] ?? false),
-                    'is_available' => (bool) ($payload['isAvailable'] ?? true),
-                    'is_attachment_required' => (bool) ($payload['isAttachmentRequired'] ?? false),
-                    'seo_title_ar' => $payload['seoTitleAr'] ?? null,
-                    'seo_title_en' => $payload['seoTitleEn'] ?? null,
-                    'seo_description_ar' => $payload['seoDescriptionAr'] ?? null,
-                    'seo_description_en' => $payload['seoDescriptionEn'] ?? null,
-                    'seo_tags_ar' => $payload['seoTagsAr'] ?? null,
-                    'seo_tags_en' => $payload['seoTagsEn'] ?? null,
-                ]);
+                try {
+                    $service = Service::query()->create([
+                        'category_id' => $category?->getKey(),
+                        'subcategory_id' => $subcategory?->getKey(),
+                        'name_ar' => trim((string) $payload['nameAr']),
+                        'name_en' => trim((string) $payload['nameEn']),
+                        'short_description_ar' => trim((string) $payload['shortDescriptionAr']),
+                        'short_description_en' => trim((string) $payload['shortDescriptionEn']),
+                        'description_ar' => $this->nullableTrimmedString($payload['descriptionAr'] ?? null),
+                        'description_en' => $this->nullableTrimmedString($payload['descriptionEn'] ?? null),
+                        'slug_ar' => $this->resolveArabicSlug($payload['slugAr'] ?? null, (string) $payload['nameAr']),
+                        'slug_en' => $this->resolveEnglishSlug($payload['slugEn'] ?? null, (string) $payload['nameEn']),
+                        'production_time_ar' => $payload['productionTimeAr'] ?? null,
+                        'production_time_en' => $payload['productionTimeEn'] ?? null,
+                        'price_type' => (int) $payload['priceType'],
+                        'base_price' => $payload['basePrice'],
+                        'is_active' => (bool) ($payload['isActive'] ?? false),
+                        'is_available' => (bool) ($payload['isAvailable'] ?? true),
+                        'is_attachment_required' => (bool) ($payload['isAttachmentRequired'] ?? false),
+                        'seo_title_ar' => $payload['seoTitleAr'] ?? null,
+                        'seo_title_en' => $payload['seoTitleEn'] ?? null,
+                        'seo_description_ar' => $payload['seoDescriptionAr'] ?? null,
+                        'seo_description_en' => $payload['seoDescriptionEn'] ?? null,
+                        'seo_tags_ar' => $payload['seoTagsAr'] ?? null,
+                        'seo_tags_en' => $payload['seoTagsEn'] ?? null,
+                    ]);
+                } catch (QueryException $exception) {
+                    $this->throwValidationForUniqueServiceConstraint($exception);
+                }
 
                 $this->serviceSlugReservationService->sync($service, $service->slug_ar, $service->slug_en);
 
@@ -159,13 +166,22 @@ class CreateServiceAction
         }
     }
 
-    private function resolveSlug(mixed $submittedSlug, string $name): string
+    private function resolveArabicSlug(mixed $submittedSlug, string $name): string
     {
         if (is_string($submittedSlug) && trim($submittedSlug) !== '') {
-            return $this->localizedServiceSlugService->normalize($submittedSlug);
+            return $this->localizedServiceSlugService->normalizeArabic($submittedSlug);
         }
 
-        return $this->localizedServiceSlugService->generateFromName($name);
+        return $this->localizedServiceSlugService->generateFromArabicName($name);
+    }
+
+    private function resolveEnglishSlug(mixed $submittedSlug, string $name): string
+    {
+        if (is_string($submittedSlug) && trim($submittedSlug) !== '') {
+            return $this->localizedServiceSlugService->normalizeEnglish($submittedSlug);
+        }
+
+        return $this->localizedServiceSlugService->generateFromEnglishName($name);
     }
 
     private function nullableTrimmedString(mixed $value): ?string
@@ -177,5 +193,30 @@ class CreateServiceAction
         $trimmed = trim((string) $value);
 
         return $trimmed === '' ? null : $trimmed;
+    }
+
+    private function throwValidationForUniqueServiceConstraint(QueryException $exception): never
+    {
+        $message = $exception->getMessage();
+        $field = match (true) {
+            str_contains($message, 'uq_services_name_ar') => 'nameAr',
+            str_contains($message, 'uq_services_name_en') => 'nameEn',
+            str_contains($message, 'uq_services_slug_ar') => 'slugAr',
+            str_contains($message, 'uq_services_slug_en') => 'slugEn',
+            default => null,
+        };
+
+        if ($field === null) {
+            throw $exception;
+        }
+
+        throw new ApiBusinessException(
+            'validation.invalid_payload',
+            'VALIDATION_ERROR',
+            HttpStatusCode::UNPROCESSABLE_ENTITY,
+            [
+                $field => [__('validation.unique', ['attribute' => $field])],
+            ],
+        );
     }
 }
