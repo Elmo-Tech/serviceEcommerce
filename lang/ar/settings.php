@@ -44,5 +44,10 @@ return [
         'favicon_file' => 'يجب رفع أيقونة الموقع كملف.',
         'favicon_max' => 'يجب ألا يزيد حجم أيقونة الموقع عن 1 ميجابايت.',
         'favicon_mimes' => 'يجب أن تكون أيقونة الموقع من نوع PNG أو ICO أو SVG.',
+        'clear_phones_boolean' => 'قيمة مسح أرقام الهاتف يجب أن تكون true أو false.',
+        'clear_social_links_boolean' => 'قيمة مسح روابط التواصل الاجتماعي يجب أن تكون true أو false.',
+        'remove_logo_boolean' => 'قيمة حذف شعار الموقع يجب أن تكون true أو false.',
+        'remove_footer_logo_boolean' => 'قيمة حذف شعار الفوتر يجب أن تكون true أو false.',
+        'remove_favicon_boolean' => 'قيمة حذف أيقونة الموقع يجب أن تكون true أو false.',
     ],
 ];

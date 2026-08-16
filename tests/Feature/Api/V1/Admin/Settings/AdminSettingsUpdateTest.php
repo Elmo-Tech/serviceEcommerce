@@ -138,6 +138,49 @@ it('accepts the real multipart patch shape sent by Postman', function () {
         ->assertJsonPath('data.phones.0.hasWhats', 1);
 });
 
+it('accepts real multipart clear shortcut keys sent by Postman', function () {
+    $setting = Setting::factory()->create(['id' => 1]);
+    $setting->phones()->create(['number' => '01012345678', 'has_whats' => 1, 'position' => 0]);
+    $setting->socialLinks()->create(['platform' => SocialPlatform::FACEBOOK, 'url' => 'https://facebook.com/example', 'position' => 0]);
+
+    $boundary = '----SettingsShortcutBoundary7MA4YWxk';
+    $parts = [
+        ['clearPhones', '1'],
+        ['clearSocialLinks', 'true'],
+        ['removeFavicon', '1'],
+    ];
+    $body = '';
+
+    foreach ($parts as [$name, $value]) {
+        $body .= "--{$boundary}\r\n";
+        $body .= "Content-Disposition: form-data; name=\"{$name}\"\r\n\r\n";
+        $body .= "{$value}\r\n";
+    }
+
+    $body .= "--{$boundary}--\r\n";
+
+    $response = $this->call(
+        'PATCH',
+        '/api/v1/admin/settings',
+        server: [
+            'CONTENT_TYPE' => "multipart/form-data; boundary={$boundary}",
+            'CONTENT_LENGTH' => (string) strlen($body),
+            'HTTP_ACCEPT' => 'application/json',
+            'HTTP_ACCEPT_LANGUAGE' => 'en',
+            'HTTP_AUTHORIZATION' => 'Bearer '.settingsAdminToken(),
+        ],
+        content: $body,
+    );
+
+    $response->assertOk()
+        ->assertJsonPath('data.phones', [])
+        ->assertJsonPath('data.socialLinks', [])
+        ->assertJsonPath('data.favicon', null);
+
+    expect($setting->fresh()->phones()->count())->toBe(0)
+        ->and($setting->fresh()->socialLinks()->count())->toBe(0);
+});
+
 it('preserves omitted fields and explicitly clears optional scalar fields', function () {
     Setting::factory()->create([
         'id' => 1,
@@ -247,21 +290,22 @@ it('rejects phone and social collection limits and invariants', function (array 
     ], 'socialLinks'],
 ]);
 
-it('ignores removed collection clear and branding remove keys', function (string $key) {
+it('clears collections and branding files through shortcut keys', function () {
     $setting = Setting::factory()->create(['id' => 1]);
-    $before = $setting->fresh()->getAttributes();
+    $setting->phones()->create(['number' => '01012345678', 'has_whats' => 1, 'position' => 0]);
+    $setting->socialLinks()->create(['platform' => SocialPlatform::FACEBOOK, 'url' => 'https://facebook.com/example', 'position' => 0]);
 
-    $this->patchJson('/api/v1/admin/settings', [$key => 1], settingsAdminHeaders(settingsAdminToken()))
-        ->assertOk();
+    $this->patchJson('/api/v1/admin/settings', [
+        'clearPhones' => 1,
+        'clearSocialLinks' => 'true',
+    ], settingsAdminHeaders(settingsAdminToken()))
+        ->assertOk()
+        ->assertJsonPath('data.phones', [])
+        ->assertJsonPath('data.socialLinks', []);
 
-    expect($setting->fresh()->getAttributes())->toBe($before);
-})->with([
-    'clearPhones',
-    'clearSocialLinks',
-    'removeLogo',
-    'removeFooterLogo',
-    'removeFavicon',
-]);
+    expect($setting->fresh()->phones()->count())->toBe(0)
+        ->and($setting->fresh()->socialLinks()->count())->toBe(0);
+});
 
 it('ignores removed settings keys during update requests', function () {
     Setting::factory()->create(['id' => 1]);

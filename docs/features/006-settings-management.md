@@ -335,6 +335,9 @@ phones submitted with one or more items
 
 phones = []
 → delete all phones
+
+clearPhones = 1 or true
+→ delete all phones
 ```
 
 To delete one phone, the frontend removes it locally and submits the remaining
@@ -398,6 +401,9 @@ socialLinks submitted with one or more items
 → replace the full collection
 
 socialLinks = []
+→ delete all links
+
+clearSocialLinks = 1 or true
 → delete all links
 ```
 
@@ -526,6 +532,9 @@ Workflow:
 ```text
 logo = ""
 → remove the current logo
+
+removeLogo = 1 or true
+→ remove the current logo
 ```
 
 Workflow:
@@ -536,7 +545,9 @@ Workflow:
 
 ### Conflict
 
-The same applies to footer logo and favicon.
+The same applies to footer logo and favicon using either an empty
+`footerLogo`/`favicon` value or the `removeFooterLogo`/`removeFavicon`
+shortcut key.
 
 ### Filesystem Compensation
 

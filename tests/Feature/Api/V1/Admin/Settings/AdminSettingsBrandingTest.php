@@ -119,7 +119,7 @@ it('returns localized Arabic validation when favicon type is invalid', function 
         ->assertJsonPath('errors.favicon.0', trans('settings.validation.favicon_mimes', [], 'ar'));
 });
 
-it('ignores client-controlled paths and removed branding keys', function () {
+it('ignores client-controlled paths', function () {
     $setting = Setting::factory()->create(['id' => 1]);
     $headers = settingsAdminHeaders(settingsAdminToken());
     $before = $setting->fresh()->getAttributes();
@@ -128,10 +128,38 @@ it('ignores client-controlled paths and removed branding keys', function () {
         'logoPath' => 'settings/logo/client-controlled.svg',
     ], $headers)->assertOk();
 
-    $this->patchJson('/api/v1/admin/settings', ['removeLogo' => 1], $headers)
-        ->assertOk();
-
     expect($setting->fresh()->getAttributes())->toBe($before);
+});
+
+it('removes branding files through shortcut keys', function () {
+    Storage::disk('public')->put('settings/logo/old.svg', '<svg xmlns="http://www.w3.org/2000/svg"/>');
+    Storage::disk('public')->put('settings/footer-logo/old.svg', '<svg xmlns="http://www.w3.org/2000/svg"/>');
+    Storage::disk('public')->put('settings/favicon/old.svg', '<svg xmlns="http://www.w3.org/2000/svg"/>');
+
+    $setting = Setting::factory()->create([
+        'id' => 1,
+        'logo_path' => 'settings/logo/old.svg',
+        'footer_logo_path' => 'settings/footer-logo/old.svg',
+        'favicon_path' => 'settings/favicon/old.svg',
+    ]);
+
+    $this->patchJson('/api/v1/admin/settings', [
+        'removeLogo' => 1,
+        'removeFooterLogo' => 'true',
+        'removeFavicon' => true,
+    ], settingsAdminHeaders(settingsAdminToken()))
+        ->assertOk()
+        ->assertJsonPath('data.logo', null)
+        ->assertJsonPath('data.footerLogo', null)
+        ->assertJsonPath('data.favicon', null);
+
+    expect($setting->fresh()->logo_path)->toBeNull()
+        ->and($setting->fresh()->footer_logo_path)->toBeNull()
+        ->and($setting->fresh()->favicon_path)->toBeNull();
+
+    Storage::disk('public')->assertMissing('settings/logo/old.svg');
+    Storage::disk('public')->assertMissing('settings/footer-logo/old.svg');
+    Storage::disk('public')->assertMissing('settings/favicon/old.svg');
 });
 
 it('replaces and removes branding only after valid state is committed', function () {

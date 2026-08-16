@@ -1457,7 +1457,7 @@
         },
         {
           "name": "Update Settings",
-          "description": "Atomic multipart partial update. Omitted values are preserved; empty optional strings clear to null. phones/socialLinks are ordered full replacements, and the literal [] clears either collection. Submit logo/footerLogo/favicon as an empty Text field to remove it, or as File to replace it. googleMapsUrl accepts an absolute HTTP/HTTPS URL and an empty value clears it. Phone input is normalized to digits-only local format and must contain exactly 10 or 11 digits after +20/0020 normalization.",
+          "description": "Atomic multipart partial update. Omitted values are preserved; empty optional strings clear to null. phones/socialLinks are ordered full replacements; send phones=[] or clearPhones=1 to clear phones, and socialLinks=[] or clearSocialLinks=1 to clear social links. Submit logo/footerLogo/favicon as an empty Text field or send removeLogo/removeFooterLogo/removeFavicon=1 to remove branding files, or send File to replace them. googleMapsUrl accepts an absolute HTTP/HTTPS URL and an empty value clears it. Phone input is normalized to digits-only local format and must contain exactly 10 or 11 digits after +20/0020 normalization.",
           "request": {
             "method": "PATCH",
             "header": [
@@ -1474,15 +1474,20 @@
                 { "key": "phones[1][number]", "value": "01112345678", "type": "text", "description": "Second ordered 11-digit phone; maximum total is 3.", "disabled": true },
                 { "key": "phones[1][hasWhats]", "value": "0", "type": "text", "description": "WhatsApp flag for the second phone.", "disabled": true },
                 { "key": "phones", "value": "[]", "type": "text", "description": "Enable this row and disable every phones[index] row to clear all phones.", "disabled": true },
+                { "key": "clearPhones", "value": "1", "type": "text", "description": "Shortcut clear flag. Send 1/true to delete all phone rows without sending phones=[].", "disabled": true },
                 { "key": "addressAr", "value": "القاهرة، مصر", "type": "text", "description": "Optional Arabic address; empty string clears it.", "disabled": true },
                 { "key": "addressEn", "value": "Cairo, Egypt", "type": "text", "description": "Optional English address; empty string clears it.", "disabled": true },
                 { "key": "googleMapsUrl", "value": "https://maps.google.com/?q=30.0444,31.2357", "type": "text", "description": "Optional absolute HTTP/HTTPS Google Maps URL; empty string clears it.", "disabled": true },
                 { "key": "socialLinks[0][platform]", "value": "facebook", "type": "text", "description": "facebook, instagram, linkedin, youtube, tiktok, x, telegram, pinterest, or snapchat.", "disabled": true },
                 { "key": "socialLinks[0][url]", "value": "https://facebook.com/service-commerce", "type": "text", "description": "Absolute HTTP/HTTPS URL for the platform.", "disabled": true },
                 { "key": "socialLinks", "value": "[]", "type": "text", "description": "Enable this row and disable every socialLinks[index] row to clear all social links.", "disabled": true },
+                { "key": "clearSocialLinks", "value": "1", "type": "text", "description": "Shortcut clear flag. Send 1/true to delete all social links without sending socialLinks=[].", "disabled": true },
                 { "key": "logo", "type": "file", "src": "", "description": "File replaces the logo (JPG/JPEG/PNG/WEBP/SVG, max 5 MB). Change this row to Text with an empty value to remove it.", "disabled": true },
+                { "key": "removeLogo", "value": "1", "type": "text", "description": "Shortcut remove flag. Send 1/true to remove the current logo.", "disabled": true },
                 { "key": "footerLogo", "type": "file", "src": "", "description": "File replaces the footer logo (JPG/JPEG/PNG/WEBP/SVG, max 5 MB). Change this row to Text with an empty value to remove it.", "disabled": true },
-                { "key": "favicon", "type": "file", "src": "", "description": "File replaces the favicon (PNG/ICO/SVG, max 1 MB). Change this row to Text with an empty value to remove it.", "disabled": true }
+                { "key": "removeFooterLogo", "value": "1", "type": "text", "description": "Shortcut remove flag. Send 1/true to remove the current footer logo.", "disabled": true },
+                { "key": "favicon", "type": "file", "src": "", "description": "File replaces the favicon (PNG/ICO/SVG, max 1 MB). Change this row to Text with an empty value to remove it.", "disabled": true },
+                { "key": "removeFavicon", "value": "1", "type": "text", "description": "Shortcut remove flag. Send 1/true to remove the current favicon.", "disabled": true }
               ]
             },
             "url": "{{baseUrl}}/admin/settings"

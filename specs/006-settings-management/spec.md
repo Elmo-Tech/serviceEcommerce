@@ -217,7 +217,20 @@ socialLinks[]
 
 Collections are cleared by submitting `phones = []` or `socialLinks = []`.
 Branding files are removed by submitting the matching `logo`, `footerLogo`, or
-`favicon` field as an empty value. No separate clear/remove keys exist.
+`favicon` field as an empty value.
+
+The API also accepts these explicit shortcut keys for frontend form controls:
+
+```text
+clearPhones = 1 or true
+clearSocialLinks = 1 or true
+removeLogo = 1 or true
+removeFooterLogo = 1 or true
+removeFavicon = 1 or true
+```
+
+The shortcut keys perform the same clearing/removal actions as the empty-array
+or empty-file-field forms.
 
 No field named `defaultOgImage` or `ogImage` exists in requests, persistence,
 Admin responses, or Public responses.
@@ -330,7 +343,8 @@ Rules:
   replaced atomically.
 - **FR-028**: When `phones` is omitted, phones MUST remain unchanged.
 - **FR-029**: Submitting `phones = []` MUST delete all phone rows.
-- **FR-030**: No separate phone-clear key is accepted.
+- **FR-030**: Submitting `clearPhones = 1` or `clearPhones = true` MUST delete
+  all phone rows.
 
 Accepted equivalent examples include:
 
@@ -378,7 +392,8 @@ snapchat
   replaced atomically.
 - **FR-040**: When `socialLinks` is omitted, social links MUST remain unchanged.
 - **FR-041**: Submitting `socialLinks = []` MUST delete all social links.
-- **FR-042**: No separate social-link-clear key is accepted.
+- **FR-042**: Submitting `clearSocialLinks = 1` or `clearSocialLinks = true`
+  MUST delete all social links.
 - **FR-043**: The Admin resource MUST return `availableSocialPlatforms` as the
   approved stable English machine-key list.
 
@@ -410,7 +425,8 @@ svg
 - **FR-063**: Submitting a valid new file MUST replace the current file.
 - **FR-064**: Submitting `logo`, `footerLogo`, or `favicon` as an explicit empty
   value MUST clear the matching stored path.
-- **FR-065**: No separate branding remove key is accepted.
+- **FR-065**: Submitting `removeLogo`, `removeFooterLogo`, or `removeFavicon`
+  as `1` or `true` MUST clear the matching stored path.
 - **FR-066**: File responses MUST contain absolute public URLs or `null`, never
   internal paths.
 

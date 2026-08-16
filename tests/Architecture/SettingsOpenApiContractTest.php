@@ -95,7 +95,9 @@ it('freezes exact request and response settings objects', function () {
         'ValidationErrorResponse' => ['success', 'message', 'code', 'errors'],
         'AdminSettingsUpdateRequest' => [
             'publicEmail', 'addressAr', 'addressEn', 'googleMapsUrl',
-            'phones', 'socialLinks', 'logo', 'footerLogo', 'favicon',
+            'phones', 'clearPhones', 'socialLinks', 'clearSocialLinks',
+            'logo', 'removeLogo', 'footerLogo', 'removeFooterLogo',
+            'favicon', 'removeFavicon',
         ],
     ];
 

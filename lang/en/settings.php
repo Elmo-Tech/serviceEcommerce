@@ -44,5 +44,10 @@ return [
         'favicon_file' => 'Upload the favicon as a file.',
         'favicon_max' => 'The favicon may not be greater than 1 MB.',
         'favicon_mimes' => 'The favicon must be a PNG, ICO, or SVG file.',
+        'clear_phones_boolean' => 'The clear phones value must be true or false.',
+        'clear_social_links_boolean' => 'The clear social links value must be true or false.',
+        'remove_logo_boolean' => 'The remove logo value must be true or false.',
+        'remove_footer_logo_boolean' => 'The remove footer logo value must be true or false.',
+        'remove_favicon_boolean' => 'The remove favicon value must be true or false.',
     ],
 ];

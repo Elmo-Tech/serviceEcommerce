@@ -35,6 +35,11 @@ class UpdateSettingsRequest extends FormRequest
             'logo' => ['sometimes', 'nullable', 'file', 'max:5120', 'mimes:jpg,jpeg,png,webp,svg'],
             'footerLogo' => ['sometimes', 'nullable', 'file', 'max:5120', 'mimes:jpg,jpeg,png,webp,svg'],
             'favicon' => ['sometimes', 'nullable', 'file', 'max:1024', 'mimes:png,ico,svg'],
+            'clearPhones' => ['sometimes', 'boolean'],
+            'clearSocialLinks' => ['sometimes', 'boolean'],
+            'removeLogo' => ['sometimes', 'boolean'],
+            'removeFooterLogo' => ['sometimes', 'boolean'],
+            'removeFavicon' => ['sometimes', 'boolean'],
         ];
     }
 
@@ -78,6 +83,11 @@ class UpdateSettingsRequest extends FormRequest
             'favicon.file' => __('settings.validation.favicon_file'),
             'favicon.max' => __('settings.validation.favicon_max'),
             'favicon.mimes' => __('settings.validation.favicon_mimes'),
+            'clearPhones.boolean' => __('settings.validation.clear_phones_boolean'),
+            'clearSocialLinks.boolean' => __('settings.validation.clear_social_links_boolean'),
+            'removeLogo.boolean' => __('settings.validation.remove_logo_boolean'),
+            'removeFooterLogo.boolean' => __('settings.validation.remove_footer_logo_boolean'),
+            'removeFavicon.boolean' => __('settings.validation.remove_favicon_boolean'),
         ];
     }
 
@@ -105,6 +115,12 @@ class UpdateSettingsRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         $payload = [];
+
+        foreach (['clearPhones', 'clearSocialLinks', 'removeLogo', 'removeFooterLogo', 'removeFavicon'] as $field) {
+            if (array_key_exists($field, $this->all())) {
+                $payload[$field] = $this->normalizeBooleanFlag($this->input($field));
+            }
+        }
 
         foreach (['phones', 'socialLinks'] as $field) {
             $value = $this->input($field);
@@ -167,6 +183,24 @@ class UpdateSettingsRequest extends FormRequest
             }
 
             $payload['socialLinks'] = $socialLinks;
+        }
+
+        if (($payload['clearPhones'] ?? false) === true) {
+            $payload['phones'] = [];
+        }
+
+        if (($payload['clearSocialLinks'] ?? false) === true) {
+            $payload['socialLinks'] = [];
+        }
+
+        foreach ([
+            'removeLogo' => 'logo',
+            'removeFooterLogo' => 'footerLogo',
+            'removeFavicon' => 'favicon',
+        ] as $flag => $field) {
+            if (($payload[$flag] ?? false) === true && ! $this->hasFile($field)) {
+                $payload[$field] = null;
+            }
         }
 
         foreach (['logo', 'footerLogo', 'favicon'] as $field) {
@@ -284,6 +318,27 @@ class UpdateSettingsRequest extends FormRequest
         $normalized = preg_replace('/\s+/u', ' ', $normalized) ?? $normalized;
 
         return $normalized === '' ? null : $normalized;
+    }
+
+    private function normalizeBooleanFlag(mixed $value): mixed
+    {
+        if (is_bool($value)) {
+            return $value;
+        }
+
+        if (is_int($value)) {
+            return $value === 1 ? true : ($value === 0 ? false : $value);
+        }
+
+        if (! is_string($value)) {
+            return $value;
+        }
+
+        return match (mb_strtolower(trim($value))) {
+            '1', 'true' => true,
+            '0', 'false' => false,
+            default => $value,
+        };
     }
 
     private function ensureApprovedFileExtensions(Validator $validator): void

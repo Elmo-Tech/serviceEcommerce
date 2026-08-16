@@ -443,6 +443,9 @@ components:
             items, duplicate normalized numbers, or more than one WhatsApp-enabled item are rejected.
           items:
             $ref: '#/components/schemas/PhoneInput'
+        clearPhones:
+          type: boolean
+          description: When true, clears all phone numbers without submitting phones as an empty array.
         socialLinks:
           type: array
           maxItems: 9
@@ -450,6 +453,9 @@ components:
           description: Full ordered replacement; an empty array clears all links and duplicate platforms are rejected.
           items:
             $ref: '#/components/schemas/SocialLinkItem'
+        clearSocialLinks:
+          type: boolean
+          description: When true, clears all social links without submitting socialLinks as an empty array.
         logo:
           anyOf:
           - type: string
@@ -463,6 +469,9 @@ components:
           - webp
           - svg
           x-max-file-size-bytes: 5242880
+        removeLogo:
+          type: boolean
+          description: When true, removes the current logo without submitting an empty logo field.
         footerLogo:
           anyOf:
           - type: string
@@ -476,6 +485,9 @@ components:
           - webp
           - svg
           x-max-file-size-bytes: 5242880
+        removeFooterLogo:
+          type: boolean
+          description: When true, removes the current footer logo without submitting an empty footerLogo field.
         favicon:
           anyOf:
           - type: string
@@ -487,3 +499,6 @@ components:
           - ico
           - svg
           x-max-file-size-bytes: 1048576
+        removeFavicon:
+          type: boolean
+          description: When true, removes the current favicon without submitting an empty favicon field.

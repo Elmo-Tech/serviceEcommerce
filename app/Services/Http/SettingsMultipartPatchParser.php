@@ -16,6 +16,8 @@ class SettingsMultipartPatchParser
     private const SCALAR_FIELDS = [
         'publicEmail', 'addressAr', 'addressEn', 'googleMapsUrl',
         'phones', 'socialLinks', 'logo', 'footerLogo', 'favicon',
+        'clearPhones', 'clearSocialLinks',
+        'removeLogo', 'removeFooterLogo', 'removeFavicon',
     ];
 
     /** @var list<string> */
